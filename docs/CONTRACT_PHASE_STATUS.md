@@ -2,6 +2,8 @@
 
 Last audited: 2026-08-30. This is one continuous production codebase; phases are acceptance checkpoints and never branches or replacement implementations.
 
+Foundation source snapshot: `13bac633f623cf259a82fe7238741ae422f89096`.
+
 ## Current checkpoint
 
 | Phase | Status | Gate |

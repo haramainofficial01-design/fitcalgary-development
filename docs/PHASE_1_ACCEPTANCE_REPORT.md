@@ -8,7 +8,7 @@ The current repository materially satisfies the Foundation checkpoint within the
 
 Production identity/social credentials, production infrastructure, real devices, store signing/accounts, and final client content are correctly `BLOCKED_EXTERNAL`; they are not represented as completed or production verified.
 
-Acceptance candidate source commit: **to be recorded in the checkpoint commit follow-up**.
+Acceptance candidate source commit: `13bac633f623cf259a82fe7238741ae422f89096`.
 
 ## B. Contract requirement matrix
 
