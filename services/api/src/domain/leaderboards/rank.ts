@@ -1,0 +1,6 @@
+import type { RankingDirection } from '@fitcalgary/contracts';
+export interface RankableResult { id:string; normalizedMetric:string; verifiedAt:Date; }
+export interface RankedResult extends RankableResult { rank:number; }
+export function rankResults(results:RankableResult[],direction:RankingDirection):RankedResult[]{ const sign=direction==='LOWER_IS_BETTER'?1:-1;return [...results].sort((a,b)=>{const metric=(Number(a.normalizedMetric)-Number(b.normalizedMetric))*sign;if(metric!==0)return metric;const time=a.verifiedAt.getTime()-b.verifiedAt.getTime();return time!==0?time:a.id.localeCompare(b.id);}).map((result,index)=>({...result,rank:index+1})); }
+export interface RankMovement { resultId:string; previousRank:number|null; currentRank:number; passedResultIds:string[]; }
+export function calculateMovements(previous:RankedResult[],current:RankedResult[]):RankMovement[]{ const before=new Map(previous.map((r)=>[r.id,r.rank]));return current.map((r)=>{const previousRank=before.get(r.id)??null;const passedResultIds=previousRank===null?[]:previous.filter((old)=>old.rank<previousRank&&(current.find((next)=>next.id===old.id)?.rank??0)>r.rank).map((old)=>old.id);return{resultId:r.id,previousRank,currentRank:r.rank,passedResultIds};}); }

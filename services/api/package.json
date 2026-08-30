@@ -1,0 +1,6 @@
+{
+  "name":"@fitcalgary/api","version":"0.1.0","private":true,"type":"module","engines":{"node":">=22.13.0"},
+  "scripts":{"build":"tsc -p tsconfig.json","start":"node dist/index.js","dev":"pnpm build && node --watch dist/index.js","test":"node --experimental-strip-types --test test/*.test.ts","typecheck":"tsc -p tsconfig.json --noEmit","db:migrate":"node dist/scripts/migrate.js"},
+  "dependencies":{"@aws-sdk/client-s3":"^3.873.0","@aws-sdk/s3-request-presigner":"^3.873.0","@fastify/cors":"^11.1.0","@fastify/helmet":"^13.0.1","@fastify/rate-limit":"^10.3.0","@fitcalgary/contracts":"link:../../packages/contracts","fastify":"^5.6.0","jose":"^6.1.0","pg":"^8.16.3","zod":"^4.1.5"},
+  "devDependencies":{"@types/node":"^24.3.0","@types/pg":"^8.15.5","typescript":"^5.9.3"}
+}

@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import { normalizePrice } from '../src/domain/pricing/normalize.ts';
+test('biweekly is exactly 26 payments per year',()=>{const result=normalizePrice({recurringCents:2000,frequency:'BIWEEKLY',mandatoryAnnualFeeCents:12000,initiationFeeCents:6000,complete:true});assert.equal(result.paymentsPerYear,26);assert.equal(result.annualRecurringCents,64000);assert.equal(result.ongoingMonthlyCents,5333);assert.equal(result.firstYearMonthlyCents,5833);});
+test('incomplete pricing never claims a normalized amount',()=>{const result=normalizePrice({recurringCents:1000,frequency:'MONTHLY',complete:false});assert.equal(result.ongoingMonthlyCents,null);assert.equal(result.firstYearMonthlyCents,null);});
+test('negative components are rejected',()=>assert.throws(()=>normalizePrice({recurringCents:-1,frequency:'MONTHLY',complete:true})));

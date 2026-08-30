@@ -1,0 +1,26 @@
+name: FitCalgaryWatch
+options:
+  bundleIdPrefix: ca.fitcalgary
+  deploymentTarget: {watchOS: "10.0"}
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 1.0.0
+targets:
+  FitCalgaryWatch:
+    type: application
+    platform: watchOS
+    sources: [FitCalgaryWatch]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ca.fitcalgary.index.watchkitapp
+        PRODUCT_NAME: FitCalgary
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: FitCalgary
+        INFOPLIST_KEY_WKCompanionAppBundleIdentifier: ca.fitcalgary.index
+        INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads: NO
+        CODE_SIGN_ENTITLEMENTS: FitCalgaryWatch/FitCalgaryWatch.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    scheme:
+      testTargets: []

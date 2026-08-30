@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import { ageOn,eligibleDivisionIds,type DivisionRule } from '../src/domain/divisions/eligibility.ts';
+const rules:DivisionRule[]=[{id:'open',label:'Open',minimumAge:null,maximumAge:null,minimumInclusive:true,maximumInclusive:true,open:true},{id:'18-22',label:'18–22',minimumAge:18,maximumAge:22,minimumInclusive:true,maximumInclusive:true,open:false},{id:'23-29',label:'23–29',minimumAge:23,maximumAge:29,minimumInclusive:true,maximumInclusive:true,open:false}];
+test('age calculation respects birthday',()=>{assert.equal(ageOn(new Date('2000-09-10'),new Date('2026-09-09')),25);assert.equal(ageOn(new Date('2000-09-10'),new Date('2026-09-10')),26);});
+test('boundaries are explicit and do not overlap',()=>{assert.deepEqual(eligibleDivisionIds(22,rules),['open','18-22']);assert.deepEqual(eligibleDivisionIds(23,rules),['open','23-29']);});

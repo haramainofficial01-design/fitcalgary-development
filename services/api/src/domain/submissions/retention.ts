@@ -1,0 +1,2 @@
+export interface EvidenceRecord { status:'PENDING_REVIEW'|'APPROVED'|'REJECTED'|'CANCELLED'; retainUntil:Date; deletedAt:Date|null; }
+export function retentionDecision(record:EvidenceRecord,now:Date):'KEEP'|'WARN_REVIEW'|'DELETE'{if(record.deletedAt)return'KEEP';if(record.status==='PENDING_REVIEW')return record.retainUntil.getTime()-now.getTime()<=48*60*60*1000?'WARN_REVIEW':'KEEP';return record.retainUntil<=now?'DELETE':'KEEP';}

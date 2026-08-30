@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import { notificationFor } from '../src/domain/notifications/events.ts';
+test('passed notification contains new rank and durable deep link',()=>{const value=notificationFor({type:'LEADERBOARD_PASSED',leaderboardId:'board-1',newRank:12,passingAthleteDisplayName:'Alex'});assert.match(value.body,/now #12/);assert.equal(value.deepLink,'fitcalgary://leaderboards/board-1');});

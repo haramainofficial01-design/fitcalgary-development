@@ -1,0 +1,355 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1B04294D18406F3A9775810F /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E55C09ED7EFFF31E9C8BC35 /* KeychainStore.swift */; };
+		299833A65E5507E479494788 /* FitCalgaryWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69F003C590CBD8FCAB82DF3 /* FitCalgaryWatchApp.swift */; };
+		5B61BC6535F24ED60CE21552 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B644C527748829D367B8A6EC /* Assets.xcassets */; };
+		5E2651877CAEBFAD95362835 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE99A2D36CFAE0657C7E149D /* DashboardView.swift */; };
+		913FF2F57C5A68933D3D62F4 /* WatchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E0C7E87C79A7BF376CA08D /* WatchStore.swift */; };
+		ABFED850D07D02FAC0FD6487 /* WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B614061FCF7EADA723467892 /* WatchSnapshot.swift */; };
+		E1B970FA8DAF3B45AEEF55B4 /* GlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D70AA2C8A3B349741DD4B7E /* GlassCard.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		01D03A3AC55D01E8999B7FAB /* FitCalgaryWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitCalgaryWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		022AFFAF4E741EA6C9FDB4F6 /* FitCalgaryWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitCalgaryWatch.entitlements; sourceTree = "<group>"; };
+		37E0C7E87C79A7BF376CA08D /* WatchStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchStore.swift; sourceTree = "<group>"; };
+		7D70AA2C8A3B349741DD4B7E /* GlassCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassCard.swift; sourceTree = "<group>"; };
+		9E55C09ED7EFFF31E9C8BC35 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		B614061FCF7EADA723467892 /* WatchSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSnapshot.swift; sourceTree = "<group>"; };
+		B644C527748829D367B8A6EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C69F003C590CBD8FCAB82DF3 /* FitCalgaryWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitCalgaryWatchApp.swift; sourceTree = "<group>"; };
+		CE99A2D36CFAE0657C7E149D /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		043036FE8A8131D6D1461FA8 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B614061FCF7EADA723467892 /* WatchSnapshot.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		28CE4C82683A967B442D7F6A /* FitCalgaryWatch */ = {
+			isa = PBXGroup;
+			children = (
+				022AFFAF4E741EA6C9FDB4F6 /* FitCalgaryWatch.entitlements */,
+				C69F003C590CBD8FCAB82DF3 /* FitCalgaryWatchApp.swift */,
+				043036FE8A8131D6D1461FA8 /* Models */,
+				D279D694D34E1E976B71F3E9 /* Resources */,
+				86A57D677531BDEC680DCCE9 /* Services */,
+				29966852E520B7409A133109 /* Views */,
+			);
+			path = FitCalgaryWatch;
+			sourceTree = "<group>";
+		};
+		29966852E520B7409A133109 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				CE99A2D36CFAE0657C7E149D /* DashboardView.swift */,
+				7D70AA2C8A3B349741DD4B7E /* GlassCard.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		53B29FCC384F2A7C731E5F9A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				01D03A3AC55D01E8999B7FAB /* FitCalgaryWatch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		86A57D677531BDEC680DCCE9 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				9E55C09ED7EFFF31E9C8BC35 /* KeychainStore.swift */,
+				37E0C7E87C79A7BF376CA08D /* WatchStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		C946FC4E96E50E8912995B71 = {
+			isa = PBXGroup;
+			children = (
+				28CE4C82683A967B442D7F6A /* FitCalgaryWatch */,
+				53B29FCC384F2A7C731E5F9A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D279D694D34E1E976B71F3E9 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B644C527748829D367B8A6EC /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3A1206E9EA8FB03A98C1D593 /* FitCalgaryWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0AA147EE0E2B2079BCDC709B /* Build configuration list for PBXNativeTarget "FitCalgaryWatch" */;
+			buildPhases = (
+				C16244A8BB4E6E011182F42E /* Sources */,
+				C58248622ADC0C7C5D9E84D4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FitCalgaryWatch;
+			packageProductDependencies = (
+			);
+			productName = FitCalgaryWatch;
+			productReference = 01D03A3AC55D01E8999B7FAB /* FitCalgaryWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		13DF238DD0F1085EC6C76D89 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = CD00BC5F11458289A4A1D2A2 /* Build configuration list for PBXProject "FitCalgaryWatch" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = C946FC4E96E50E8912995B71;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 53B29FCC384F2A7C731E5F9A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3A1206E9EA8FB03A98C1D593 /* FitCalgaryWatch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C58248622ADC0C7C5D9E84D4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B61BC6535F24ED60CE21552 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C16244A8BB4E6E011182F42E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5E2651877CAEBFAD95362835 /* DashboardView.swift in Sources */,
+				299833A65E5507E479494788 /* FitCalgaryWatchApp.swift in Sources */,
+				E1B970FA8DAF3B45AEEF55B4 /* GlassCard.swift in Sources */,
+				1B04294D18406F3A9775810F /* KeychainStore.swift in Sources */,
+				ABFED850D07D02FAC0FD6487 /* WatchSnapshot.swift in Sources */,
+				913FF2F57C5A68933D3D62F4 /* WatchStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		07A35F614BE1A92AA60DD569 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		0E92AAFAD4200B0F893F9263 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = FitCalgaryWatch/FitCalgaryWatch.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FitCalgary;
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = NO;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ca.fitcalgary.index;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.fitcalgary.index.watchkitapp;
+				PRODUCT_NAME = FitCalgary;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Release;
+		};
+		74F3778DDB305F649223F217 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+		C344C909BD5B1D0257EBE238 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = FitCalgaryWatch/FitCalgaryWatch.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FitCalgary;
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = NO;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ca.fitcalgary.index;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.fitcalgary.index.watchkitapp;
+				PRODUCT_NAME = FitCalgary;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0AA147EE0E2B2079BCDC709B /* Build configuration list for PBXNativeTarget "FitCalgaryWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C344C909BD5B1D0257EBE238 /* Debug */,
+				0E92AAFAD4200B0F893F9263 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CD00BC5F11458289A4A1D2A2 /* Build configuration list for PBXProject "FitCalgaryWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				74F3778DDB305F649223F217 /* Debug */,
+				07A35F614BE1A92AA60DD569 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 13DF238DD0F1085EC6C76D89 /* Project object */;
+}

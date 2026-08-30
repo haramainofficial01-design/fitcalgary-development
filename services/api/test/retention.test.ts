@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import { retentionDecision } from '../src/domain/submissions/retention.ts';
+const now=new Date('2026-08-29T00:00:00Z');test('pending evidence near expiry warns instead of deleting',()=>assert.equal(retentionDecision({status:'PENDING_REVIEW',retainUntil:new Date('2026-08-30T00:00:00Z'),deletedAt:null},now),'WARN_REVIEW'));test('decided expired evidence deletes',()=>assert.equal(retentionDecision({status:'APPROVED',retainUntil:new Date('2026-08-28T00:00:00Z'),deletedAt:null},now),'DELETE'));
