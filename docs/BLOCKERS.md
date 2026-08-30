@@ -1,6 +1,6 @@
 # Blockers and external dependencies
 
-No unresolved developer-controlled issue prevents Phase 1 client review. The items below correctly remain `BLOCKED_EXTERNAL` or later-phase work; development adapters, environment variables, fixtures, and mocks are in place so they do not halt foundation work.
+No unresolved developer-controlled issue prevents Phase 1 client review. The Client-recognizable Flutter product shell is included and development fixtures are explicitly labeled. The items below correctly remain `BLOCKED_EXTERNAL` or later-phase work; adapters, environment variables, fixtures, and mocks keep them from blocking foundation/product-shell review.
 
 ## Client/service inputs (`BLOCKED_EXTERNAL`)
 

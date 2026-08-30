@@ -9,44 +9,59 @@ class BrandHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SafeArea(
     bottom: false,
-    child: Container(
-      height: 74,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: FitColors.ink)),
-      ),
-      child: Row(
-        children: [
-          const Text(
-            'FITCALGARY',
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              fontSize: 18,
-              letterSpacing: -.6,
-            ),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 440;
+        return Container(
+          height: 74,
+          padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 20),
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: FitColors.ink)),
           ),
-          const SizedBox(width: 10),
-          const Text(
-            'INDEX',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 9,
-              letterSpacing: 2.4,
-              color: FitColors.muted,
-            ),
-          ),
-          const Spacer(),
-          if (showActions)
-            FilledButton(
-              onPressed: () => context.push('/submit'),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(0, 44),
-                padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Row(
+            children: [
+              Text(
+                'FITCALGARY',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: compact ? 15 : 18,
+                  letterSpacing: -.6,
+                ),
               ),
-              child: const Text('POST A RESULT'),
-            ),
-        ],
-      ),
+              SizedBox(width: compact ? 6 : 10),
+              Text(
+                'INDEX',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: compact ? 7 : 9,
+                  letterSpacing: compact ? 1.7 : 2.4,
+                  color: FitColors.muted,
+                ),
+              ),
+              const Spacer(),
+              if (showActions) ...[
+                OutlinedButton(
+                  onPressed: () => context.push('/signin'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 42),
+                    padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 12),
+                  ),
+                  child: const Text('SIGN IN'),
+                ),
+                const SizedBox(width: 6),
+                FilledButton(
+                  onPressed: () => context.push('/submit'),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(0, 42),
+                    padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 12),
+                  ),
+                  child: Text(compact ? 'POST RESULT' : 'POST A RESULT'),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
     ),
   );
 }

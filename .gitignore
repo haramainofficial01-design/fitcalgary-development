@@ -27,3 +27,4 @@
 DerivedData/
 
 services/api-go/fitcalgary-api
+tmp/

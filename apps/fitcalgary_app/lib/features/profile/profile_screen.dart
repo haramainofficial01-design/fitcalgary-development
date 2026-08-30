@@ -61,7 +61,72 @@ class _SignedOutProfile extends StatelessWidget {
         onPressed: () => context.push('/signin'),
         child: const Text('SIGN IN →'),
       ),
+      const SizedBox(height: 28),
+      const _AccountFeature(
+        icon: Icons.verified_outlined,
+        title: 'VERIFIED RESULTS',
+        body: 'Your reviewed marks and leaderboard positions.',
+      ),
+      const _AccountFeature(
+        icon: Icons.bookmark_border,
+        title: 'SAVED GYMS',
+        body: 'Keep a private shortlist from the Calgary index.',
+      ),
+      const _AccountFeature(
+        icon: Icons.notifications_none,
+        title: 'NOTIFICATIONS',
+        body: 'Review, ranking and event updates under your control.',
+      ),
     ],
+  );
+}
+
+class _AccountFeature extends StatelessWidget {
+  const _AccountFeature({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
+  final IconData icon;
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(vertical: 18),
+    decoration: const BoxDecoration(
+      border: Border(bottom: BorderSide(color: FitColors.line)),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, size: 25),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                body,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: FitColors.muted,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
   );
 }
 

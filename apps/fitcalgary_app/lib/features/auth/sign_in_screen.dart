@@ -64,7 +64,19 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               const SizedBox(height: 36),
               FilledButton(
                 onPressed: busy ? null : signIn,
-                child: Text(busy ? 'CONNECTING…' : 'CONTINUE SECURELY →'),
+                child: Text(busy ? 'CONNECTING…' : 'EMAIL OR PASSWORD →'),
+              ),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                onPressed: busy ? null : signIn,
+                icon: const Icon(Icons.g_mobiledata, size: 25),
+                label: const Text('CONTINUE WITH GOOGLE'),
+              ),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                onPressed: busy ? null : signIn,
+                icon: const Icon(Icons.apple),
+                label: const Text('SIGN IN WITH APPLE'),
               ),
               if (error != null)
                 Padding(
@@ -76,7 +88,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 ),
               const SizedBox(height: 24),
               const Text(
-                'Email/password, Google, and Apple are handled by the FitCalgary Keycloak identity service using OIDC Authorization Code + PKCE.',
+                'These choices continue to the FitCalgary Keycloak identity service. Email verification, password reset, Google and Apple are enabled there when their production credentials are supplied. The app uses OIDC Authorization Code + PKCE.',
                 style: TextStyle(
                   fontSize: 11,
                   color: FitColors.muted,

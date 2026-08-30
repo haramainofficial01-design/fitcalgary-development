@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/pashagolub/pgxmock/v4"
@@ -59,6 +60,55 @@ func TestProtectedRouteRejectsMissingBearerToken(t *testing.T) {
 	server.Router().ServeHTTP(recorder, request)
 	if recorder.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401, got %d: %s", recorder.Code, recorder.Body.String())
+	}
+}
+
+func TestUserRoleCannotAccessAdminRoute(t *testing.T) {
+	server, database := newTestServer(t)
+	defer database.Close()
+	expectAuthentication(database)
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/admin/overview", nil)
+	request.Header.Set("Authorization", "Bearer token")
+	recorder := httptest.NewRecorder()
+	server.Router().ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusForbidden {
+		t.Fatalf("a USER must not access an ADMIN route; got %d: %s", recorder.Code, recorder.Body.String())
+	}
+	var body map[string]any
+	if err := json.Unmarshal(recorder.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	errorBody, ok := body["error"].(map[string]any)
+	if !ok || errorBody["code"] != "FORBIDDEN" {
+		t.Fatalf("expected safe FORBIDDEN error envelope, got %#v", body)
+	}
+	if err := database.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestUnknownJSONFieldReturnsValidationError(t *testing.T) {
+	server, database := newTestServer(t)
+	defer database.Close()
+	expectAuthentication(database)
+	request := httptest.NewRequest(http.MethodPatch, "/api/v1/profile", strings.NewReader(`{"unexpected":true}`))
+	request.Header.Set("Authorization", "Bearer token")
+	request.Header.Set("Content-Type", "application/json")
+	recorder := httptest.NewRecorder()
+	server.Router().ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("unknown input must be rejected; got %d: %s", recorder.Code, recorder.Body.String())
+	}
+	var body map[string]any
+	if err := json.Unmarshal(recorder.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	errorBody, ok := body["error"].(map[string]any)
+	if !ok || errorBody["code"] != "VALIDATION_ERROR" {
+		t.Fatalf("expected safe VALIDATION_ERROR envelope, got %#v", body)
+	}
+	if err := database.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
 	}
 }
 

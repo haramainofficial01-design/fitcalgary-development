@@ -11,14 +11,16 @@ Executed on 2026-08-30 in the developer’s local macOS environment. Simulator r
 | Migration clean initialization | `go run ./cmd/migrate` against empty PostgreSQL 17.11 | PASS | 30 public tables; 5 disciplines; 5 divisions |
 | Migration repeatability | Same migration command a second time | PASS | No changes/errors; checksum ledger verified |
 | API readiness/data read | `GET /ready`, `GET /api/v1/gyms` | PASS | Ready response and Phase 1 gym from PostgreSQL |
-| Auth protection | `GET /api/v1/auth/context` without bearer | PASS | HTTP 401 |
-| Auth/role/profile write | Same endpoint with gated development token, then SQL profile query | PASS | `USER`, verified email, active profile persisted |
+| Auth protection | `GET /api/v1/profile` without bearer | PASS | HTTP 401 `UNAUTHENTICATED` |
+| Auth/role/profile write | Profile endpoint with gated development token, then SQL profile query | PASS | HTTP 200; `USER`; active profile persisted |
+| Authorization rejection | `USER` token against `/api/v1/admin/overview` | PASS | HTTP 403 `FORBIDDEN` |
 | Flutter analysis | `flutter analyze` | PASS | No issues |
-| Flutter widget smoke | `flutter test` | PASS | Home experience test passed |
+| Flutter widget/product navigation | `flutter test` | PASS | Home plus Home/Gyms/Board/Compete/Me navigation passed (2 tests) |
+| Flutter product web build/runtime | `flutter build web --release --dart-define=API_BASE_URL=...`; local Chrome launch | PASS | Responsive Client product shell rendered; configured-origin API calls succeeded |
 | Android debug build | `flutter build apk --debug` with emulator API URL | PASS | APK built and installed |
-| Android release artifact | `flutter build appbundle --release` with placeholder production URLs | PASS | `app-release.aab`, 53.5 MB; not production signed |
+| Android release artifact | `flutter build appbundle --release` with placeholder production URLs | PASS | `app-release.aab`, 53.6 MB; not production signed |
 | Android emulator launch | Explicit `am start` on Pixel/API 36 AVD | PASS | Cold launch, resumed `MainActivity` |
-| Flutter → Go → PostgreSQL | Tap Gyms in Android emulator | PASS | `artifacts/simulator/android-phase1-api-db.png` shows DB-seeded gym and normalized $25.00 price |
+| Flutter → Go → PostgreSQL | Tap Gyms in Android emulator after fresh migration | PASS | UI semantics and screenshot show DB-seeded “Phase 1 Integration Gym” and normalized $25.00 price |
 | Android app logs | App-PID error log review | PASS with benign platform notices | No Flutter exception/crash; emulator ashmem/IME notices only |
 | iOS simulator build | `flutter build ios --simulator --debug` | PASS | `Runner.app` built with Xcode 26.6 |
 | iOS simulator launch | `simctl install`, `simctl launch` on iPhone 17 Pro | PASS | PID returned; rendered screenshot |

@@ -51,30 +51,47 @@ class AppShell extends StatelessWidget {
     const paths = ['/', '/gyms', '/leaderboards', '/events', '/profile'];
     final index = paths.indexOf(location);
     return Scaffold(
-      body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index < 0 ? 0 : index,
-        onDestinationSelected: (value) => context.go(paths[value]),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 960),
+          child: child,
+        ),
+      ),
+      bottomNavigationBar: ColoredBox(
+        color: const Color(0xFFFFE8E3),
+        child: Center(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 960),
+            child: NavigationBar(
+              selectedIndex: index < 0 ? 0 : index,
+              onDestinationSelected: (value) => context.go(paths[value]),
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.grid_view_outlined),
+                  label: 'Gyms',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.bar_chart_outlined),
+                  label: 'Board',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.calendar_today_outlined),
+                  label: 'Compete',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.person_outline),
+                  label: 'Me',
+                ),
+              ],
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.grid_view_outlined),
-            label: 'Gyms',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bar_chart_outlined),
-            label: 'Board',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_today_outlined),
-            label: 'Compete',
-          ),
-          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Me'),
-        ],
+        ),
       ),
     );
   }

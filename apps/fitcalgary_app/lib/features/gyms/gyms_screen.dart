@@ -16,6 +16,10 @@ class GymsScreen extends ConsumerStatefulWidget {
 
 class _GymsScreenState extends ConsumerState<GymsScreen> {
   String query = '';
+  String area = 'ALL AREAS';
+  String pricing = 'EVERYTHING';
+  bool sortByCost = true;
+  bool showMore = false;
   @override
   Widget build(BuildContext context) {
     final gyms = ref.watch(gymsProvider);
@@ -54,7 +58,86 @@ class _GymsScreenState extends ConsumerState<GymsScreen> {
                       hintText: 'Search gyms, operators, areas',
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 14),
+                  gyms.when(
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
+                    data: (items) {
+                      final areas = <String>{
+                        'ALL AREAS',
+                        ...items
+                            .map((item) => item.area?.toUpperCase())
+                            .whereType<String>(),
+                      }.take(6).toList(growable: false);
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Wrap(
+                            spacing: 7,
+                            runSpacing: 7,
+                            children: areas
+                                .map(
+                                  (label) => _IndexFilter(
+                                    label: label,
+                                    selected: area == label,
+                                    onPressed: () =>
+                                        setState(() => area = label),
+                                  ),
+                                )
+                                .toList(growable: false),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 7,
+                            runSpacing: 7,
+                            children:
+                                [
+                                      'EVERYTHING',
+                                      'ALL-IN VERIFIED',
+                                      'PRICING PENDING',
+                                    ]
+                                    .map(
+                                      (label) => _IndexFilter(
+                                        label: label,
+                                        selected: pricing == label,
+                                        onPressed: () =>
+                                            setState(() => pricing = label),
+                                      ),
+                                    )
+                                    .toList(growable: false),
+                          ),
+                          const SizedBox(height: 10),
+                          OutlinedButton(
+                            onPressed: () =>
+                                setState(() => showMore = !showMore),
+                            child: Text(
+                              showMore ? 'FEWER FILTERS' : 'MORE FILTERS',
+                            ),
+                          ),
+                          if (showMore)
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: const BoxDecoration(
+                                border: Border(
+                                  left: BorderSide(color: FitColors.line),
+                                  right: BorderSide(color: FitColors.line),
+                                  bottom: BorderSide(color: FitColors.line),
+                                ),
+                              ),
+                              child: const Text(
+                                'Additional amenities and contract filters will use Client-confirmed data in Phase 2.',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: FitColors.muted,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 22),
                   gyms.when(
                     loading: () => const Center(
                       child: Padding(
@@ -75,7 +158,26 @@ class _GymsScreenState extends ConsumerState<GymsScreen> {
                                     .toLowerCase()
                                     .contains(query),
                           )
+                          .where(
+                            (item) =>
+                                area == 'ALL AREAS' ||
+                                item.area?.toUpperCase() == area,
+                          )
+                          .where((item) {
+                            if (pricing == 'ALL-IN VERIFIED') {
+                              return item.pricingComplete;
+                            }
+                            if (pricing == 'PRICING PENDING') {
+                              return !item.pricingComplete;
+                            }
+                            return true;
+                          })
                           .toList();
+                      visible.sort((a, b) {
+                        if (!sortByCost) return a.name.compareTo(b.name);
+                        return (a.lowestOngoingMonthlyCents ?? 1 << 30)
+                            .compareTo(b.lowestOngoingMonthlyCents ?? 1 << 30);
+                      });
                       if (visible.isEmpty) {
                         return const EmptyPanel(
                           title: 'No gyms found',
@@ -83,7 +185,38 @@ class _GymsScreenState extends ConsumerState<GymsScreen> {
                         );
                       }
                       return Column(
-                        children: visible.map((item) => _GymRow(item)).toList(),
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${visible.length} ${visible.length == 1 ? 'LOCATION' : 'LOCATIONS'}',
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                              ),
+                              _IndexFilter(
+                                label: 'COST',
+                                selected: sortByCost,
+                                onPressed: () =>
+                                    setState(() => sortByCost = true),
+                              ),
+                              const SizedBox(width: 6),
+                              _IndexFilter(
+                                label: 'A–Z',
+                                selected: !sortByCost,
+                                onPressed: () =>
+                                    setState(() => sortByCost = false),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          ...visible.map((item) => _GymRow(item)),
+                        ],
                       );
                     },
                   ),
@@ -95,6 +228,30 @@ class _GymsScreenState extends ConsumerState<GymsScreen> {
       ),
     );
   }
+}
+
+class _IndexFilter extends StatelessWidget {
+  const _IndexFilter({
+    required this.label,
+    required this.selected,
+    required this.onPressed,
+  });
+  final String label;
+  final bool selected;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => OutlinedButton(
+    onPressed: onPressed,
+    style: OutlinedButton.styleFrom(
+      backgroundColor: selected ? FitColors.coral : Colors.transparent,
+      foregroundColor: selected ? FitColors.white : FitColors.ink,
+      side: BorderSide(color: selected ? FitColors.coral : FitColors.line),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      minimumSize: const Size(0, 42),
+    ),
+    child: Text(label),
+  );
 }
 
 class _GymRow extends ConsumerStatefulWidget {

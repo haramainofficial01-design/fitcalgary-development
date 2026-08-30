@@ -4,11 +4,11 @@
 
 # PHASE 1 READY FOR CLIENT REVIEW
 
-The current repository materially satisfies the Foundation checkpoint within the Developer’s control. The corrected production architecture is Flutter/Dart for the shared iOS/Android app, Go for backend/integration services, PostgreSQL for authoritative data, and Keycloak as the sole V1 OIDC provider. The foundation builds on web, iOS simulator, Android emulator, and watchOS simulator. A clean local PostgreSQL 17.11 database was initialized reproducibly, the Go service read and wrote it, protected API behavior was exercised with an explicitly gated development identity, and the Android Flutter client rendered a gym returned by that Go/PostgreSQL path.
+The current repository materially satisfies the expanded Foundation checkpoint within the Developer’s control. It combines the Flutter/Dart + Go + PostgreSQL + Keycloak technical foundation with a working, responsive product shell derived from the Client’s supplied FitCalgary direction. Home, Gym Index, Board, Compete, Me and sign-in surfaces are recognizable, navigable, and demonstrated on iOS, Android and Flutter web; watchOS remains a separate companion.
 
 Production identity/social credentials, production infrastructure, real devices, store signing/accounts, and final client content are correctly `BLOCKED_EXTERNAL`; they are not represented as completed or production verified.
 
-Acceptance candidate source commit: `13bac633f623cf259a82fe7238741ae422f89096`.
+Original technical-foundation snapshot: `13bac633f623cf259a82fe7238741ae422f89096`. The expanded UI evidence commit is recorded in the final Client package.
 
 ## B. Contract requirement matrix
 
@@ -33,7 +33,8 @@ Acceptance candidate source commit: `13bac633f623cf259a82fe7238741ae422f89096`.
 | iOS development/build environment | TESTED (SIMULATOR) | Flutter iOS app builds, installs and launches | Flutter iOS project | Xcode 26.6 simulator build/launch | PASS | Real device/signing NOT DEVICE_VERIFIED |
 | Android development/build environment | TESTED (EMULATOR) | SDK/JDK/licenses/AVD configured; APK and AAB build | Flutter Android project | Doctor, APK install/launch, AAB build | PASS | Real device/signing NOT DEVICE_VERIFIED |
 | Core Flutter app build/run | TESTED (SIMULATORS) | Shared app analyzes/tests and runs on both mobile simulators | `apps/fitcalgary_app` | Analyze, widget test, iOS/Android launch | PASS | Real devices later |
-| Web foundation | TESTED locally | Public routes, directories, auth BFF, proxy, admin shell | `apps/web` | Oxlint, TypeScript, Vinext production build | PASS | Production env/domain `BLOCKED_EXTERNAL` |
+| Client product shell | TESTED (SIMULATOR/EMULATOR/WEB) | Client-recognizable Home, Gym Index, Board, Compete, Me and Keycloak sign-in shell; working navigation, filters, sort, board selection and event details | Flutter feature screens and navigation tests | Side-by-side review against supplied Client screens; route/control tests; visual launch review | PASS | Final content and deep workflows remain Phase 2 |
+| Web foundation | TESTED locally | Responsive Flutter product shell plus public/admin routes, auth BFF, proxy and admin shell | `apps/fitcalgary_app/web`, `apps/web` | Flutter web release/run; Oxlint, TypeScript, Vinext production build | PASS | Production env/domain `BLOCKED_EXTERNAL` |
 | Apple Watch/watchOS foundation | TESTED (SIMULATOR) | Native SwiftUI target, Keychain/session/watch summary model | `apps/watch` | Xcode build/install/launch | PASS | Real Watch NOT DEVICE_VERIFIED |
 | Security baseline | TESTED | Secret isolation, OIDC, secure tokens, server authorization, validation/errors, private evidence, auditing | `docs/SECURITY_BASELINE.md` and service/client modules | Auth/owner/cipher tests; source review | PASS foundation | Production penetration/config review in Phase 3 |
 | Dependencies documented | IMPLEMENTED | Tool/runtime versions and service dependencies recorded | README, service READMEs, Test Matrix | Documentation audit | PASS | Client provider selections later |
@@ -54,7 +55,7 @@ Acceptance candidate source commit: `13bac633f623cf259a82fe7238741ae422f89096`.
 | Go | 1.27.0 darwin/arm64 — test/vet/build PASS |
 | Xcode/iOS | Xcode 26.6 — iPhone 17 Pro simulator build/install/launch PASS |
 | Android | SDK 36, emulator 37.1.11, JDK 21 — debug APK build/install/launch PASS; release AAB build PASS |
-| Web | Node 22-compatible workspace/pnpm 11 — lint/typecheck/build PASS |
+| Web | Flutter product web release/build/run PASS; web-native public/admin lint/typecheck/build PASS |
 | watchOS | watchSimulator 26.5 — Xcode build/install/launch PASS |
 | Backend | Go production entry point and migration command build PASS |
 | Database | PostgreSQL 17.11 — clean migration plus repeat migration PASS; 30 tables |
@@ -82,7 +83,7 @@ The rendered result is captured at `artifacts/simulator/android-phase1-api-db.pn
 
 ## F. Tests
 
-Commands and exact boundaries are maintained in `docs/TEST_MATRIX.md`. All Phase 1 acceptance gates pass: Go tests/vet/build, clean/repeat migration, API/auth integration, Flutter analyze/test, Android APK/emulator/AAB, iOS simulator, watchOS simulator, web lint/typecheck/build, and Keycloak configuration validation.
+Commands and exact boundaries are maintained in `docs/TEST_MATRIX.md`. All Phase 1 acceptance gates pass: Go tests/vet/build, clean/repeat migration, API/auth integration, Flutter analysis and product-navigation tests, Android APK/emulator/AAB, iOS simulator, Flutter web release/runtime, watchOS simulator, web-native lint/typecheck/build, and Keycloak configuration validation.
 
 ## G. External blockers
 
@@ -94,4 +95,4 @@ After explicit authorization, complete and harden the V1 user and operational wo
 
 ## I. Plain-language client summary
 
-FitCalgary’s Phase 1 foundation is ready for review. We established the production architecture, database and reproducible migrations, Go API, Keycloak-based authentication design, secure role/permission pattern, shared Flutter mobile app, web foundation, and Apple Watch foundation. We built and launched the app on iOS, Android and watchOS simulators, built the web app, and proved the Flutter app can retrieve real test data through the Go service from PostgreSQL. Production service credentials, app-store access, real-device checks and final gym/event/rules content are still required from the Client or third-party providers and are clearly separated from completed development. Subject to Client acceptance of this checkpoint, the same codebase is ready to proceed into Phase 2.
+FitCalgary’s expanded Phase 1 foundation is ready for review. It now combines the production architecture with a working Client-recognizable product shell across iOS, Android and responsive Flutter web, plus the separate Apple Watch companion. The five primary app areas navigate correctly, visible controls behave, development data is labeled, and Flutter has been shown reading PostgreSQL data through the Go service. Production credentials, final content, store access and physical-device checks remain clearly separated from completed work. Subject to Client acceptance, the same codebase is ready for Phase 2.

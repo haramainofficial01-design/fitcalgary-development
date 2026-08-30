@@ -8,7 +8,7 @@ Foundation source snapshot: `13bac633f623cf259a82fe7238741ae422f89096`.
 
 | Phase | Status | Gate |
 |---|---|---|
-| Phase 1 — Foundation | READY FOR CLIENT REVIEW | Developer-controlled foundation requirements are materially met; production credentials/data remain explicitly `BLOCKED_EXTERNAL`. |
+| Phase 1 — Foundation + Client product shell | READY FOR CLIENT REVIEW | Technical foundation and Client-recognizable Flutter product shell are materially met; production credentials/data remain explicitly `BLOCKED_EXTERNAL`. |
 | Phase 2 — Core Product | AWAITING AUTHORIZATION | Some useful V1 work already exists and is preserved, but no substantial new Phase 2 work proceeds until explicit `PROCEED TO PHASE 2`. |
 | Phase 3 — Final Delivery | NOT_STARTED | Begins only after Phase 2 acceptance and authorization. |
 
@@ -16,7 +16,7 @@ Foundation source snapshot: `13bac633f623cf259a82fe7238741ae422f89096`.
 
 | Status | Requirements |
 |---|---|
-| TESTED | Clean architecture, Go builds/tests, Flutter builds/tests, iOS simulator, Android emulator, web build, watchOS simulator, PostgreSQL initialization, API/database integration, mock auth/role protection |
+| TESTED | Clean architecture, Go builds/tests, Flutter product/navigation tests, Client shell on iOS simulator/Android emulator/Flutter web, web-native build, watchOS simulator, PostgreSQL initialization, API/database integration, mock auth/role protection |
 | CONFIGURED | Environment template, Keycloak realm/clients/roles, Compose topology, private-storage and notification adapters |
 | IMPLEMENTED | Versioned API foundations for gyms, events, leaderboards, submissions, notifications and admin; secure session/token handling; audit/outbox/retention structure |
 | BLOCKED_EXTERNAL | Production Keycloak/SMTP/social IdPs, managed DB/storage, APNs/FCM, domains, signing/store accounts, approved content/legal materials |
