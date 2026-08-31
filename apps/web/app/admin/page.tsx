@@ -2,42 +2,32 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SyntheticEvent } from 'react';
-import { Activity, Bell, CalendarDays, ChartNoAxesCombined, ClipboardCheck, Dumbbell, FileClock, Flag, Gauge, Settings, ShieldCheck, Users } from 'lucide-react';
+import { Activity, BadgeDollarSign, Bell, CalendarDays, ChartNoAxesCombined, ClipboardCheck, Dumbbell, FileClock, Flag, Gauge, Layers3, ListChecks, Settings, ShieldCheck, Tags, Users } from 'lucide-react';
 
 type Json = Record<string, unknown>;
 type Session = { authenticated: boolean; displayName?: string; roles?: string[] };
 
 const sections = [
-  ['overview', 'Overview', Gauge],
-  ['users', 'Users', Users],
-  ['gyms', 'Gyms', Dumbbell],
-  ['clubs', 'Clubs', Activity],
-  ['events', 'Events', CalendarDays],
-  ['leaderboards', 'Leaderboards', ChartNoAxesCombined],
-  ['submissions', 'Submissions', ClipboardCheck],
-  ['judges', 'Judges', ShieldCheck],
-  ['moderation', 'Moderation', Flag],
-  ['notifications', 'Notifications', Bell],
-  ['analytics', 'Analytics', ChartNoAxesCombined],
-  ['settings', 'Content & settings', Settings],
-  ['audit', 'Audit log', FileClock],
+  ['overview', 'Overview', Gauge, 'admin/overview'],
+  ['users', 'Users', Users, 'admin/users'],
+  ['roles', 'Roles', ShieldCheck, 'admin/users'],
+  ['gyms', 'Gyms', Dumbbell, 'admin/gyms'],
+  ['pricing', 'Pricing', BadgeDollarSign, 'admin/gyms'],
+  ['clubs', 'Clubs', Activity, null],
+  ['events', 'Events', CalendarDays, 'admin/events'],
+  ['disciplines', 'Disciplines', Tags, null],
+  ['divisions', 'Divisions', Layers3, null],
+  ['leaderboards', 'Leaderboards', ChartNoAxesCombined, null],
+  ['submissions', 'Submissions', ClipboardCheck, null],
+  ['judges', 'Judges & reviews', ListChecks, null],
+  ['moderation', 'Moderation', Flag, null],
+  ['notifications', 'Notifications', Bell, null],
+  ['analytics', 'Analytics', ChartNoAxesCombined, null],
+  ['settings', 'Content & settings', Settings, null],
+  ['audit', 'Audit log', FileClock, 'admin/audit-log'],
 ] as const;
 
-const endpoints: Record<string, string> = {
-  overview: 'admin/overview',
-  users: 'admin/users',
-  gyms: 'admin/gyms',
-  clubs: 'admin/clubs',
-  events: 'admin/events',
-  leaderboards: 'admin/leaderboards',
-  submissions: 'admin/submissions',
-  judges: 'admin/judges',
-  moderation: 'admin/moderation',
-  notifications: 'admin/notifications',
-  analytics: 'admin/analytics',
-  settings: 'admin/settings',
-  audit: 'admin/audit-log',
-};
+const sectionFor = (key: string) => sections.find(([candidate]) => candidate === key);
 
 async function backend(path: string, init?: RequestInit): Promise<Json> {
   const headers = new Headers(init?.headers);
@@ -65,10 +55,16 @@ export default function AdminPage() {
   const [search, setSearch] = useState('');
 
   const load = useCallback(async (section: string) => {
+    const endpoint = sectionFor(section)?.[3];
     setBusy(true);
     setError(undefined);
+    if (!endpoint) {
+      setData({});
+      setBusy(false);
+      return;
+    }
     try {
-      setData(await backend(endpoints[section]));
+      setData(await backend(endpoint));
     } catch (reason) {
       setData({});
       setError(reason instanceof Error ? reason.message : 'Unable to load this area.');
@@ -83,7 +79,10 @@ export default function AdminPage() {
       .then((value) => {
         setSession(value);
         if (value.authenticated && value.roles?.map((role) => role.toUpperCase()).includes('ADMIN')) {
-          void load('overview');
+          const requested = new URLSearchParams(location.search).get('section') ?? 'overview';
+          const initial = sectionFor(requested) ? requested : 'overview';
+          setActive(initial);
+          void load(initial);
           void backend('admin/reference-data').then(setReference).catch(() => undefined);
         } else {
           setBusy(false);
@@ -99,6 +98,7 @@ export default function AdminPage() {
     setActive(section);
     setNotice(undefined);
     setSearch('');
+    history.replaceState(null, '', `/admin?section=${encodeURIComponent(section)}`);
     void load(section);
   };
 
@@ -110,7 +110,7 @@ export default function AdminPage() {
     <main className="admin-shell">
       <aside className="admin-sidebar">
         <a className="wordmark admin-wordmark" href="/"><strong>FITCALGARY</strong><span>ADMIN</span></a>
-        <nav>{sections.map(([key, label, Icon]) => <button key={key} className={active === key ? 'active' : ''} onClick={() => select(key)}><Icon size={17} /><span>{label}</span></button>)}</nav>
+        <nav aria-label="Admin areas">{sections.map(([key, label, Icon]) => <button key={key} className={active === key ? 'active' : ''} aria-current={active === key ? 'page' : undefined} onClick={() => select(key)}><Icon size={17} /><span>{label}</span></button>)}</nav>
         <div className="admin-user"><span>{session.displayName}</span><button onClick={async () => { await fetch('/api/auth/logout', { method: 'POST' }); location.href = '/'; }}>Sign out</button></div>
       </aside>
       <section className="admin-main">
@@ -138,12 +138,18 @@ function AdminGate({ title, action }: { title: string; action?: string }) {
 
 function AdminContent({ active, data, reference, search, setSearch, onChanged }: { active: string; data: Json; reference: Json; search: string; setSearch: (value: string) => void; onChanged: (message: string) => Promise<void> }) {
   if (active === 'overview') return <Overview data={data} />;
+  if (!sectionFor(active)?.[3]) return <PlannedAdminArea active={active} />;
   const rows = Array.isArray(data.data) ? data.data as Json[] : [];
   const visible = rows.filter((row) => JSON.stringify(row).toLowerCase().includes(search.toLowerCase()));
   return <div className="admin-content">
     <div className="admin-toolbar"><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Search ${active}`} />{active === 'gyms' && <CreateGym reference={reference} onChanged={onChanged} />}{active === 'events' && <CreateEvent reference={reference} onChanged={onChanged} />}</div>
     {visible.length ? <AdminTable rows={visible} /> : <div className="admin-empty"><h2>No records returned</h2><p>This connected area is ready for authorized client content. Empty production data is never replaced with fabricated records.</p></div>}
   </div>;
+}
+
+function PlannedAdminArea({ active }: { active: string }) {
+  const label = sectionFor(active)?.[1] ?? 'This area';
+  return <div className="admin-planned"><div className="admin-planned-mark"><ShieldCheck size={28} /></div><p className="overline">Protected structure established</p><h2>{label}</h2><p>The authenticated route, permission boundary, navigation, loading and error patterns are in place. Deeper content operations are part of the agreed Phase 2 product work.</p><div className="admin-planned-state"><span>ADMIN ROUTE</span><strong>READY</strong><span>SERVER AUTHORIZATION</span><strong>ENFORCED</strong><span>PRODUCTION CONTENT</span><strong>CLIENT / PHASE 2</strong></div></div>;
 }
 
 function Overview({ data }: { data: Json }) {

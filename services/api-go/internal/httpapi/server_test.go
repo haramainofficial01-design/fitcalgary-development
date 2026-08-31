@@ -30,6 +30,10 @@ func (v testVerifier) Verify(context.Context, string) (auth.Principal, error) {
 }
 
 func newTestServer(t *testing.T) (*Server, pgxmock.PgxPoolIface) {
+	return newTestServerWithRoles(t, auth.RoleUser)
+}
+
+func newTestServerWithRoles(t *testing.T, roles ...auth.Role) (*Server, pgxmock.PgxPoolIface) {
 	t.Helper()
 	database, err := pgxmock.NewPool()
 	if err != nil {
@@ -39,8 +43,33 @@ func newTestServer(t *testing.T) (*Server, pgxmock.PgxPoolIface) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	server := NewServer(database, testVerifier{principal: auth.Principal{Subject: "keycloak-subject", Email: "athlete@example.ca", Username: "athlete", EmailVerified: true, Roles: []auth.Role{auth.RoleUser}}}, nil, cipher, config.Config{WebPublicURL: "http://localhost:3000"}, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	server := NewServer(database, testVerifier{principal: auth.Principal{Subject: "keycloak-subject", Email: "athlete@example.ca", Username: "athlete", EmailVerified: true, Roles: roles}}, nil, cipher, config.Config{WebPublicURL: "http://localhost:3000"}, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	return server, database
+}
+
+func TestAdminRoleCanAccessAdminOverview(t *testing.T) {
+	server, database := newTestServerWithRoles(t, auth.RoleUser, auth.RoleAdmin)
+	defer database.Close()
+	expectAuthentication(database)
+	database.ExpectQuery(regexp.QuoteMeta(`SELECT (SELECT count(*) FROM profiles WHERE account_status='ACTIVE') AS total_users,(SELECT count(*) FROM submissions WHERE status='PENDING_REVIEW') AS pending_submissions,(SELECT count(*) FROM submission_evidence WHERE evidence_deleted_at IS NULL AND retain_until<now()+interval '48 hours') AS evidence_nearing_expiry,(SELECT count(*) FROM gyms WHERE publish_status='PUBLISHED') AS published_gyms,(SELECT count(*) FROM events WHERE publish_status='PUBLISHED' AND start_at>now()) AS upcoming_events,(SELECT count(*) FROM notifications WHERE delivery_status='FAILED') AS failed_notifications`)).
+		WillReturnRows(pgxmock.NewRows([]string{"total_users", "pending_submissions", "evidence_nearing_expiry", "published_gyms", "upcoming_events", "failed_notifications"}).AddRow(int64(2), int64(1), int64(0), int64(3), int64(4), int64(0)))
+	request := httptest.NewRequest(http.MethodGet, "/api/v1/admin/overview", nil)
+	request.Header.Set("Authorization", "Bearer token")
+	recorder := httptest.NewRecorder()
+	server.Router().ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("an ADMIN must access the overview; got %d: %s", recorder.Code, recorder.Body.String())
+	}
+	var body map[string]any
+	if err := json.Unmarshal(recorder.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if body["published_gyms"] != float64(3) {
+		t.Fatalf("expected database-backed admin overview, got %#v", body)
+	}
+	if err := database.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func expectAuthentication(database pgxmock.PgxPoolIface) {
