@@ -21,7 +21,7 @@ Executed on 2026-08-31 in the developer’s local macOS environment. Simulator r
 | Flutter onboarding/routes on iOS | `flutter test integration_test/phase1_demo_test.dart -d <iOS simulator>` | PASS | Same first-launch and primary-route demonstration passed |
 | Flutter product web build/runtime | `flutter build web --release --dart-define=API_BASE_URL=...`; local Chrome launch | PASS | Responsive Client product shell rendered; configured-origin API calls succeeded |
 | Android debug build | `flutter build apk --debug` with emulator API URL | PASS | APK built and installed |
-| Android release artifact | `flutter build appbundle --release` with placeholder production URLs | PASS | `app-release.aab`, 53.6 MB; not production signed |
+| Android release artifact | `flutter build appbundle --release` with placeholder production URLs | PASS | `app-release.aab`, 53.5 MB; not production signed |
 | Android emulator launch | Explicit `am start` on Pixel/API 36 AVD | PASS | Cold launch, resumed `MainActivity` |
 | Flutter → Go → PostgreSQL | Tap Gyms in Android emulator after fresh migration | PASS | UI semantics and screenshot show DB-seeded “Phase 1 Integration Gym” and normalized $25.00 price |
 | Android app logs | App-PID error log review | PASS with benign platform notices | No Flutter exception/crash; emulator ashmem/IME notices only |
