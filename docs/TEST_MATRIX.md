@@ -1,6 +1,6 @@
 # Test matrix
 
-Executed on 2026-08-30 in the developer’s local macOS environment. Simulator results are separate from real-device verification.
+Executed on 2026-08-31 in the developer’s local macOS environment. Simulator results are separate from real-device verification.
 
 | Target | Command/check | Result | Evidence/notes |
 |---|---|---|---|
@@ -12,10 +12,13 @@ Executed on 2026-08-30 in the developer’s local macOS environment. Simulator r
 | Migration repeatability | Same migration command a second time | PASS | No changes/errors; checksum ledger verified |
 | API readiness/data read | `GET /ready`, `GET /api/v1/gyms` | PASS | Ready response and Phase 1 gym from PostgreSQL |
 | Auth protection | `GET /api/v1/profile` without bearer | PASS | HTTP 401 `UNAUTHENTICATED` |
-| Auth/role/profile write | Profile endpoint with gated development token, then SQL profile query | PASS | HTTP 200; `USER`; active profile persisted |
+| Auth/role/profile write | Profile endpoint with environment-supplied development identity, then SQL profile query | PASS | HTTP 200; `USER`; active profile persisted; no test credential committed |
 | Authorization rejection | `USER` token against `/api/v1/admin/overview` | PASS | HTTP 403 `FORBIDDEN` |
+| Admin authorization success | `ADMIN` token against `/api/v1/admin/overview` | PASS | HTTP 200; responsive dashboard rendered current API values |
 | Flutter analysis | `flutter analyze` | PASS | No issues |
-| Flutter widget/product navigation | `flutter test` | PASS | Home plus Home/Gyms/Board/Compete/Me navigation passed (2 tests) |
+| Flutter widget/product navigation | `flutter test` | PASS | Four tests cover Home, first-launch progression/persistence, returning-user bypass and Home/Gyms/Board/Compete/Me navigation |
+| Flutter onboarding/routes on Android | `flutter test integration_test/phase1_demo_test.dart -d <Android emulator>` | PASS | First launch through Home, Gyms, Board, Compete, Me and return to Home |
+| Flutter onboarding/routes on iOS | `flutter test integration_test/phase1_demo_test.dart -d <iOS simulator>` | PASS | Same first-launch and primary-route demonstration passed |
 | Flutter product web build/runtime | `flutter build web --release --dart-define=API_BASE_URL=...`; local Chrome launch | PASS | Responsive Client product shell rendered; configured-origin API calls succeeded |
 | Android debug build | `flutter build apk --debug` with emulator API URL | PASS | APK built and installed |
 | Android release artifact | `flutter build appbundle --release` with placeholder production URLs | PASS | `app-release.aab`, 53.6 MB; not production signed |

@@ -1,6 +1,6 @@
 # Blockers and external dependencies
 
-No unresolved developer-controlled issue prevents Phase 1 client review. The Client-recognizable Flutter product shell is included and development fixtures are explicitly labeled. The items below correctly remain `BLOCKED_EXTERNAL` or later-phase work; adapters, environment variables, fixtures, and mocks keep them from blocking foundation/product-shell review.
+The Client-recognizable Flutter product shell, onboarding, primary routes and administration foundation are included, and development fixtures are explicitly labeled. Final GitHub authorization on this Mac is an active packaging dependency for private-remote/fresh-clone verification; it does not change the tested application foundation. The items below correctly remain `BLOCKED_EXTERNAL` or later-phase work; adapters, environment variables, fixtures and test accounts keep them from blocking foundation/product-shell implementation.
 
 ## Client/service inputs (`BLOCKED_EXTERNAL`)
 

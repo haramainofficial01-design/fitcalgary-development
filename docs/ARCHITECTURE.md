@@ -28,3 +28,7 @@ Web / iOS / Android / watchOS / Admin
 ## Trust boundaries
 
 Clients cannot supply user identity, roles, approval state, rank, or verification state. Signed evidence access is issued only after server authorization. Sensitive state changes are transactional, idempotent where retryable, and audit logged with a request ID.
+
+## Phase 1 product and operations foundation
+
+The Flutter application owns the shared first-launch onboarding state and primary Home/Gyms/Board/Compete/Me navigation. The responsive web administration surface consumes the same Go contract and never treats hidden navigation as authorization; the Go middleware and handlers remain authoritative. The Client-supplied visual/product direction is implemented directly in maintainable source and is not a runtime dependency on FlutterFlow or another visual builder.

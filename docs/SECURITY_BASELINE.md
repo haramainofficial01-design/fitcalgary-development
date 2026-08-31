@@ -9,4 +9,4 @@
 - Notification device tokens are AES-GCM encrypted at rest and stored with a one-way lookup hash. Secrets are environment variables and are excluded from source control.
 - CORS is allowlisted to the configured web origin. Responses set content-type, frame, referrer, and permissions security headers. Production requires HTTPS, managed secrets, backups, least-privilege infrastructure identities, and provider credential rotation.
 
-The local Phase 1 harness is intentionally separate from the production command, requires two explicit development-only environment gates, and accepts only a fixed non-production token. The production container builds `cmd/api`, not the harness.
+The local Phase 1 harness is intentionally separate from the production command, requires explicit development-only environment gates, and accepts only environment-supplied non-production identities plus an environment-supplied token-cipher key. No development token or cipher key is committed. The production container builds `cmd/api`, not the harness.
