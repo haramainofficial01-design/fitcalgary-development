@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 .tooling/
+.artifacts/
 
 **/node_modules/
 **/.dart_tool/

@@ -23,12 +23,22 @@ import (
 	"fitcalgary.ca/index/api/internal/security"
 )
 
-const developmentToken = "phase1-development-token"
+type developmentVerifier struct {
+	userToken  string
+	adminToken string
+}
 
-type developmentVerifier struct{}
-
-func (developmentVerifier) Verify(_ context.Context, token string) (auth.Principal, error) {
-	if token != developmentToken {
+func (v developmentVerifier) Verify(_ context.Context, token string) (auth.Principal, error) {
+	if token == v.adminToken {
+		return auth.Principal{
+			Subject:       "phase1-development-admin",
+			Email:         "phase1-admin@example.invalid",
+			EmailVerified: true,
+			Username:      "phase1-administrator",
+			Roles:         []auth.Role{auth.RoleUser, auth.RoleAdmin},
+		}, nil
+	}
+	if token != v.userToken {
 		return auth.Principal{}, errors.New("invalid development token")
 	}
 	return auth.Principal{
@@ -47,6 +57,12 @@ func main() {
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
 		log.Fatal("DATABASE_URL is required")
+	}
+	userToken := os.Getenv("PHASE1_USER_TOKEN")
+	adminToken := os.Getenv("PHASE1_ADMIN_TOKEN")
+	tokenCipherKey := os.Getenv("PHASE1_TOKEN_CIPHER_KEY")
+	if userToken == "" || adminToken == "" || tokenCipherKey == "" {
+		log.Fatal("PHASE1_USER_TOKEN, PHASE1_ADMIN_TOKEN, and PHASE1_TOKEN_CIPHER_KEY are required")
 	}
 	migrationsDir := os.Getenv("MIGRATIONS_DIR")
 	if migrationsDir == "" {
@@ -69,12 +85,15 @@ func main() {
 	if err := database.ApplyMigrations(ctx, pool, migrationsDir); err != nil {
 		log.Fatal(err)
 	}
-	cipher, err := security.NewTokenCipher([]byte("0123456789abcdef0123456789abcdef"))
+	cipher, err := security.NewTokenCipher([]byte(tokenCipherKey))
 	if err != nil {
 		log.Fatal(err)
 	}
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	server := httpapi.NewServer(pool, developmentVerifier{}, nil, cipher, config.Config{
+	server := httpapi.NewServer(pool, developmentVerifier{
+		userToken:  userToken,
+		adminToken: adminToken,
+	}, nil, cipher, config.Config{
 		Environment:           "development",
 		WebPublicURL:          "http://localhost:3000",
 		SignedURLTTL:          5 * time.Minute,
