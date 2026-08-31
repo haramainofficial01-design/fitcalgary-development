@@ -7,7 +7,16 @@ import '../../app/widgets.dart';
 import '../../core/theme.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
-  const SignInScreen({super.key});
+  const SignInScreen({
+    this.nextLocation = '/profile',
+    this.returnToOnboarding = false,
+    this.onSignedIn,
+    super.key,
+  });
+
+  final String nextLocation;
+  final bool returnToOnboarding;
+  final Future<void> Function()? onSignedIn;
   @override
   ConsumerState<SignInScreen> createState() => _SignInScreenState();
 }
@@ -20,7 +29,8 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     try {
       await ref.read(authServiceProvider).signIn();
       if (mounted) {
-        context.go('/profile');
+        await widget.onSignedIn?.call();
+        if (mounted) context.go(widget.nextLocation);
       }
     } catch (e) {
       if (mounted) {
@@ -61,6 +71,16 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   fontSize: 16,
                 ),
               ),
+              if (widget.returnToOnboarding) ...[
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: busy ? null : () => context.go('/onboarding'),
+                    child: const Text('← BACK TO INTRODUCTION'),
+                  ),
+                ),
+              ],
               const SizedBox(height: 36),
               FilledButton(
                 onPressed: busy ? null : signIn,
