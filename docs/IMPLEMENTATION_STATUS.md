@@ -8,6 +8,7 @@ Status vocabulary: `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED`, `CONFIGURED`, `T
 |---|---|---|
 | Repository and architecture | IMPLEMENTED / TESTED | One codebase; Flutter/Dart mobile, Go services, PostgreSQL, Keycloak, private storage, web-native public/admin, SwiftUI watchOS. Go test/build and all client builds pass. |
 | Source/version control | IN_PROGRESS / TESTED LOCALLY | Authentic local history, foundation snapshot and acceptance-candidate tag preserved; developer-controlled private remote and fresh-clone verification are the final source-control gate. Client repository remains read-only input. |
+| Client original source | AUDITED / HISTORY VERIFIED | Client-authorized archive and authenticated full clone at source commit `4c629019`; three available commits plus archive/tree digests recorded in `docs/CLIENT_SOURCE_PROVENANCE.md`. Product/UI/security decisions mapped to the active implementation; Client remote remains read-only. |
 | PostgreSQL schema/migrations | TESTED | PostgreSQL 17.11 initialized from empty state; `0001_initial.sql` applied twice through the Go migrator; 30 public tables; checksum `a563ca44c48ff9daf4b2ca7f378dcaa048145d818319902f1fc90044013862f7`. |
 | Go API and workers | TESTED | Public/account/submission/judge/admin/notification foundations compile; unit/security tests and `go vet` pass; database readiness and read/write integration exercised locally. |
 | TypeScript API prototype | DEPRECATED / NON_PRODUCTION | Frozen reference in `services/api`; not in the deployment topology and not extended. |

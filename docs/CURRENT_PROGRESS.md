@@ -23,7 +23,7 @@ Phase 1 — final verification and Client-review packaging. Substantial Phase 2 
 
 ## In progress
 
-- Read-only Client source repository provenance inspection, pending GitHub authorization on this Mac.
+- Read-only Client source snapshot and full authenticated Git history inspected at source commit `4c629019`; the three available Client commits and provenance are recorded without modifying the Client repository.
 - Final Phase 1 milestone commit/tag/push.
 
 ## Tested

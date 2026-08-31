@@ -8,7 +8,7 @@ Foundation source snapshot: `13bac633f623cf259a82fe7238741ae422f89096`.
 
 | Phase | Status | Gate |
 |---|---|---|
-| Phase 1 — Foundation + Client product shell | FINAL VERIFICATION | Technical foundation, Client-recognizable Flutter product shell, onboarding, primary routes and role-protected admin foundation are materially met. Private remote/fresh-clone verification and final package quality control are the remaining checkpoint tasks. |
+| Phase 1 — Foundation + Client product shell | FINAL VERIFICATION | Technical foundation, Client-recognizable Flutter product shell, onboarding, primary routes and role-protected admin foundation are materially met. The signed agreement and the full Client repository/history have been audited at commit `4c629019`; private remote/fresh-clone verification and final package quality control are the remaining checkpoint tasks. |
 | Phase 2 — Core Product | AWAITING AUTHORIZATION | Some useful V1 work already exists and is preserved, but no substantial new Phase 2 work proceeds until explicit `PROCEED TO PHASE 2`. |
 | Phase 3 — Final Delivery | NOT_STARTED | Begins only after Phase 2 acceptance and authorization. |
 
