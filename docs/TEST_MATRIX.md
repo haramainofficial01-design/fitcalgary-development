@@ -2,6 +2,8 @@
 
 Executed on 2026-08-31 in the developer’s local macOS environment. Simulator results are separate from real-device verification.
 
+Daily regression refresh on 2026-09-01: Flutter analysis and all four widget tests passed; Go tests, `go vet` and production build passed; web lint, TypeScript checking, two session/PKCE authorization tests and the production build passed. Platform simulator/emulator entries below retain their 2026-08-31 verification dates until the scheduled final checkpoint.
+
 | Target | Command/check | Result | Evidence/notes |
 |---|---|---|---|
 | Go toolchain | `go version` | PASS | Go 1.27.0 darwin/arm64 |
@@ -34,6 +36,7 @@ Executed on 2026-08-31 in the developer’s local macOS environment. Simulator r
 | Web production build | `pnpm build` | PASS | Public/admin/auth/backend routes emitted |
 | Keycloak realm artifact | JSON parse plus setting inspection | PASS | Verify email/reset/registration/brute force; roles; PKCE S256 clients; disabled Google/Apple hooks |
 | Secret scan | High-confidence key/private-key scan plus sensitive-file inventory | PASS | No credential material or secret environment files staged |
+| Private source recovery | Clean clone of Developer-controlled private repository; `git fsck --full`; remote/clone SHA comparison; Go tests; Flutter analysis/tests | PASS | Clone HEAD `76b8a64`; remote matched; Go packages passed; Flutter found no issues and all four tests passed |
 
 ## Platform verification ledger
 

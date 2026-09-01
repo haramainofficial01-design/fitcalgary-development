@@ -1,10 +1,10 @@
 # Current progress
 
-Last updated: 2026-08-31.
+Last updated: 2026-09-01.
 
 ## Current phase
 
-Phase 1 — final verification and Client-review packaging. Substantial Phase 2 development remains on hold pending explicit authorization.
+Phase 1 — final scheduled QA and Client-review packaging. Substantial Phase 2 development remains on hold pending explicit authorization.
 
 ## Completed
 
@@ -18,13 +18,13 @@ Phase 1 — final verification and Client-review packaging. Substantial Phase 2 
 
 ## Currently working
 
-- Final private remote and fresh-clone verification.
-- Final Phase 1 PDF and demonstration/proof video quality control.
+- Daily foundation regression checks and evidence accuracy review.
+- Final Phase 1 package verification remains scheduled for 2026-09-04.
 
 ## In progress
 
-- Read-only Client source snapshot and full authenticated Git history inspected at source commit `4c629019`; the three available Client commits and provenance are recorded without modifying the Client repository.
-- Final Phase 1 milestone commit/tag/push.
+- Final package commit, accurately dated milestone tag, private-remote push and post-push clean-clone verification remain pending the scheduled final checkpoint.
+- Production credentials/data and physical-device verification remain explicitly external/later.
 
 ## Tested
 
@@ -41,11 +41,13 @@ Production identity/email/social credentials; managed hosting/database/storage; 
 
 ## Latest private Git commit
 
-Pending final private-remote verification.
+Current branch `HEAD` records the latest daily Phase 1 evidence refresh based on source baseline `76b8a64`. The final package commit and review tag have not yet been created.
 
 ## Latest tested commit
 
-`a0f869d` — cross-platform Phase 1 visual route demonstration added after the verified foundation/auth/admin commits.
+`76b8a64` — clean private-remote clone verified with Git integrity, Go tests, Flutter analysis and all four Flutter tests.
+
+On 2026-09-01 the active workspace also passed Flutter analysis/tests, Go tests/vet/build, and web lint/type/auth/build checks. These daily checks do not replace the final 2026-09-04 checkpoint.
 
 ## Platform status
 

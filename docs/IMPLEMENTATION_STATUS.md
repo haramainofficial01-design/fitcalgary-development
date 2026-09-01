@@ -7,7 +7,7 @@ Status vocabulary: `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED`, `CONFIGURED`, `T
 | Area | Current status | Evidence and boundary |
 |---|---|---|
 | Repository and architecture | IMPLEMENTED / TESTED | One codebase; Flutter/Dart mobile, Go services, PostgreSQL, Keycloak, private storage, web-native public/admin, SwiftUI watchOS. Go test/build and all client builds pass. |
-| Source/version control | IN_PROGRESS / TESTED LOCALLY | Authentic local history, foundation snapshot and acceptance-candidate tag preserved; developer-controlled private remote and fresh-clone verification are the final source-control gate. Client repository remains read-only input. |
+| Source/version control | TESTED / PRIVATE REMOTE VERIFIED | Authentic history, foundation snapshot and acceptance-candidate tag are preserved in `haramainofficial01-design/fitcalgary-development` (private). A clean clone matched remote HEAD and passed Git integrity, Go tests, Flutter analysis and all Flutter tests. Client repository remains read-only input. |
 | Client original source | AUDITED / HISTORY VERIFIED | Client-authorized archive and authenticated full clone at source commit `4c629019`; three available commits plus archive/tree digests recorded in `docs/CLIENT_SOURCE_PROVENANCE.md`. Product/UI/security decisions mapped to the active implementation; Client remote remains read-only. |
 | PostgreSQL schema/migrations | TESTED | PostgreSQL 17.11 initialized from empty state; `0001_initial.sql` applied twice through the Go migrator; 30 public tables; checksum `a563ca44c48ff9daf4b2ca7f378dcaa048145d818319902f1fc90044013862f7`. |
 | Go API and workers | TESTED | Public/account/submission/judge/admin/notification foundations compile; unit/security tests and `go vet` pass; database readiness and read/write integration exercised locally. |
@@ -29,3 +29,5 @@ Status vocabulary: `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED`, `CONFIGURED`, `T
 | Store submission | NOT_STARTED / BLOCKED_EXTERNAL | Client store accounts, signing identities, final content/legal approvals, device QA, assets, and production endpoints required. |
 
 Substantial Phase 2 feature work is paused pending explicit authorization after Phase 1 client review.
+
+The Client review package candidate contains exactly one consolidated four-page PDF and two MP4 demonstrations. Interim rendering, text/status review, forbidden internal-tool term scan, video metadata/playback sampling and privacy review passed on 2026-08-31; final regeneration and quality control remain scheduled for 2026-09-04.

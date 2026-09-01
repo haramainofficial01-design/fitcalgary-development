@@ -29,7 +29,7 @@ Audited 2026-08-31 against `FitCalgary Development Delivery Agreement Final.pdf`
 | Security/config baseline | VERIFIED FOUNDATION | Secret inventory/scan, `.env.example`, strict config, validation, safe errors, protected routes, private-storage structure and audit foundations | Production security/release review remains Phase 3 |
 | Flutter -> Go -> PostgreSQL | VERIFIED | Android emulator rendered a PostgreSQL-seeded gym through the Go API; protected profile write/read also persisted | Production environment remains external |
 | Dependencies/blockers/Phase 2 path | VERIFIED | `docs/BLOCKERS.md`, `docs/TEST_MATRIX.md`, `docs/PHASE_2_IMPLEMENTATION_PATH.md` | Explicit `PROCEED TO PHASE 2` authorization required |
-| Concise Client review package | FINAL QUALITY CONTROL | One PDF plus two focused MP4s; real captures and precise verification terminology | Regenerated after the final private Git milestone |
+| Concise Client review package | FINAL QA IN PROGRESS | One four-page PDF plus two focused MP4 candidates; real captures and precise verification terminology are present | Scheduled 2026-09-04 regeneration, visual/privacy review, final commit/tag/push and clean-clone check |
 
 ## Phase boundary
 
