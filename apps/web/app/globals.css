@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
 
 :root { --ink:#25282c; --black:#17181a; --paper:#f3f2ed; --white:#faf9f5; --line:#b8b8b2; --muted:#70716f; --coral:#c75a49; --coral-dark:#a74235; }
 * { box-sizing:border-box; }
