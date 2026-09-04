@@ -1,6 +1,6 @@
 # Current progress
 
-Last updated: 2026-09-03 (America/Edmonton).
+Last updated: 2026-09-04 morning (America/Edmonton).
 
 ## Current phase
 
@@ -21,6 +21,10 @@ items. Its existing Git checkpoint remains an unchanged historical baseline.
 - Authentic local Git history, foundation snapshot and acceptance-candidate tag preserved.
 
 ## Currently working
+
+- September 4: club/event publishing services now pass real-database CRUD,
+  visibility, filtering, permission and audit-rollback tests. Client/admin form
+  integration and athlete profile depth remain today's next work, not completed.
 
 - Phase 2 API-backed gym directory/detail/comparison, saved gyms and profile persistence.
 - Separate opt-in fixture loader and production data guards are implemented/tested.

@@ -1,5 +1,29 @@
 # V1 API foundation contract
 
+## Phase 2 clubs/events — September 4 morning
+
+- `GET /clubs`, `GET /events`: server search `q`, `city` (default Calgary),
+  `category`, `sport`, `page`, `pageSize`; public records only. Empty pages retain
+  the complete filtered `total`. Responses preserve `data/page/pageSize/total`.
+- `GET /clubs/{slug}`, `GET /events/{slug}`: published detail with optional `city`;
+  drafts/archives/missing records return 404. Club detail includes address,
+  eligibility, season, website/registration links and source information.
+- Events additionally accept `month=YYYY-MM` (Edmonton month), `open=true|false`
+  and `phase=UPCOMING|CURRENT|COMPLETED|CANCELLED|POSTPONED`. State is server-derived;
+  cancellation/postponement overrides dates. With no end time, the event becomes
+  completed after start rather than assuming a duration. Open-entry results require
+  ACTIVE, registration OPEN and a nonexpired deadline (start time if none supplied).
+- `GET/POST /admin/clubs`, `PUT /admin/clubs/{id}`; existing event GET/POST plus
+  `PUT /admin/events/{id}`. All require ADMIN server-side. PUT replaces editable
+  fields; `publishStatus=DRAFT|PUBLISHED|ARCHIVED` supports unpublishing and reversible
+  archiving without deleting IDs/relationships. Event entry requirements and image
+  URL are now editable. Typed fields, valid timestamps/date order and HTTP(S) links
+  without embedded credentials are enforced. Content and audit commit atomically.
+
+Executable proof: `content_integration_test.go` covers real PostgreSQL publication,
+detail/list queries, event state, unsafe input, role rejection and audit rollback.
+Client forms/routes still require integration before this is a complete user workflow.
+
 ## Phase 2 directory/account increment — September 3, 2026
 
 `GET /gyms` accepts `q`, `city`, `category`, `area`, `amenity`,

@@ -2,6 +2,10 @@
 
 ## Phase 2 schedule and verification
 
+September 4 morning: no new external blocker. Club/event service acceptance tests
+pass; remaining client/admin form wiring and athlete-profile scope are developer
+implementation work scheduled next, not dependencies to request from the Client.
+
 September 8 morning (evening contingency) targets the entire Phase 2 product and
 three-file Client review package; it is not a completion guarantee. See
 `PHASE_2_DELIVERY_PLAN.md`. Remaining workflow integration, web parity and final

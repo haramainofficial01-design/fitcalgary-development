@@ -1,6 +1,6 @@
 # Phase 2 — Core Product
 
-Updated: 2026-09-03, America/Edmonton.
+Updated: 2026-09-04 morning, America/Edmonton.
 
 ## Authority and target
 
@@ -47,6 +47,23 @@ not live production Keycloak/social authentication. Full Phase 2 acceptance and 
 new watchOS regression remain ahead; older platform evidence is separately recorded.
 
 ## Execution path
+
+September 4 morning: the club/event service increment is DEVELOPMENT TESTED.
+Administrators can create, edit, publish, unpublish and archive club/event records
+using the existing production schema. Each mutation and audit entry commits in one
+transaction; forced audit failure rolls the content write back. Public detail routes
+hide drafts/archives and support city-qualified slugs. List routes search/filter/page
+on the server and retain totals even beyond the last page. Event state is derived
+from dates with cancellation/postponement taking precedence; open-entry filtering
+excludes cancelled events and expired registration. Timestamp and link validation,
+normal-user rejection, publication visibility and atomic rollback passed against
+both an existing and a newly initialized disposable PostgreSQL database.
+
+This is the morning backend increment, NOT completion of September 4's full scope.
+Next: connect clubs and detailed event routes in Flutter/web; implement the matching
+admin forms; extend gym-affiliation/profile presentation; verify publication through
+actual client UI and rerun iOS/Android routes. No new platform verification is claimed
+for these endpoints yet. No new external blocker was encountered this morning.
 
 | Area | Next acceptance evidence | Status |
 |---|---|---|

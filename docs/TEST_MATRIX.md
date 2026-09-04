@@ -3,6 +3,20 @@
 Phase 1 is accepted, paid and closed per the Developer's confirmation. The platform
 matrix below is historical evidence, not a pending acceptance list.
 
+## Phase 2 increment — 2026-09-04 morning
+
+| Check | Result | Boundary |
+|---|---|---|
+| Baseline `flutter analyze`; `flutter test` | PASS | No findings; seven existing tests pass; Flutter source unchanged this block |
+| `go test ./...`; `go vet ./...`; `go build ./cmd/api` | PASS | Current backend with new club/event services |
+| Fresh `APP_ENV=test DEMO_DATA=true DATABASE_URL=... go run ./cmd/dev-seed` | PASS | New loopback `fitcalgary_day4_content_test`; existing ordered migrations and isolated development fixtures |
+| `CONTENT_TEST_DATABASE_URL=... go test ./internal/httpapi -run 'TestContentPublicationDatabaseFlow\|TestSafeContentLinks' -count=1 -v` | PASS | Existing and clean PostgreSQL: create/publish/update/unpublish/archive, public detail/search/category/sport filters, out-of-range totals, event states, invalid timestamp/link rejection, 401/403, audit persistence and forced audit-failure rollback |
+| `DIRECTORY_TEST_DATABASE_URL=... go test ./internal/httpapi -run TestDirectoryAccountDatabaseFlow -count=1 -v` | PASS | Gym/account regression against the new disposable database |
+| New club/event client/mobile/web workflow | NOT YET VERIFIED | Backend increment only; client/admin forms and profile depth remain September 4 work |
+
+No new physical-device, production-auth or production-data verification. Phase 1
+remains closed and its checkpoint is preserved.
+
 ## Phase 2 increment — 2026-09-03
 
 | Check | Result | Boundary |

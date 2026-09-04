@@ -22,7 +22,9 @@ func (s *Server) registerPublicRoutes(router chi.Router) {
 	router.Get("/gyms", s.handle(s.listGyms))
 	router.Get("/gyms/{slug}", s.handle(s.getGym))
 	router.Get("/clubs", s.handle(s.listClubs))
+	router.Get("/clubs/{slug}", s.handle(s.getClub))
 	router.Get("/events", s.handle(s.listEvents))
+	router.Get("/events/{slug}", s.handle(s.getEvent))
 	router.Get("/disciplines", s.handle(s.listDisciplines))
 	router.Get("/leaderboards", s.handle(s.listLeaderboards))
 	router.Get("/leaderboards/{id}", s.handle(s.getLeaderboard))
@@ -102,39 +104,11 @@ func (s *Server) getGym(_ http.ResponseWriter, r *http.Request) (any, error) {
 }
 
 func (s *Server) listClubs(_ http.ResponseWriter, r *http.Request) (any, error) {
-	params, err := parseList(r)
-	if err != nil {
-		return nil, err
-	}
-	rows, err := queryMaps(r.Context(), s.db, `SELECT cl.id,cl.slug,cl.name,cl.sport,cl.category,cl.description,cl.registration_url,cl.tags,c.name AS city,COUNT(*) OVER() AS total FROM clubs cl JOIN cities c ON c.id=cl.city_id WHERE cl.publish_status='PUBLISHED' AND c.slug=$1 AND ($2::text IS NULL OR cl.name ILIKE $2 OR cl.sport ILIKE $2) ORDER BY cl.name LIMIT $3 OFFSET $4`, params.City, like(params.Query), params.PageSize, (params.Page-1)*params.PageSize)
-	if err != nil {
-		return nil, err
-	}
-	return paginated(rows, params.Page, params.PageSize), nil
+	return s.listContent(r, false)
 }
 
 func (s *Server) listEvents(_ http.ResponseWriter, r *http.Request) (any, error) {
-	params, err := parseList(r)
-	if err != nil {
-		return nil, err
-	}
-	month := optionalString(r.URL.Query().Get("month"), 7)
-	if month != nil && (len(*month) != 7 || (*month)[4] != '-') {
-		return nil, validation("month must use YYYY-MM")
-	}
-	var open *bool
-	if raw := strings.TrimSpace(r.URL.Query().Get("open")); raw != "" {
-		parsed, err := strconv.ParseBool(raw)
-		if err != nil {
-			return nil, validation("open must be true or false")
-		}
-		open = &parsed
-	}
-	rows, err := queryMaps(r.Context(), s.db, `SELECT e.id,e.slug,e.name,e.organizer,e.category,e.start_at,e.end_at,e.registration_status,e.location,e.external_registration_url,e.sport,e.event_status,c.name AS city,COUNT(*) OVER() AS total FROM events e JOIN cities c ON c.id=e.city_id WHERE e.publish_status='PUBLISHED' AND c.slug=$1 AND ($2::text IS NULL OR e.name ILIKE $2 OR COALESCE(e.sport,'') ILIKE $2) AND ($3::text IS NULL OR to_char(e.start_at,'YYYY-MM')=$3) AND ($4::boolean IS NULL OR $4=false OR e.registration_status='OPEN') ORDER BY e.start_at LIMIT $5 OFFSET $6`, params.City, like(params.Query), month, open, params.PageSize, (params.Page-1)*params.PageSize)
-	if err != nil {
-		return nil, err
-	}
-	return paginated(rows, params.Page, params.PageSize), nil
+	return s.listContent(r, true)
 }
 
 func (s *Server) listDisciplines(_ http.ResponseWriter, r *http.Request) (any, error) {

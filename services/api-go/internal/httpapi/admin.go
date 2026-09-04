@@ -26,6 +26,10 @@ func (s *Server) registerAdminRoutes(router chi.Router) {
 	router.Post("/admin/gyms/{id}/pricing", s.handle(s.adminCreatePricing))
 	router.Get("/admin/events", s.handle(s.adminEvents))
 	router.Post("/admin/events", s.handle(s.adminCreateEvent))
+	router.Put("/admin/events/{id}", s.handle(s.adminUpdateEvent))
+	router.Get("/admin/clubs", s.handle(s.adminClubs))
+	router.Post("/admin/clubs", s.handle(s.adminCreateClub))
+	router.Put("/admin/clubs/{id}", s.handle(s.adminUpdateClub))
 	router.Put("/admin/settings/{key}", s.handle(s.adminUpdateSetting))
 	router.Put("/admin/users/{profileId}/roles/{role}", s.handle(s.adminGrantRole))
 	router.Delete("/admin/users/{profileId}/roles/{role}", s.handle(s.adminRevokeRole))
@@ -281,43 +285,12 @@ type eventInput struct {
 	SourceURL               *string  `json:"sourceUrl"`
 	EventStatus             string   `json:"eventStatus"`
 	PublishStatus           string   `json:"publishStatus"`
+	EntryRequirements       *string  `json:"entryRequirements"`
+	ImageURL                *string  `json:"imageUrl"`
 }
 
 func (s *Server) adminCreateEvent(w http.ResponseWriter, r *http.Request) (any, error) {
-	if err := adminOnly(r); err != nil {
-		return nil, err
-	}
-	var body eventInput
-	if err := decodeJSON(r, &body); err != nil {
-		return nil, err
-	}
-	if body.RegistrationStatus == "" {
-		body.RegistrationStatus = "OPEN"
-	}
-	if body.EventStatus == "" {
-		body.EventStatus = "ACTIVE"
-	}
-	if body.PublishStatus == "" {
-		body.PublishStatus = "DRAFT"
-	}
-	if !validUUID(body.CityID) || !slugPattern.MatchString(body.Slug) || len(strings.TrimSpace(body.Name)) < 2 || !oneOf(body.RegistrationStatus, "OPEN", "CLOSED", "NOT_APPLICABLE") || !oneOf(body.EventStatus, "ACTIVE", "CANCELLED", "POSTPONED") || !oneOf(body.PublishStatus, "DRAFT", "PUBLISHED", "ARCHIVED") {
-		return nil, validation("event fields are invalid")
-	}
-	if _, err := time.Parse(time.RFC3339, body.StartAt); err != nil {
-		return nil, validation("startAt must be an RFC3339 timestamp")
-	}
-	if body.Tags == nil {
-		body.Tags = []string{}
-	}
-	rows, err := queryMaps(r.Context(), s.db, `INSERT INTO events(city_id,slug,name,organizer,category,description,start_at,end_at,registration_deadline,registration_status,location,external_registration_url,sport,official_fitcalgary,tags,source_url,event_status,publish_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING *`, body.CityID, body.Slug, strings.TrimSpace(body.Name), body.Organizer, body.Category, body.Description, body.StartAt, body.EndAt, body.RegistrationDeadline, body.RegistrationStatus, body.Location, body.ExternalRegistrationURL, body.Sport, body.OfficialFitCalgary, body.Tags, body.SourceURL, body.EventStatus, body.PublishStatus)
-	if err != nil {
-		return nil, err
-	}
-	if err := s.audit(r, "EVENT_CREATED", "EVENT", rows[0]["id"], nil, rows[0]); err != nil {
-		return nil, err
-	}
-	created(w, rows[0])
-	return nil, nil
+	return s.saveEvent(w, r, false)
 }
 
 func (s *Server) adminUpdateSetting(_ http.ResponseWriter, r *http.Request) (any, error) {
