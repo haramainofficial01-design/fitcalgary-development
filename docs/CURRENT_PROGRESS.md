@@ -53,10 +53,18 @@ Production identity/email/social credentials; managed hosting/database/storage; 
 ## Latest private Git commit
 
 Latest verified implementation push:
-`58a2d1469a040c1f2e1d1692f5eb1d2eb71bdb6e`. Private remote main matched this
+`384b115718eb1392f0e643c6075080686d6e9c0a`. Private remote main matched this
 SHA after push. Use `git log -1` for subsequent documentation commits.
 
 ## Latest tested commit
+
+`384b115718eb1392f0e643c6075080686d6e9c0a` — September 4 morning club/event
+service increment: Go tests/vet/build, clean PostgreSQL initialization,
+publication/permissions/atomic-audit rollback and gym/account regressions passed.
+Flutter baseline analysis and seven tests passed; new content client flows remain
+to be integrated and verified in the next blocks.
+
+Previous mobile-tested increment:
 
 `58a2d1469a040c1f2e1d1692f5eb1d2eb71bdb6e` — Phase 2 gym/account increment:
 Flutter analysis/seven tests, iOS recorded integration, Android integration,
