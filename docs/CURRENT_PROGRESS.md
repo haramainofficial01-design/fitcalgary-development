@@ -22,18 +22,20 @@ items. Its existing Git checkpoint remains an unchanged historical baseline.
 
 ## Currently working
 
-- Phase 2 production-model data flows and isolated development fixtures.
+- Phase 2 API-backed gym directory/detail/comparison, saved gyms and profile persistence.
 - Separate opt-in fixture loader and production data guards are implemented/tested.
-- See `PHASE_2_STATUS.md` for scope and `DATA_POLICY.md` for data boundaries.
+- See `PHASE_2_STATUS.md` for scope, `DATA_POLICY.md` for data boundaries and
+  `PHASE_2_DELIVERY_PLAN.md` for the September 4–8 work blocks and complete-package target.
 
 ## In progress
 
-- Phase 2 gym/pricing/account workflows, followed by the remaining Core Product scope.
+- Remaining Phase 2 Core Product workflows; next focus is clubs/events/profile depth.
 - Production credentials/data and physical-device verification remain explicitly external/later.
 
 ## Tested
 
-- Flutter analysis and four widget tests.
+- Flutter analysis and seven widget/product tests; new directory/account flow passed
+  on iOS Simulator and Android emulator using an ephemeral identity and real Go/PostgreSQL.
 - Android and iOS onboarding/primary-route integration demonstrations.
 - Go tests, vet, production build and role authorization tests.
 - PostgreSQL 17.11 clean/repeat initialization, 30-table schema and API read/write path.
@@ -46,8 +48,8 @@ Production identity/email/social credentials; managed hosting/database/storage; 
 
 ## Latest private Git commit
 
-Last verified private baseline before this Phase 2 increment:
-`05573727528dd917957d9150ed82115a2d2cdca1`. Use `git log -1` and the private remote
+Last verified private baseline before this gym/account increment:
+`e348e7e8946e2f4c589eeb1726eb3c9e067363d5`. Use `git log -1` and the private remote
 tracking reference for the newest increment; all new commits belong to Phase 2.
 
 ## Latest tested commit
@@ -61,8 +63,9 @@ Historical full-platform foundation:
 
 On 2026-09-01 the Phase 1 PDF and both MP4 files passed layout, playback, privacy
 and claim-boundary review. They remain historical evidence of the closed milestone.
-The September 3 Phase 2 working increment passed Go tests/vet/build and fresh
-PostgreSQL 17.11 fixture/API tests; that does not imply a new cross-platform test run.
+The September 3 Phase 2 gym/account increment additionally passed fresh PostgreSQL
+membership migration/directory/account tests and actual mobile integration runs.
+See `TEST_MATRIX.md` for exact verification boundaries and post-fix reruns.
 
 ## Platform status
 

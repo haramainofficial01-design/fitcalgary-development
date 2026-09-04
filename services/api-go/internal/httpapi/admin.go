@@ -202,6 +202,13 @@ type pricingInput struct {
 	PricingComplete            bool    `json:"pricingComplete"`
 	SourceURL                  *string `json:"sourceUrl"`
 	EffectiveFrom              *string `json:"effectiveFrom"`
+	EffectiveTo                *string `json:"effectiveTo"`
+	MembershipType             *string `json:"membershipType"`
+	ContractMonths             *int    `json:"contractMonths"`
+	Eligibility                *string `json:"eligibility"`
+	DropInCents                *int    `json:"dropInCents"`
+	TrialDetails               *string `json:"trialDetails"`
+	Notes                      *string `json:"notes"`
 }
 
 func (s *Server) adminCreatePricing(w http.ResponseWriter, r *http.Request) (any, error) {
@@ -224,8 +231,19 @@ func (s *Server) adminCreatePricing(w http.ResponseWriter, r *http.Request) (any
 			return nil, validation("effectiveFrom must use YYYY-MM-DD")
 		}
 	}
+	if body.EffectiveTo != nil {
+		if _, err := time.Parse("2006-01-02", *body.EffectiveTo); err != nil {
+			return nil, validation("effectiveTo must use YYYY-MM-DD")
+		}
+		if body.EffectiveFrom != nil && *body.EffectiveTo < *body.EffectiveFrom {
+			return nil, validation("effectiveTo precedes effectiveFrom")
+		}
+	}
+	if err := validateMembershipTerms(body); err != nil {
+		return nil, err
+	}
 	normalized := domain.NormalizePrice(domain.PriceInput{RecurringCents: body.RecurringCents, Frequency: body.BillingFrequency, MandatoryRecurringFeeCents: body.MandatoryRecurringFeeCents, MandatoryAnnualFeeCents: body.MandatoryAnnualFeeCents, InitiationFeeCents: body.InitiationFeeCents, Complete: body.PricingComplete})
-	rows, err := queryMaps(r.Context(), s.db, `INSERT INTO gym_pricing(gym_id,plan_name,recurring_cents,billing_frequency,mandatory_recurring_fee_cents,mandatory_annual_fee_cents,initiation_fee_cents,ongoing_monthly_cents,first_year_monthly_cents,pricing_complete,source_url,effective_from,last_verified_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,now()) RETURNING *`, gymID, body.PlanName, body.RecurringCents, body.BillingFrequency, body.MandatoryRecurringFeeCents, body.MandatoryAnnualFeeCents, body.InitiationFeeCents, normalized.OngoingMonthlyCents, normalized.FirstYearMonthlyCents, body.PricingComplete, body.SourceURL, body.EffectiveFrom)
+	rows, err := queryMaps(r.Context(), s.db, `INSERT INTO gym_pricing(gym_id,plan_name,recurring_cents,billing_frequency,mandatory_recurring_fee_cents,mandatory_annual_fee_cents,initiation_fee_cents,ongoing_monthly_cents,first_year_monthly_cents,pricing_complete,source_url,effective_from,last_verified_at,effective_to,membership_type,contract_months,eligibility,drop_in_cents,trial_details,notes) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,now(),$13,$14,$15,$16,$17,$18,$19) RETURNING *`, gymID, body.PlanName, body.RecurringCents, body.BillingFrequency, body.MandatoryRecurringFeeCents, body.MandatoryAnnualFeeCents, body.InitiationFeeCents, normalized.OngoingMonthlyCents, normalized.FirstYearMonthlyCents, body.PricingComplete, body.SourceURL, body.EffectiveFrom, body.EffectiveTo, body.MembershipType, body.ContractMonths, body.Eligibility, body.DropInCents, body.TrialDetails, body.Notes)
 	if err != nil {
 		return nil, err
 	}

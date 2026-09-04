@@ -100,7 +100,7 @@ func main() {
 		MaxEvidenceBytes:      4_294_967_296,
 		EvidenceRetentionDays: 14,
 	}, logger)
-	address := fmt.Sprintf(":%s", port)
+	address := fmt.Sprintf("127.0.0.1:%s", port)
 	log.Printf("phase1 development harness listening on %s", address)
 	log.Fatal(http.ListenAndServe(address, server.Router()))
 }

@@ -24,14 +24,17 @@ Status vocabulary: `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED`, `CONFIGURED`, `T
 | watchOS foundation | TESTED (SIMULATOR) / NOT DEVICE_VERIFIED | Native SwiftUI target builds and launches on Apple Watch Series 11 simulator; companion session reports reachable in simulator. No real Apple Watch test. |
 | Private evidence storage | IMPLEMENTED / BLOCKED_EXTERNAL | S3 multipart/sign/playback adapter and retention worker exist. Production bucket and credentials are required for service verification. |
 | Notifications | IMPLEMENTED / BLOCKED_EXTERNAL | Database/outbox/device-token encryption foundations exist and tests pass. APNs/FCM credentials and real devices are required for delivery verification. |
-| Gym/event/client data | IN_PROGRESS / BLOCKED_EXTERNAL | Schema, APIs, clients, and admin publication paths exist. Only explicit Phase 1 test data was used; client-confirmed production content is required. |
+| Gym/account workflows | TESTED increment / IN_PROGRESS overall | Server search/filters/paging, current membership prices/terms, Flutter detail/comparison, private saved gyms and profile persistence run against Go/PostgreSQL; mobile integration tests exercise actual read/write. Broader Phase 2 acceptance remains pending. |
+| Gym/event/client data | IN_PROGRESS / BLOCKED_EXTERNAL | Real models plus isolated opt-in development fixtures; production guards reject fixture databases. Client-approved production content remains external. |
 | Production deployment | NOT_STARTED / BLOCKED_EXTERNAL | Domain, hosting accounts, managed database/storage/Keycloak, secrets, DNS/TLS, and client ownership decisions required. |
 | Store submission | NOT_STARTED / BLOCKED_EXTERNAL | Client store accounts, signing identities, final content/legal approvals, device QA, assets, and production endpoints required. |
 
 Phase 1 is COMPLETE / ACCEPTED / FULLY PAID / CLOSED, as explicitly confirmed by
 the Developer. Phase 2 is authorized and in progress; all new work belongs to
 Phase 2. Development fixture isolation and production data guards are tested;
-see `PHASE_2_STATUS.md`. Later production/device dependencies do not reopen Phase 1.
+see `PHASE_2_STATUS.md` and `PHASE_2_DELIVERY_PLAN.md`. Additive migration `0002`
+extends membership terms without changing historical `0001`. Later
+production/device dependencies do not reopen Phase 1.
 
 The historical Phase 1 Client review package contains one consolidated four-page
 PDF and two MP4 demonstrations, reviewed on 2026-09-01. Preserve the accepted

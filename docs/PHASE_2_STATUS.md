@@ -26,27 +26,48 @@ Development-data isolation is IMPLEMENTED / DEVELOPMENT TESTED:
 
 Evidence: `cmd/dev-seed/main_test.go`, `internal/config/config_test.go`,
 `internal/db/data_guard_test.go` under `services/api-go`; see `DATA_POLICY.md`.
-This increment is not a new iOS/Android/web/watchOS verification or a complete
-Phase 2 acceptance run. Existing platform results remain separately recorded.
+The September 3 gym/account increment additionally implements server-side directory
+search, area/category/amenity/price filters, sorting and pagination; API-backed gym
+details and two/three-gym comparison; owner-scoped saved gyms; and persisted profile
+edits. Current normalized ongoing/year-one pricing is distinguished from incomplete
+plans. Additive migration `0002` adds membership terms and effective-date metadata;
+the migrator now applies ordered, checksum-verified migrations under one transaction
+and advisory lock, preserving existing data.
+
+Seven Flutter tests, analysis, Go regression/vet/build and real PostgreSQL
+directory/account/admin-permission tests pass. The complete mobile flow passes on
+iOS Simulator and Android emulator, including a unique profile edit after full
+client-state reload. An initial recording exposed a keyboard-obscured save button;
+the editor is now scrollable and the final recorded iOS and Android runs pass.
+Android in-process screenshot capture stalled emulator input; removing that capture
+mechanism allowed the unchanged business flow to pass. Use external Android capture.
+
+These tests use ephemeral development identities and actual Go/PostgreSQL data,
+not live production Keycloak/social authentication. Full Phase 2 acceptance and a
+new watchOS regression remain ahead; older platform evidence is separately recorded.
 
 ## Execution path
 
 | Area | Next acceptance evidence | Status |
 |---|---|---|
-| Gyms, pricing, accounts, saved gyms | Signed-in client browse/detail/compare/save, persisted through Go/PostgreSQL | IN_PROGRESS; production model and foundation exist; complete flow not yet freshly verified |
+| Gyms, pricing, accounts, saved gyms | Signed-in client browse/detail/compare/save, persisted through Go/PostgreSQL | TESTED increment; final content, broader comparison UX and web-native parity remain Phase 2 work |
 | Clubs, events, athlete profiles | Search/detail/profile edits and persistence across clients | IN_PROGRESS foundation; deeper flow verification pending |
 | Official/community boards | Configured disciplines/divisions, correct ranking and clear verification status | IN_PROGRESS foundation; end-to-end acceptance pending |
 | Submission, evidence and judging | Private upload, permissions, comments, decisions, resubmission and ranking publication | IN_PROGRESS foundation; full acceptance pending |
 | Administration | Actual content/user/role/review operations with server permission tests | IN_PROGRESS foundation; full CRUD depth pending |
 | Notifications and integrations | Persisted state, workflow triggers, configured delivery adapters | IN_PROGRESS foundation; external production credentials pending |
 | Cross-platform acceptance | Regression suite plus actual iOS/Android/web/watchOS runs and evidence | PENDING Phase 2 verification |
-| Phase 2 Client package | Concise review document, real demo and technical proof after acceptance tests | NOT_STARTED |
+| Phase 2 Client package | Concise review document, real demo and technical proof after acceptance tests | PLANNED; increment screenshots captured, final package not yet produced |
 
 Daily sequence: domain/gyms/accounts; clubs/events/profiles; boards/results;
 evidence/judging; admin/notifications/platform checks; integrated acceptance QA.
 Carry unfinished higher-risk work forward honestly instead of declaring a day's
 scope complete because its calendar date passed. Commit logical tested increments
 with real timestamps to the private development remote only.
+
+The dated work split, three daily blocks and September 8 complete-package target
+are documented in `PHASE_2_DELIVERY_PLAN.md`. Flag schedule risk promptly; a
+scheduled run or target date does not guarantee product acceptance.
 
 ## Dependencies
 

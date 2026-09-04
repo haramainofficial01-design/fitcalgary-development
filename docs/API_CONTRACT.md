@@ -1,5 +1,29 @@
 # V1 API foundation contract
 
+## Phase 2 directory/account increment — September 3, 2026
+
+`GET /gyms` accepts `q`, `city`, `category`, `area`, `amenity`,
+`pricing=complete|incomplete`, `maxMonthlyCents`, `sort=cost|name`, `pageSize` and
+`page`. Invalid bounds/filters return structured validation errors. Results include
+stable gym slugs, area, amenities, current normalized ongoing/year-one prices and
+pricing-completeness state. Search, filtering, sorting and pagination run on the
+server. Unknown costs are not represented as a free membership.
+
+`GET /gyms/{slug}` supplies actual gym details and currently effective pricing plans.
+Optional `city` disambiguates a slug. Plan metadata supports membership type,
+contract months, eligibility, drop-in cost, trial details, notes and source information.
+The additive `0002_membership_terms.sql` migration preserves existing data.
+
+Saved-gym reads/writes are authenticated and owner-scoped. Saving is idempotent;
+missing/unpublished gyms are rejected. Another account cannot remove the owner's
+saved entry. Profile updates persist through the protected API; supplying role
+changes through the profile payload is rejected. Admin pricing writes require
+server-authorized administrator access and validated terms/effective dates.
+
+Executable evidence: `internal/httpapi/directory_integration_test.go` in the Go
+service and `integration_test/gym_account_flow_test.dart` in the Flutter app. The
+latter uses an ephemeral development identity but real service/database operations.
+
 The production contract is the versioned Go API under `/api/v1`. JSON errors use `{ "error": { "code", "message", "requestId", "details" } }`. List endpoints return `{ "data", "page", "pageSize", "total" }` where pagination applies. Protected requests carry an OIDC access token in `Authorization: Bearer <token>`; identity, effective roles, ownership, approvals, and ranks are always resolved server-side.
 
 ## Public foundation

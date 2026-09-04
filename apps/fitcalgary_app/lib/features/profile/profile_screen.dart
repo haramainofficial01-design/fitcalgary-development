@@ -7,6 +7,7 @@ import '../../app/providers.dart';
 import '../../app/widgets.dart';
 import '../../core/theme.dart';
 import '../../domain/models.dart';
+import '../gyms/gym_providers.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -162,6 +163,10 @@ class _SignedInProfile extends ConsumerWidget {
             data: (value) => _ProfileIdentity(profile: value),
           ),
           const SizedBox(height: 34),
+          OutlinedButton(
+            onPressed: () => context.push('/saved-gyms'),
+            child: const Text('SAVED GYMS'),
+          ),
           const Divider(color: FitColors.ink),
           const SizedBox(height: 22),
           const Overline('Submissions'),
@@ -187,6 +192,8 @@ class _SignedInProfile extends ConsumerWidget {
             onPressed: () async {
               await ref.read(authServiceProvider).signOut();
               ref.invalidate(profileProvider);
+              ref.invalidate(savedGymsProvider);
+              ref.invalidate(submissionsProvider);
               if (context.mounted) context.go('/');
             },
             child: const Text('SIGN OUT'),
@@ -225,6 +232,9 @@ class _SignedInProfile extends ConsumerWidget {
     try {
       await ref.read(apiProvider).dio.delete<void>('/profile');
       await ref.read(authServiceProvider).signOut();
+      ref.invalidate(savedGymsProvider);
+      ref.invalidate(profileProvider);
+      ref.invalidate(submissionsProvider);
       if (context.mounted) context.go('/');
     } on DioException {
       if (context.mounted) {
@@ -344,41 +354,45 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   }
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.fromLTRB(
-      24,
-      28,
-      24,
-      MediaQuery.viewInsetsOf(context).bottom + 28,
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const Text(
-          'Edit profile',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
-        ),
-        const SizedBox(height: 22),
-        TextField(
-          controller: name,
-          decoration: const InputDecoration(labelText: 'DISPLAY NAME'),
-        ),
-        const SizedBox(height: 14),
-        TextField(
-          controller: bio,
-          maxLength: 280,
-          maxLines: 4,
-          decoration: const InputDecoration(labelText: 'BIO'),
-        ),
-        if (error != null)
-          Text(error!, style: const TextStyle(color: FitColors.coralDark)),
-        const SizedBox(height: 14),
-        FilledButton(
-          onPressed: busy ? null : save,
-          child: Text(busy ? 'SAVING…' : 'SAVE CHANGES'),
-        ),
-      ],
+  Widget build(BuildContext context) => SingleChildScrollView(
+    child: Padding(
+      padding: EdgeInsets.fromLTRB(
+        24,
+        28,
+        24,
+        MediaQuery.viewInsetsOf(context).bottom + 28,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Edit profile',
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 22),
+          TextField(
+            controller: name,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => FocusScope.of(context).unfocus(),
+            decoration: const InputDecoration(labelText: 'DISPLAY NAME'),
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: bio,
+            maxLength: 280,
+            maxLines: 4,
+            decoration: const InputDecoration(labelText: 'BIO'),
+          ),
+          if (error != null)
+            Text(error!, style: const TextStyle(color: FitColors.coralDark)),
+          const SizedBox(height: 14),
+          FilledButton(
+            onPressed: busy ? null : save,
+            child: Text(busy ? 'SAVING…' : 'SAVE CHANGES'),
+          ),
+        ],
+      ),
     ),
   );
 }

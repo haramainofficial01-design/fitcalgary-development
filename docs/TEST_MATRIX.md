@@ -10,7 +10,20 @@ matrix below is historical evidence, not a pending acceptance list.
 | `go test ./...`, `go vet ./...`, `go build ./cmd/api` | PASS | Go regression and API build |
 | `FIXTURE_TEST_DATABASE_URL=... go test ./cmd/dev-seed -v -count=1` | PASS | Fresh PostgreSQL 17.11; migrations, nonempty refusal, repeat load, normalized/unknown prices, production guard, real public API/filter responses |
 | Explicit `go run ./cmd/dev-seed` repeat | PASS | Existing batch is not duplicated |
-| Mobile/web/watchOS Phase 2 checks | NOT RUN for this increment | Earlier foundation results below are not new Phase 2 verification |
+| `flutter analyze`; `flutter test` | PASS | No analysis findings; seven tests including directory parsing, incomplete pricing and error/retry/empty states |
+| `DIRECTORY_TEST_DATABASE_URL=... go test ./internal/httpapi -run TestDirectoryAccountDatabaseFlow -count=1 -v` | PASS | Real PostgreSQL: filtering/paging/order, profile edits, saved-gym persistence/idempotency/ownership, unauthenticated rejection, admin pricing terms, future pricing exclusion and invalid payload rejection |
+| Migration `0002` on existing and fresh disposable databases; repeat initializer | PASS | Optional membership fields/constraints; original migration unchanged; both ledger entries recorded without repeated initialization |
+| iOS `flutter drive --driver=test_driver/gym_flow_driver.dart --target=integration_test/gym_account_flow_test.dart -d <iPhone simulator>` | PASS | Final recorded run: 13 seconds of assertions after Xcode build; browse/detail, normalized comparison, save/reload/remove and unique profile edit/reload through actual Go/PostgreSQL |
+| Android `flutter test integration_test/gym_account_flow_test.dart -d emulator-5554` | PASS | Final build/install and 31-second flow passed after the profile-keyboard fix; same real service/database workflow |
+| `flutter build web --release` | PASS | Current Flutter production build; no new web-browser account-flow verification implied |
+| Recording-related failure and fix | RESOLVED for this run | iOS recording exposed keyboard-obscured profile save; scrollable editor, keyboard dismissal and final rerun passed. Android in-process screenshot surface conversion stalled input; removed capture mechanism and reran successfully. Use external emulator captures. |
+| watchOS, Android release AAB, web-native runtime | NOT RERUN for this increment | Existing foundation results below remain historical; full Phase 2 regression scheduled before acceptance |
+
+Toolchain: Flutter 3.47.2 / Dart 3.13; Go 1.27; PostgreSQL 17.11. Mobile tests use
+an ephemeral local identity adapter and real loopback Go/PostgreSQL services. They
+do not verify production Keycloak, Google/Apple sign-in or physical devices. Actual
+iOS screenshots were captured and inspected internally; they are not a finished
+Phase 2 client package. Test credentials are runtime-only and not committed.
 
 ## Historical Phase 1 checks
 

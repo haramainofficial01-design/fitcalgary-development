@@ -44,6 +44,9 @@ func parseList(r *http.Request) (listParams, error) {
 	if len(city) > 80 {
 		return listParams{}, validation("city is too long")
 	}
+	if len(r.URL.Query().Get("q")) > 120 || len(r.URL.Query().Get("category")) > 80 {
+		return listParams{}, validation("search or category is too long")
+	}
 	return listParams{Query: optionalString(r.URL.Query().Get("q"), 120), City: city, Page: page, PageSize: pageSize, Category: optionalString(r.URL.Query().Get("category"), 80)}, nil
 }
 
@@ -52,7 +55,27 @@ func (s *Server) listGyms(_ http.ResponseWriter, r *http.Request) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	rows, err := queryMaps(r.Context(), s.db, `SELECT g.id,g.slug,g.name,g.operator,g.neighbourhood AS area,c.name AS city,g.categories,MIN(p.ongoing_monthly_cents) FILTER (WHERE p.pricing_complete) AS lowest_ongoing_monthly_cents,COALESCE(bool_and(p.pricing_complete),false) AS pricing_complete,g.updated_at,COUNT(*) OVER() AS total FROM gyms g JOIN cities c ON c.id=g.city_id LEFT JOIN gym_pricing p ON p.gym_id=g.id WHERE g.publish_status='PUBLISHED' AND c.slug=$1 AND ($2::text IS NULL OR g.name ILIKE $2 OR COALESCE(g.operator,'') ILIKE $2 OR COALESCE(g.neighbourhood,'') ILIKE $2) AND ($3::text IS NULL OR $3=ANY(g.categories)) GROUP BY g.id,c.name ORDER BY g.name LIMIT $4 OFFSET $5`, params.City, like(params.Query), params.Category, params.PageSize, (params.Page-1)*params.PageSize)
+	filters, err := parseGymFilters(r)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := queryMaps(r.Context(), s.db, `WITH directory AS (
+SELECT g.id,g.slug,g.name,g.operator,g.neighbourhood AS area,c.name AS city,g.categories,g.amenities,
+MIN(p.ongoing_monthly_cents) FILTER (WHERE p.pricing_complete) AS lowest_ongoing_monthly_cents,
+MIN(p.first_year_monthly_cents) FILTER (WHERE p.pricing_complete) AS lowest_first_year_monthly_cents,
+COALESCE(bool_and(p.pricing_complete),false) AS pricing_complete,g.updated_at
+FROM gyms g JOIN cities c ON c.id=g.city_id
+LEFT JOIN gym_pricing p ON p.gym_id=g.id AND (p.effective_from IS NULL OR p.effective_from<=CURRENT_DATE) AND (p.effective_to IS NULL OR p.effective_to>=CURRENT_DATE)
+WHERE g.publish_status='PUBLISHED' AND c.slug=$1
+AND ($2::text IS NULL OR g.name ILIKE $2 OR COALESCE(g.operator,'') ILIKE $2 OR COALESCE(g.neighbourhood,'') ILIKE $2)
+AND ($3::text IS NULL OR $3=ANY(g.categories))
+AND ($6::text IS NULL OR g.neighbourhood ILIKE $6)
+AND ($7::text IS NULL OR $7=ANY(g.amenities)) GROUP BY g.id,c.name)
+SELECT *,COUNT(*) OVER() AS total FROM directory
+WHERE ($8::text='' OR ($8='complete' AND pricing_complete) OR ($8='incomplete' AND NOT pricing_complete))
+AND ($9::int IS NULL OR lowest_ongoing_monthly_cents<=$9)
+ORDER BY CASE WHEN $10='cost' THEN lowest_ongoing_monthly_cents END ASC NULLS LAST,lower(name),id
+LIMIT $4 OFFSET $5`, params.City, like(params.Query), params.Category, params.PageSize, (params.Page-1)*params.PageSize, filters.Area, filters.Amenity, filters.Pricing, filters.MaxMonthly, filters.Sort)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +87,11 @@ func (s *Server) getGym(_ http.ResponseWriter, r *http.Request) (any, error) {
 	if strings.TrimSpace(slug) == "" || len(slug) > 180 {
 		return nil, validation("invalid gym slug")
 	}
-	rows, err := queryMaps(r.Context(), s.db, `SELECT g.*,c.name AS city,c.slug AS city_slug,COALESCE(json_agg(p ORDER BY p.ongoing_monthly_cents) FILTER (WHERE p.id IS NOT NULL),'[]') AS pricing FROM gyms g JOIN cities c ON c.id=g.city_id LEFT JOIN gym_pricing p ON p.gym_id=g.id WHERE g.slug=$1 AND g.publish_status='PUBLISHED' GROUP BY g.id,c.name,c.slug`, slug)
+	params, err := parseList(r)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := queryMaps(r.Context(), s.db, `SELECT g.*,c.name AS city,c.slug AS city_slug,COALESCE(json_agg(p ORDER BY p.ongoing_monthly_cents NULLS LAST,p.id) FILTER (WHERE p.id IS NOT NULL),'[]') AS pricing FROM gyms g JOIN cities c ON c.id=g.city_id LEFT JOIN gym_pricing p ON p.gym_id=g.id AND (p.effective_from IS NULL OR p.effective_from<=CURRENT_DATE) AND (p.effective_to IS NULL OR p.effective_to>=CURRENT_DATE) WHERE g.slug=$1 AND c.slug=$2 AND g.publish_status='PUBLISHED' GROUP BY g.id,c.name,c.slug`, slug, params.City)
 	if err != nil {
 		return nil, err
 	}

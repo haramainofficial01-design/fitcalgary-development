@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/providers.dart';
 import '../../app/widgets.dart';
 import '../../core/theme.dart';
+import '../gyms/gym_providers.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
   const SignInScreen({
@@ -28,6 +29,9 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     setState(() => busy = true);
     try {
       await ref.read(authServiceProvider).signIn();
+      ref.invalidate(savedGymsProvider);
+      ref.invalidate(profileProvider);
+      ref.invalidate(submissionsProvider);
       if (mounted) {
         await widget.onSignedIn?.call();
         if (mounted) context.go(widget.nextLocation);

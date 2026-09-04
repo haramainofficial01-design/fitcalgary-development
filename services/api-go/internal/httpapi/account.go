@@ -188,7 +188,7 @@ func (s *Server) updateProfile(_ http.ResponseWriter, r *http.Request) (any, err
 }
 
 func (s *Server) listSavedGyms(_ http.ResponseWriter, r *http.Request) (any, error) {
-	rows, err := queryMaps(r.Context(), s.db, `SELECT g.id,g.slug,g.name,g.operator,g.neighbourhood,s.created_at FROM saved_gyms s JOIN gyms g ON g.id=s.gym_id WHERE s.profile_id=$1 ORDER BY s.created_at DESC`, identity(r).ProfileID)
+	rows, err := queryMaps(r.Context(), s.db, `SELECT g.id,g.slug,g.name,g.operator,g.neighbourhood AS area,c.name AS city,s.created_at FROM saved_gyms s JOIN gyms g ON g.id=s.gym_id JOIN cities c ON c.id=g.city_id WHERE s.profile_id=$1 AND g.publish_status='PUBLISHED' ORDER BY s.created_at DESC,g.id`, identity(r).ProfileID)
 	return map[string]any{"data": rows}, err
 }
 
@@ -197,8 +197,12 @@ func (s *Server) saveGym(w http.ResponseWriter, r *http.Request) (any, error) {
 	if !validUUID(gymID) {
 		return nil, validation("gymId must be a UUID")
 	}
-	if _, err := s.db.Exec(r.Context(), `INSERT INTO saved_gyms(profile_id,gym_id) VALUES($1,$2) ON CONFLICT DO NOTHING`, identity(r).ProfileID, gymID); err != nil {
+	result, err := s.db.Exec(r.Context(), `INSERT INTO saved_gyms(profile_id,gym_id) SELECT $1,id FROM gyms WHERE id=$2 AND publish_status='PUBLISHED' ON CONFLICT(profile_id,gym_id) DO UPDATE SET gym_id=EXCLUDED.gym_id`, identity(r).ProfileID, gymID)
+	if err != nil {
 		return nil, err
+	}
+	if result.RowsAffected() == 0 {
+		return nil, &APIError{Status: http.StatusNotFound, Code: "NOT_FOUND", Message: "Gym not found"}
 	}
 	noContent(w)
 	return nil, nil

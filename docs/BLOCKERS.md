@@ -1,5 +1,16 @@
 # Blockers and external dependencies
 
+## Phase 2 schedule and verification
+
+September 8 morning (evening contingency) targets the entire Phase 2 product and
+three-file Client review package; it is not a completion guarantee. See
+`PHASE_2_DELIVERY_PLAN.md`. Remaining workflow integration, web parity and final
+cross-platform regression are engineering work, not Client blockers. Escalate
+material schedule risk promptly. The September 3 directory/account flow is tested
+on iOS Simulator and Android emulator with actual Go/PostgreSQL and test identities.
+Recording-related emulator input/keyboard issues were corrected and rerun; they do
+not establish physical-device or production-auth verification.
+
 The Client-recognizable Flutter product shell, onboarding, primary routes and administration foundation are included, and development fixtures are explicitly labeled. The private development remote and clean-clone recovery have been verified. The items below correctly remain `BLOCKED_EXTERNAL` or later-phase work; adapters, environment variables, fixtures and test accounts keep them from blocking foundation/product-shell implementation.
 
 ## Client/service inputs (`BLOCKED_EXTERNAL`)

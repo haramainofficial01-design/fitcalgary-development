@@ -24,6 +24,7 @@ class Gym {
     required this.name,
     required this.operatorName,
     required this.city,
+    this.slug = '',
     this.area,
     this.address,
     this.lowestOngoingMonthlyCents,
@@ -33,6 +34,7 @@ class Gym {
   });
 
   final String id;
+  final String slug;
   final String name;
   final String operatorName;
   final String city;
@@ -45,14 +47,15 @@ class Gym {
 
   factory Gym.fromJson(Json json) => Gym(
     id: _string(json, 'id') ?? '',
+    slug: _string(json, 'slug') ?? '',
     name: _string(json, 'name') ?? 'Gym',
     operatorName:
         _string(json, 'operator', 'operatorName') ??
         _string(json, 'operator_name') ??
         'Independent',
     city: _string(json, 'city') ?? 'Calgary',
-    area: _string(json, 'area'),
-    address: _string(json, 'address'),
+    area: _string(json, 'area') ?? _string(json, 'neighbourhood'),
+    address: _string(json, 'address') ?? _string(json, 'address_line1'),
     lowestOngoingMonthlyCents: _int(
       json,
       'lowest_ongoing_monthly_cents',

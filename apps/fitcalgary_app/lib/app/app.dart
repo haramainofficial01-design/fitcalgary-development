@@ -6,6 +6,7 @@ import '../core/theme.dart';
 import '../features/auth/sign_in_screen.dart';
 import '../features/events/events_screen.dart';
 import '../features/gyms/gyms_screen.dart';
+import '../features/gyms/gym_detail_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/leaderboards/leaderboards_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
@@ -68,6 +69,25 @@ class _FitCalgaryAppState extends State<FitCalgaryApp> {
           routes: [
             GoRoute(path: '/', builder: (_, _) => const HomeScreen()),
             GoRoute(path: '/gyms', builder: (_, _) => const GymsScreen()),
+            GoRoute(
+              path: '/gyms/compare',
+              builder: (_, state) => GymComparisonScreen(
+                slugs: (state.uri.queryParameters['slugs'] ?? '')
+                    .split(',')
+                    .where((v) => v.isNotEmpty)
+                    .toSet()
+                    .toList(),
+              ),
+            ),
+            GoRoute(
+              path: '/gyms/:slug',
+              builder: (_, state) =>
+                  GymDetailScreen(slug: state.pathParameters['slug']!),
+            ),
+            GoRoute(
+              path: '/saved-gyms',
+              builder: (_, _) => const SavedGymsScreen(),
+            ),
             GoRoute(
               path: '/leaderboards',
               builder: (_, _) => const LeaderboardsScreen(),
@@ -140,7 +160,9 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const paths = ['/', '/gyms', '/leaderboards', '/events', '/profile'];
-    final index = paths.indexOf(location);
+    final index = location.startsWith('/gyms/') || location == '/saved-gyms'
+        ? 1
+        : paths.indexOf(location);
     return Scaffold(
       body: Center(
         child: ConstrainedBox(
