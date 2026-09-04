@@ -6,6 +6,10 @@ September 4 morning: no new external blocker. Club/event service acceptance test
 pass; remaining client/admin form wiring and athlete-profile scope are developer
 implementation work scheduled next, not dependencies to request from the Client.
 
+September 4 afternoon: no new external blocker. Mobile/web Client routes and the
+admin club creator are integrated; production content is still deliberately absent.
+Athlete profile depth and comprehensive edit controls remain engineering work.
+
 September 8 morning (evening contingency) targets the entire Phase 2 product and
 three-file Client review package; it is not a completion guarantee. See
 `PHASE_2_DELIVERY_PLAN.md`. Remaining workflow integration, web parity and final

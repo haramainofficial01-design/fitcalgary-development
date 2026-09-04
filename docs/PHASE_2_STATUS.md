@@ -65,6 +65,23 @@ admin forms; extend gym-affiliation/profile presentation; verify publication thr
 actual client UI and rerun iOS/Android routes. No new platform verification is claimed
 for these endpoints yet. No new external blocker was encountered this morning.
 
+September 4 afternoon: publication is now connected to the Client applications.
+Compete has API-backed Upcoming, Open Entry, All Events and Clubs sections, debounced
+search, server paging, loading/error/empty states, recognizably FitCalgary cards and
+real detail routes. Event details show server-derived state, times, venue, organizer,
+deadline and requirements; club details show sport, location, season and eligibility.
+Supplied HTTP(S) registration/website links open outside the application, while an
+unsupplied link is visibly disabled. The responsive web admin now loads clubs and can
+create draft/published/archived club records, alongside its event publisher.
+
+A new cross-layer test uses an authenticated development administrator to publish a
+uniquely named event and club through Go, then finds and opens both in the actual
+Flutter client before archiving them. It passes on iOS Simulator and Android emulator
+against PostgreSQL. Nine Flutter tests, Flutter analysis/web build, and web-native
+lint/type/production build pass. This is development/simulator evidence—not physical
+device, production identity, or Client-approved production data. Athlete profile
+depth and editable admin content remain today's next work.
+
 | Area | Next acceptance evidence | Status |
 |---|---|---|
 | Gyms, pricing, accounts, saved gyms | Signed-in client browse/detail/compare/save, persisted through Go/PostgreSQL | TESTED increment; final content, broader comparison UX and web-native parity remain Phase 2 work |

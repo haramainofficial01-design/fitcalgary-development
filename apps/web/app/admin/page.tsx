@@ -13,7 +13,7 @@ const sections = [
   ['roles', 'Roles', ShieldCheck, 'admin/users'],
   ['gyms', 'Gyms', Dumbbell, 'admin/gyms'],
   ['pricing', 'Pricing', BadgeDollarSign, 'admin/gyms'],
-  ['clubs', 'Clubs', Activity, null],
+  ['clubs', 'Clubs', Activity, 'admin/clubs'],
   ['events', 'Events', CalendarDays, 'admin/events'],
   ['disciplines', 'Disciplines', Tags, null],
   ['divisions', 'Divisions', Layers3, null],
@@ -142,7 +142,7 @@ function AdminContent({ active, data, reference, search, setSearch, onChanged }:
   const rows = Array.isArray(data.data) ? data.data as Json[] : [];
   const visible = rows.filter((row) => JSON.stringify(row).toLowerCase().includes(search.toLowerCase()));
   return <div className="admin-content">
-    <div className="admin-toolbar"><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Search ${active}`} />{active === 'gyms' && <CreateGym reference={reference} onChanged={onChanged} />}{active === 'events' && <CreateEvent reference={reference} onChanged={onChanged} />}</div>
+    <div className="admin-toolbar"><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Search ${active}`} />{active === 'gyms' && <CreateGym reference={reference} onChanged={onChanged} />}{active === 'clubs' && <CreateClub reference={reference} onChanged={onChanged} />}{active === 'events' && <CreateEvent reference={reference} onChanged={onChanged} />}</div>
     {visible.length ? <AdminTable rows={visible} /> : <div className="admin-empty"><h2>No records returned</h2><p>This connected area is ready for authorized client content. Empty production data is never replaced with fabricated records.</p></div>}
   </div>;
 }
@@ -191,6 +191,15 @@ function CreateEvent({ reference, onChanged }: { reference: Json; onChanged: (me
     await backend('admin/events', { method: 'POST', body: JSON.stringify({ cityId, slug: form.get('slug'), name: form.get('name'), startAt: new Date(String(form.get('startAt'))).toISOString(), registrationStatus: 'OPEN', eventStatus: 'ACTIVE', publishStatus: form.get('publishStatus'), tags: [] }) });
     await onChanged('Event saved. Published changes are immediately available to web, iOS, Android, and watch clients.');
   }}><label>City<select name="cityId" required>{cities.map((city) => <option key={String(city.id)} value={String(city.id)}>{String(city.name)}</option>)}</select></label><label>Name<input name="name" required minLength={2} /></label><label>Slug<input name="slug" required pattern="[a-z0-9-]+" /></label><label>Starts<input name="startAt" type="datetime-local" required /></label><label>Status<select name="publishStatus"><option>DRAFT</option><option>PUBLISHED</option><option>ARCHIVED</option></select></label></AdminCreate>;
+}
+
+function CreateClub({ reference, onChanged }: { reference: Json; onChanged: (message: string) => Promise<void> }) {
+  const cities = Array.isArray(reference.cities) ? reference.cities as Json[] : [];
+  return <AdminCreate label="Add club" onSubmit={async (form) => {
+    const cityId = String(form.get('cityId') ?? cities[0]?.id ?? '');
+    await backend('admin/clubs', { method: 'POST', body: JSON.stringify({ cityId, slug: form.get('slug'), name: form.get('name'), sport: form.get('sport'), category: form.get('category') || null, websiteUrl: form.get('websiteUrl') || null, tags: [], ageCategories: [], publishStatus: form.get('publishStatus') }) });
+    await onChanged('Club saved. Published changes are immediately available to every client through the shared API.');
+  }}><label>City<select name="cityId" required>{cities.map((city) => <option key={String(city.id)} value={String(city.id)}>{String(city.name)}</option>)}</select></label><label>Name<input name="name" required minLength={2} /></label><label>Slug<input name="slug" required pattern="[a-z0-9-]+" /></label><label>Sport<input name="sport" required minLength={2} /></label><label>Category<input name="category" /></label><label>Website<input name="websiteUrl" type="url" /></label><label>Status<select name="publishStatus"><option>DRAFT</option><option>PUBLISHED</option><option>ARCHIVED</option></select></label></AdminCreate>;
 }
 
 function AdminCreate({ label, children, onSubmit }: { label: string; children: React.ReactNode; onSubmit: (form: FormData) => Promise<void> }) {

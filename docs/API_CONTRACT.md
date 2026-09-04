@@ -24,6 +24,11 @@ Executable proof: `content_integration_test.go` covers real PostgreSQL publicati
 detail/list queries, event state, unsafe input, role rejection and audit rollback.
 Client forms/routes still require integration before this is a complete user workflow.
 
+Flutter now consumes the public list/detail contracts for Events and Clubs. The web
+admin consumes `admin/clubs` for list/create and `admin/events` for list/create. The
+cross-layer mobile test proves newly published administrative content becomes visible
+through the shared API; full web-admin update/unpublish controls remain in progress.
+
 ## Phase 2 directory/account increment — September 3, 2026
 
 `GET /gyms` accepts `q`, `city`, `category`, `area`, `amenity`,

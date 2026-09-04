@@ -7,6 +7,7 @@ import 'package:fitcalgary_app/core/onboarding_store.dart';
 import 'package:fitcalgary_app/domain/models.dart';
 import 'package:fitcalgary_app/features/profile/profile_screen.dart';
 import 'package:fitcalgary_app/features/gyms/gym_providers.dart';
+import 'package:fitcalgary_app/features/events/content_providers.dart';
 
 void main() {
   ProviderScope testApp(OnboardingStore store) => ProviderScope(
@@ -17,6 +18,12 @@ void main() {
       savedGymsProvider.overrideWith((ref) async => []),
       gymsProvider.overrideWith((ref) async => const <Gym>[]),
       eventsProvider.overrideWith((ref) async => const <EventListing>[]),
+      eventDirectoryProvider.overrideWith(
+        (ref, query) async => const ContentPage<EventListing>([], 0),
+      ),
+      clubDirectoryProvider.overrideWith(
+        (ref, query) async => const ContentPage<ClubListing>([], 0),
+      ),
       disciplinesProvider.overrideWith((ref) async => const <Discipline>[]),
       submissionsProvider.overrideWith(
         (ref) async => const <SubmissionRecord>[],

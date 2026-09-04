@@ -14,6 +14,17 @@ matrix below is historical evidence, not a pending acceptance list.
 | `DIRECTORY_TEST_DATABASE_URL=... go test ./internal/httpapi -run TestDirectoryAccountDatabaseFlow -count=1 -v` | PASS | Gym/account regression against the new disposable database |
 | New club/event client/mobile/web workflow | NOT YET VERIFIED | Backend increment only; client/admin forms and profile depth remain September 4 work |
 
+### September 4 afternoon continuation
+
+| Check | Result | Boundary |
+|---|---|---|
+| `flutter analyze`; `flutter test` | PASS | No findings; nine tests including published event/club list → detail routes |
+| iOS `flutter test integration_test/content_flow_test.dart -d <iPhone Simulator>` | PASS | Authenticated development admin publishes event/club through Go; Flutter retrieves and opens both; teardown archives both; actual PostgreSQL, 11-second assertion run |
+| Android same scenario on `emulator-5554` | PASS | Debug APK built/installed; same cross-layer publication → client flow and teardown passed in 12 seconds |
+| `flutter build web --release` | PASS | New responsive Compete directory and detail routes compile for web |
+| web-native `pnpm lint`; `tsc --noEmit`; `pnpm build` | PASS | Admin club endpoint/creator compiles; production build emitted admin and public routes |
+| Physical devices / production identity / production data | NOT VERIFIED | Test uses ephemeral runtime-only admin identity and isolated labelled fixtures |
+
 No new physical-device, production-auth or production-data verification. Phase 1
 remains closed and its checkpoint is preserved.
 

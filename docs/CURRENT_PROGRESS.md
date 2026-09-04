@@ -23,8 +23,10 @@ items. Its existing Git checkpoint remains an unchanged historical baseline.
 ## Currently working
 
 - September 4: club/event publishing services now pass real-database CRUD,
-  visibility, filtering, permission and audit-rollback tests. Client/admin form
-  integration and athlete profile depth remain today's next work, not completed.
+  visibility, filtering, permission and audit-rollback tests. The Flutter Compete
+  directory/detail routes and web-admin club creator are integrated. An admin publish
+  → Go/PostgreSQL → Flutter event/club scenario passes on both mobile simulators.
+  Athlete profile depth and editable admin content remain today's next work.
 
 - Phase 2 API-backed gym directory/detail/comparison, saved gyms and profile persistence.
 - Separate opt-in fixture loader and production data guards are implemented/tested.

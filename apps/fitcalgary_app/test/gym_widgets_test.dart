@@ -70,7 +70,7 @@ void main() {
     await tester.scrollUntilVisible(
       find.text('The gym index could not be reached. Try again.'),
       150,
-      scrollable:find.byType(Scrollable).first,
+      scrollable: find.byType(Scrollable).first,
     );
     expect(
       find.text('The gym index could not be reached. Try again.'),

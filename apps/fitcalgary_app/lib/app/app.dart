@@ -5,6 +5,7 @@ import '../core/onboarding_store.dart';
 import '../core/theme.dart';
 import '../features/auth/sign_in_screen.dart';
 import '../features/events/events_screen.dart';
+import '../features/events/content_detail_screen.dart';
 import '../features/gyms/gyms_screen.dart';
 import '../features/gyms/gym_detail_screen.dart';
 import '../features/home/home_screen.dart';
@@ -93,6 +94,20 @@ class _FitCalgaryAppState extends State<FitCalgaryApp> {
               builder: (_, _) => const LeaderboardsScreen(),
             ),
             GoRoute(path: '/events', builder: (_, _) => const EventsScreen()),
+            GoRoute(
+              path: '/events/:slug',
+              builder: (_, state) => ContentDetailScreen(
+                slug: state.pathParameters['slug']!,
+                club: false,
+              ),
+            ),
+            GoRoute(
+              path: '/clubs/:slug',
+              builder: (_, state) => ContentDetailScreen(
+                slug: state.pathParameters['slug']!,
+                club: true,
+              ),
+            ),
             GoRoute(path: '/profile', builder: (_, _) => const ProfileScreen()),
           ],
         ),
@@ -162,6 +177,8 @@ class AppShell extends StatelessWidget {
     const paths = ['/', '/gyms', '/leaderboards', '/events', '/profile'];
     final index = location.startsWith('/gyms/') || location == '/saved-gyms'
         ? 1
+        : location.startsWith('/events/') || location.startsWith('/clubs/')
+        ? 3
         : paths.indexOf(location);
     return Scaffold(
       body: Center(

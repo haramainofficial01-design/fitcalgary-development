@@ -80,17 +80,36 @@ class EventListing {
     this.location,
     this.registrationStatus,
     this.sport,
+    this.slug = '',
+    this.phase,
+    this.description,
+    this.organizer,
+    this.endAt,
+    this.registrationDeadline,
+    this.registrationUrl,
+    this.entryRequirements,
+    this.category,
   });
 
   final String id;
+  final String slug;
   final String name;
   final DateTime? startAt;
   final String? location;
   final String? registrationStatus;
   final String? sport;
+  final String? phase;
+  final String? description;
+  final String? organizer;
+  final DateTime? endAt;
+  final DateTime? registrationDeadline;
+  final String? registrationUrl;
+  final String? entryRequirements;
+  final String? category;
 
   factory EventListing.fromJson(Json json) => EventListing(
     id: _string(json, 'id') ?? '',
+    slug: _string(json, 'slug') ?? '',
     name: _string(json, 'name') ?? 'Event',
     startAt: _date(json, 'start_at', 'startAt'),
     location: _string(json, 'location') ?? _string(json, 'city'),
@@ -100,6 +119,72 @@ class EventListing {
       'registrationStatus',
     ),
     sport: _string(json, 'sport'),
+    phase: _string(json, 'phase'),
+    description: _string(json, 'description'),
+    organizer: _string(json, 'organizer'),
+    endAt: _date(json, 'end_at', 'endAt'),
+    registrationDeadline: _date(
+      json,
+      'registration_deadline',
+      'registrationDeadline',
+    ),
+    registrationUrl: _string(
+      json,
+      'external_registration_url',
+      'externalRegistrationUrl',
+    ),
+    entryRequirements: _string(json, 'entry_requirements', 'entryRequirements'),
+    category: _string(json, 'category'),
+  );
+}
+
+class ClubListing {
+  const ClubListing({
+    required this.id,
+    required this.slug,
+    required this.name,
+    required this.sport,
+    this.category,
+    this.description,
+    this.address,
+    this.city,
+    this.websiteUrl,
+    this.registrationUrl,
+    this.eligibility,
+    this.seasonInformation,
+    this.tags = const [],
+  });
+
+  final String id;
+  final String slug;
+  final String name;
+  final String sport;
+  final String? category;
+  final String? description;
+  final String? address;
+  final String? city;
+  final String? websiteUrl;
+  final String? registrationUrl;
+  final String? eligibility;
+  final String? seasonInformation;
+  final List<String> tags;
+
+  factory ClubListing.fromJson(Json json) => ClubListing(
+    id: _string(json, 'id') ?? '',
+    slug: _string(json, 'slug') ?? '',
+    name: _string(json, 'name') ?? 'Club',
+    sport: _string(json, 'sport') ?? 'Community',
+    category: _string(json, 'category'),
+    description: _string(json, 'description'),
+    address: _string(json, 'address'),
+    city: _string(json, 'city'),
+    websiteUrl: _string(json, 'website_url', 'websiteUrl'),
+    registrationUrl: _string(json, 'registration_url', 'registrationUrl'),
+    eligibility: _string(json, 'eligibility'),
+    seasonInformation: _string(json, 'season_information', 'seasonInformation'),
+    tags: (json['tags'] as List? ?? const [])
+        .map((value) => value.toString())
+        .toList(growable: false),
   );
 }
 
