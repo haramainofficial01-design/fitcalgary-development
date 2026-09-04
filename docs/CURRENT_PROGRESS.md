@@ -48,14 +48,16 @@ Production identity/email/social credentials; managed hosting/database/storage; 
 
 ## Latest private Git commit
 
-Last verified private baseline before this gym/account increment:
-`e348e7e8946e2f4c589eeb1726eb3c9e067363d5`. Use `git log -1` and the private remote
-tracking reference for the newest increment; all new commits belong to Phase 2.
+Latest verified implementation push:
+`58a2d1469a040c1f2e1d1692f5eb1d2eb71bdb6e`. Private remote main matched this
+SHA after push. Use `git log -1` for subsequent documentation commits.
 
 ## Latest tested commit
 
-`e348e7e8946e2f4c589eeb1726eb3c9e067363d5` — Phase 2 fixture isolation:
-Go tests/vet/API build and PostgreSQL 17.11 fixture/public-API integration passed.
+`58a2d1469a040c1f2e1d1692f5eb1d2eb71bdb6e` — Phase 2 gym/account increment:
+Flutter analysis/seven tests, iOS recorded integration, Android integration,
+Flutter web build, Go tests/vet/API build and PostgreSQL directory/account/
+membership/authorization checks passed. Phase 1 tag remains unchanged.
 
 Historical full-platform foundation:
 
