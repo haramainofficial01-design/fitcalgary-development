@@ -55,10 +55,16 @@ Production identity/email/social credentials; managed hosting/database/storage; 
 ## Latest private Git commit
 
 Latest verified implementation push:
-`384b115718eb1392f0e643c6075080686d6e9c0a`. Private remote main matched this
+`47ea8ffcdf88df2c3f0d3ae7e35fe3d2bfd9dcfa`. Private remote main matched this
 SHA after push. Use `git log -1` for subsequent documentation commits.
 
 ## Latest tested commit
+
+`47ea8ffcdf88df2c3f0d3ae7e35fe3d2bfd9dcfa` — September 4 afternoon
+Client integration: Flutter analysis/nine tests/web build, iOS and Android
+admin-publication-to-client flows, and web-native lint/type/production build passed.
+
+Morning service checkpoint:
 
 `384b115718eb1392f0e643c6075080686d6e9c0a` — September 4 morning club/event
 service increment: Go tests/vet/build, clean PostgreSQL initialization,
