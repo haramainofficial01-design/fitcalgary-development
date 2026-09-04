@@ -20,6 +20,14 @@ The Client-recognizable Flutter product shell, onboarding, primary routes and ad
 
 ## Verification boundaries
 
+- Phase 1 is accepted, paid and closed, as confirmed by the Developer. The remaining
+  dependencies here belong to Phase 2 or release verification, not Phase 1 acceptance.
+- Client data is expected over the weekend but has not been received/approved.
+  This does not block unrelated Phase 2 implementation. Follow `DATA_POLICY.md`;
+  initial discipline/division/checklist configuration remains provisional pending
+  Client rules. Complete validated import/admin workflows before claiming bulk-data
+  replacement is verified.
+
 - iPhone and Apple Watch testing is simulator-only; both remain **NOT DEVICE VERIFIED**.
 - Android testing is emulator-only; it remains **NOT DEVICE VERIFIED** despite a successful APK launch and API/database flow.
 - The hosted web preview is private and uses no production API/identity/storage configuration; the full system remains **NOT PRODUCTION VERIFIED**.

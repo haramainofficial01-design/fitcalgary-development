@@ -28,6 +28,12 @@ Status vocabulary: `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED`, `CONFIGURED`, `T
 | Production deployment | NOT_STARTED / BLOCKED_EXTERNAL | Domain, hosting accounts, managed database/storage/Keycloak, secrets, DNS/TLS, and client ownership decisions required. |
 | Store submission | NOT_STARTED / BLOCKED_EXTERNAL | Client store accounts, signing identities, final content/legal approvals, device QA, assets, and production endpoints required. |
 
-Substantial Phase 2 feature work is paused pending explicit authorization after Phase 1 client review.
+Phase 1 is COMPLETE / ACCEPTED / FULLY PAID / CLOSED, as explicitly confirmed by
+the Developer. Phase 2 is authorized and in progress; all new work belongs to
+Phase 2. Development fixture isolation and production data guards are tested;
+see `PHASE_2_STATUS.md`. Later production/device dependencies do not reopen Phase 1.
 
-The Client review package candidate contains exactly one consolidated four-page PDF and two MP4 demonstrations. Interim rendering, text/status review, forbidden internal-tool term scan, video metadata/playback sampling and privacy review passed on 2026-08-31; final regeneration and quality control remain scheduled for 2026-09-04.
+The historical Phase 1 Client review package contains one consolidated four-page
+PDF and two MP4 demonstrations, reviewed on 2026-09-01. Preserve the accepted
+package and existing Git checkpoint/history. No Phase 1 package, approval, payment
+or development work remains pending.

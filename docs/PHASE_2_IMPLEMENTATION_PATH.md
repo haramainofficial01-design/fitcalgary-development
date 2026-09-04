@@ -1,10 +1,13 @@
 # Phase 2 implementation path
 
-Phase 2 begins only after explicit `PROCEED TO PHASE 2` authorization. It continues from the same Flutter/Dart + Go + PostgreSQL + Keycloak codebase; no Phase 1 foundation or working product behavior is restarted, removed or duplicated.
+Phase 2 is explicitly authorized. Phase 1 is complete, accepted, fully paid and
+closed, as confirmed by the Developer. Continue from the same Flutter/Dart + Go +
+PostgreSQL + Keycloak codebase; no foundation or working behavior is restarted,
+removed or duplicated. See `PHASE_2_STATUS.md` for current execution.
 
 ## Work sequence
 
-1. Replace development fixtures with Client-approved gym, pricing, club, event, discipline, division and policy data through import/admin paths.
+1. Complete real-model gym/pricing and account flows using isolated fixtures under `DATA_POLICY.md`. Import approved Client data through validated admin paths when supplied; its absence does not block unrelated work.
 2. Complete account recovery, profile depth, saved gyms and social-sign-in production configuration while preserving standards-based OIDC/OAuth 2.0 + PKCE.
 3. Complete official/community leaderboard configuration and deterministic ranking publication.
 4. Complete submission, private multipart evidence, judge assignment, review, comments, approval/rejection and resubmission workflows end to end.

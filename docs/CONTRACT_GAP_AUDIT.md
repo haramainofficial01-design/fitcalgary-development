@@ -10,7 +10,9 @@ Audited 2026-08-31 against `FitCalgary Development Delivery Agreement Final.pdf`
 - Reasonable small refinements needed to finish the agreed V1 properly are included. The restrained Phase 1 modernization therefore preserves the Client identity while improving hierarchy, spacing, surfaces, depth and transitions.
 - Missing production credentials, service access, Client-approved content and physical devices extend or bound verification; they must be documented rather than represented as complete.
 - The active project and material development history may remain in a Developer-controlled private repository during development. Pre-existing Client materials remain Client property. Complete agreed custom source/history handoff occurs after full payment and final handoff under the agreement.
-- Phase 1 is not represented as Client-accepted until the Client approves it in writing or Phase 2 begins without an unresolved material Phase 1 issue.
+- The Developer explicitly confirms Phase 1 is complete, formally Client-accepted,
+  fully paid and closed, with Phase 2 progression approved. Preserve the existing
+  historical checkpoint; there are no remaining Phase 1 acceptance obligations.
 
 ## Phase 1 contract-gap result
 
@@ -28,9 +30,12 @@ Audited 2026-08-31 against `FitCalgary Development Delivery Agreement Final.pdf`
 | iOS, Android, web, watchOS foundations | VERIFIED IN LOCAL SIMULATOR/EMULATOR/BUILD ENVIRONMENTS | Test Matrix records each build/run and the Android release AAB | Physical devices and production signing are not verified |
 | Security/config baseline | VERIFIED FOUNDATION | Secret inventory/scan, `.env.example`, strict config, validation, safe errors, protected routes, private-storage structure and audit foundations | Production security/release review remains Phase 3 |
 | Flutter -> Go -> PostgreSQL | VERIFIED | Android emulator rendered a PostgreSQL-seeded gym through the Go API; protected profile write/read also persisted | Production environment remains external |
-| Dependencies/blockers/Phase 2 path | VERIFIED | `docs/BLOCKERS.md`, `docs/TEST_MATRIX.md`, `docs/PHASE_2_IMPLEMENTATION_PATH.md` | Explicit `PROCEED TO PHASE 2` authorization required |
-| Concise Client review package | FINAL QA IN PROGRESS | One four-page PDF plus two focused MP4 candidates; real captures and precise verification terminology are present | Scheduled 2026-09-04 regeneration, visual/privacy review, final commit/tag/push and clean-clone check |
+| Dependencies/blockers/Phase 2 path | VERIFIED | `docs/BLOCKERS.md`, `docs/TEST_MATRIX.md`, `docs/PHASE_2_IMPLEMENTATION_PATH.md` | Phase 2 explicitly authorized; Phase 1 accepted, paid and closed |
+| Concise Client review package | VERIFIED / ACCEPTED / CLOSED | One four-page PDF plus two focused MP4 files; real captures, precise verification terminology, visual/privacy review and playback checks passed on 2026-09-01 | No open Phase 1 work; retain package as historical evidence |
 
 ## Phase boundary
 
-No substantial Phase 2 work is authorized by this audit. Existing later-stage foundations are preserved. After Client review and explicit authorization, Phase 2 continues in the same codebase and completes the agreed V1 workflows described in the signed agreement and `docs/PHASE_2_IMPLEMENTATION_PATH.md`.
+The Developer has explicitly confirmed Phase 1 acceptance, full payment and closure,
+and authorized Phase 2. All new work belongs to Phase 2 in the same codebase.
+Preserve the historical Phase 1 Git checkpoint. Complete the agreed Core Product
+workflows under `docs/PHASE_2_IMPLEMENTATION_PATH.md`; Phase 3 remains a later gate.

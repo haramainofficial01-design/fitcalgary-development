@@ -1,10 +1,14 @@
 # Current progress
 
-Last updated: 2026-09-01.
+Last updated: 2026-09-03 (America/Edmonton).
 
 ## Current phase
 
-Phase 1 — final scheduled QA and Client-review packaging. Substantial Phase 2 development remains on hold pending explicit authorization.
+Phase 2 — Core Product, explicitly authorized and in progress.
+
+Phase 1 is COMPLETE / ACCEPTED / FULLY PAID / CLOSED, as explicitly confirmed
+by the Developer. There are no pending Phase 1 development, acceptance or payment
+items. Its existing Git checkpoint remains an unchanged historical baseline.
 
 ## Completed
 
@@ -18,12 +22,13 @@ Phase 1 — final scheduled QA and Client-review packaging. Substantial Phase 2 
 
 ## Currently working
 
-- Daily foundation regression checks and evidence accuracy review.
-- Final Phase 1 package verification remains scheduled for 2026-09-04.
+- Phase 2 production-model data flows and isolated development fixtures.
+- Separate opt-in fixture loader and production data guards are implemented/tested.
+- See `PHASE_2_STATUS.md` for scope and `DATA_POLICY.md` for data boundaries.
 
 ## In progress
 
-- Final package commit, accurately dated milestone tag, private-remote push and post-push clean-clone verification remain pending the scheduled final checkpoint.
+- Phase 2 gym/pricing/account workflows, followed by the remaining Core Product scope.
 - Production credentials/data and physical-device verification remain explicitly external/later.
 
 ## Tested
@@ -41,13 +46,23 @@ Production identity/email/social credentials; managed hosting/database/storage; 
 
 ## Latest private Git commit
 
-Current branch `HEAD` records the latest daily Phase 1 evidence refresh based on source baseline `76b8a64`. The final package commit and review tag have not yet been created.
+Last verified private baseline before this Phase 2 increment:
+`05573727528dd917957d9150ed82115a2d2cdca1`. Use `git log -1` and the private remote
+tracking reference for the newest increment; all new commits belong to Phase 2.
 
 ## Latest tested commit
 
-`76b8a64` — clean private-remote clone verified with Git integrity, Go tests, Flutter analysis and all four Flutter tests.
+`e348e7e8946e2f4c589eeb1726eb3c9e067363d5` — Phase 2 fixture isolation:
+Go tests/vet/API build and PostgreSQL 17.11 fixture/public-API integration passed.
 
-On 2026-09-01 the active workspace also passed Flutter analysis/tests, Go tests/vet/build, and web lint/type/auth/build checks. These daily checks do not replace the final 2026-09-04 checkpoint.
+Historical full-platform foundation:
+
+`e66e12646974f526e3760f102acdcac3a94ee6d7` — active workspace verified with Flutter analysis/tests, Go tests/vet/build, web lint/type/auth/build, PostgreSQL migration/API read-write checks and all platform simulator/emulator builds and launches.
+
+On 2026-09-01 the Phase 1 PDF and both MP4 files passed layout, playback, privacy
+and claim-boundary review. They remain historical evidence of the closed milestone.
+The September 3 Phase 2 working increment passed Go tests/vet/build and fresh
+PostgreSQL 17.11 fixture/API tests; that does not imply a new cross-platform test run.
 
 ## Platform status
 
