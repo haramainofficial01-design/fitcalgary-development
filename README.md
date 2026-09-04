@@ -21,6 +21,9 @@ Prerequisites: Go 1.27+, Node.js 22+ and pnpm 11+ for the web workspace, Docker 
 4. Start web with `pnpm --dir apps/web dev`.
 5. Run mobile with `flutter run` from `apps/fitcalgary_app`.
 
-Development seeds are opt-in through `DEMO_DATA=true`; production must use client-published data.
+Development fixtures require the separate `go run ./cmd/dev-seed` command, explicit
+`DEMO_DATA=true` and a new loopback-only development/test database. Production refuses
+fixture-marked databases. See [data policy](docs/DATA_POLICY.md) for setup and approved-data
+replacement rules, and [Phase 2 status](docs/PHASE_2_STATUS.md) for current work.
 
 See [architecture](docs/ARCHITECTURE.md), [API contract](docs/API_CONTRACT.md), [Phase 1 report](docs/PHASE_1_ACCEPTANCE_REPORT.md), [test matrix](docs/TEST_MATRIX.md), [blockers](docs/BLOCKERS.md), and [implementation status](docs/IMPLEMENTATION_STATUS.md).

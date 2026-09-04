@@ -30,6 +30,11 @@ type Config struct {
 }
 
 func Load() (Config, error) {
+	if value("APP_ENV", "development") == "production" {
+		if raw := strings.TrimSpace(os.Getenv("DEMO_DATA")); raw != "" && raw != "false" {
+			return Config{}, errors.New("DEMO_DATA must be false in production")
+		}
+	}
 	cfg := Config{
 		Environment:       value("APP_ENV", "development"),
 		DatabaseURL:       os.Getenv("DATABASE_URL"),

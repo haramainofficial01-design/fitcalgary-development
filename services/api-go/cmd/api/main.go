@@ -56,6 +56,11 @@ func run(logger *slog.Logger) error {
 	if err := database.ApplyMigrations(rootContext, pool, cfg.MigrationsDir); err != nil {
 		return fmt.Errorf("database migration: %w", err)
 	}
+	if cfg.Environment == "production" {
+		if err := database.RejectDevelopmentData(rootContext, pool); err != nil {
+			return err
+		}
+	}
 
 	verifier, err := auth.NewOIDCVerifier(rootContext, cfg.KeycloakIssuer, cfg.KeycloakAudience)
 	if err != nil {
