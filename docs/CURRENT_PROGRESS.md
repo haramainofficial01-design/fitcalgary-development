@@ -57,8 +57,9 @@ Production identity/email/social credentials; managed hosting/database/storage; 
 ## Latest private Git commit
 
 Latest verified implementation push:
-`3833a38` — September 4 evening athlete profile performance, eligibility, gym and
-privacy increment. Record the remote match after the documentation commit/push.
+`3833a3889e25d64e970760e7fd646cebb89b2293` — September 4 evening athlete profile
+performance, eligibility, gym and privacy increment. Private remote `main` matched
+the documentation checkpoint `862f45c4fb3f171a529a0cd6d8ec561473be1b50`.
 
 ## Latest tested commit
 
