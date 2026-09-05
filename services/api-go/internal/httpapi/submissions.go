@@ -15,6 +15,9 @@ import (
 func (s *Server) registerSubmissionRoutes(router chi.Router) {
 	router.Get("/submissions", s.handle(s.listSubmissions))
 	router.Post("/submissions", s.handle(s.createSubmission))
+	router.Post("/results/community", s.handle(s.recordCommunity))
+	router.Get("/submissions/{id}", s.handle(s.getSubmission))
+	router.Post("/submissions/{id}/cancel", s.handle(s.cancelSubmission))
 	router.Post("/submissions/{id}/uploads", s.handle(s.beginUpload))
 	router.Post("/uploads/{id}/parts/{partNumber}", s.handle(s.signUploadPart))
 	router.Post("/uploads/{id}/finalize", s.handle(s.finalizeUpload))
@@ -30,6 +33,8 @@ type createSubmissionInput struct {
 	ClaimedMetric       float64         `json:"claimedMetric"`
 	EvidenceType        string          `json:"evidenceType"`
 	ChecklistAcceptance map[string]bool `json:"checklistAcceptance"`
+	DivisionID          *string         `json:"divisionId"`
+	BoardType           string          `json:"boardType"`
 	ParentSubmissionID  *string         `json:"parentSubmissionId"`
 }
 
@@ -43,22 +48,65 @@ func (s *Server) createSubmission(w http.ResponseWriter, r *http.Request) (any, 
 	}
 	owner := identity(r).ProfileID
 	var banned bool
-	if err := s.db.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM bans WHERE profile_id=$1 AND lifted_at IS NULL AND (ends_at IS NULL OR ends_at>now()))`, owner).Scan(&banned); err != nil {
+	if err := s.db.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM bans WHERE profile_id=$1 AND lifted_at IS NULL AND starts_at<=now() AND (ends_at IS NULL OR ends_at>now()))`, owner).Scan(&banned); err != nil {
 		return nil, err
 	}
 	if banned {
 		return nil, &APIError{Status: http.StatusForbidden, Code: "ACCOUNT_RESTRICTED", Message: "This account cannot submit results"}
 	}
-	var eligible bool
-	if err := s.db.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM disciplines WHERE id=$1 AND active=true AND community_eligible=true)`, body.DisciplineID).Scan(&eligible); err != nil {
+
+	if body.BoardType == "" {
+		body.BoardType = "OFFICIAL"
+	}
+	if !oneOf(body.BoardType, "OFFICIAL", "COMMUNITY") || (body.DivisionID != nil && !validUUID(*body.DivisionID)) {
+		return nil, validation("Invalid board or division")
+	}
+	tx, err := s.db.Begin(r.Context())
+	if err != nil {
 		return nil, err
 	}
-	if !eligible {
-		return nil, &APIError{Status: http.StatusUnprocessableEntity, Code: "DISCIPLINE_INELIGIBLE", Message: "This discipline is unavailable for community submissions"}
+	defer tx.Rollback(r.Context())
+	var kind, evidence string
+	var minimum float64
+	var maximum *float64
+	var checklistRules []byte
+	err = tx.QueryRow(r.Context(), `SELECT metric_type,minimum_metric,maximum_metric,evidence_type,verification_checklist FROM disciplines WHERE id=$1 AND active AND (($2='OFFICIAL' AND official_eligible) OR ($2='COMMUNITY' AND community_eligible)) FOR SHARE`, body.DisciplineID, body.BoardType).Scan(&kind, &minimum, &maximum, &evidence, &checklistRules)
+	if err != nil {
+		return nil, err
+	}
+	if !validMetric(body.ClaimedMetric, minimum, maximum, kind) {
+		return nil, validation("Result is outside this discipline's allowed values")
+	}
+	if body.EvidenceType != evidence && !(evidence == "ACTIVITY_OR_OFFICIAL" && oneOf(body.EvidenceType, "ACTIVITY_FILE", "EXTERNAL_ACTIVITY_REFERENCE")) {
+		return nil, validation("Evidence must match this discipline's published rules")
+	}
+	if err = checkRequiredChecklist(checklistRules, body.ChecklistAcceptance); err != nil {
+		return nil, err
+	}
+	_, division, _, err := selectDivision(r, tx, owner, body.DivisionID)
+	if err != nil {
+		return nil, err
+	}
+	if body.ParentSubmissionID != nil {
+		var parentOwner, parentStatus, parentDiscipline string
+		var hasChild bool
+		err = tx.QueryRow(r.Context(), `SELECT profile_id,status,discipline_id,EXISTS(SELECT 1 FROM submissions c WHERE c.parent_submission_id=p.id AND c.status<>'CANCELLED') FROM submissions p WHERE id=$1 FOR UPDATE`, body.ParentSubmissionID).Scan(&parentOwner, &parentStatus, &parentDiscipline, &hasChild)
+		if err != nil {
+			return nil, err
+		}
+		if parentOwner != owner {
+			return nil, &APIError{Status: 403, Code: "FORBIDDEN", Message: "You cannot resubmit another athlete's result"}
+		}
+		if !oneOf(parentStatus, "REJECTED", "CHANGES_REQUESTED") || hasChild || parentDiscipline != body.DisciplineID {
+			return nil, &APIError{Status: 409, Code: "INVALID_STATE", Message: "This submission is not eligible for a new correction"}
+		}
 	}
 	checklist, _ := json.Marshal(body.ChecklistAcceptance)
-	rows, err := queryMaps(r.Context(), s.db, `INSERT INTO submissions(profile_id,discipline_id,parent_submission_id,claimed_metric,evidence_type,checklist_acceptance,status) VALUES($1,$2,$3,$4,$5,$6,'DRAFT') RETURNING id,status,created_at`, owner, body.DisciplineID, body.ParentSubmissionID, body.ClaimedMetric, body.EvidenceType, checklist)
+	rows, err := queryMaps(r.Context(), tx, `INSERT INTO submissions(profile_id,discipline_id,parent_submission_id,claimed_metric,evidence_type,checklist_acceptance,status,division_id,board_type) VALUES($1,$2,$3,$4,$5,$6,'DRAFT',$7,$8) RETURNING id,status,created_at`, owner, body.DisciplineID, body.ParentSubmissionID, body.ClaimedMetric, body.EvidenceType, checklist, division, body.BoardType)
 	if err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(r.Context()); err != nil {
 		return nil, err
 	}
 	created(w, rows[0])
@@ -79,8 +127,19 @@ func (s *Server) beginUpload(w http.ResponseWriter, r *http.Request) (any, error
 	if err := decodeJSON(r, &body); err != nil {
 		return nil, err
 	}
-	var status string
-	if err := s.db.QueryRow(r.Context(), `SELECT status FROM submissions WHERE id=$1 AND profile_id=$2`, submissionID, identity(r).ProfileID).Scan(&status); err != nil {
+	if s.store == nil {
+		return nil, &APIError{Status: 503, Code: "STORAGE_UNAVAILABLE", Message: "Evidence storage is not configured"}
+	}
+	if body.SizeBytes <= 0 || body.SizeBytes > s.config.MaxEvidenceBytes || !oneOf(body.ContentType, "video/mp4", "video/quicktime", "video/webm", "application/gpx+xml", "image/jpeg", "image/png") {
+		return nil, validation("Unsupported evidence file type or size")
+	}
+	tx, err := s.db.Begin(r.Context())
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(r.Context())
+	var status, evidenceType string
+	if err := tx.QueryRow(r.Context(), `SELECT status,evidence_type FROM submissions WHERE id=$1 AND profile_id=$2 FOR UPDATE`, submissionID, identity(r).ProfileID).Scan(&status, &evidenceType); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, &APIError{Status: http.StatusNotFound, Code: "NOT_FOUND", Message: "Submission not found"}
 		}
@@ -89,16 +148,25 @@ func (s *Server) beginUpload(w http.ResponseWriter, r *http.Request) (any, error
 	if status != "DRAFT" && status != "UPLOADING" {
 		return nil, &APIError{Status: http.StatusConflict, Code: "INVALID_STATE", Message: "Submission cannot accept a new upload"}
 	}
+	if (evidenceType == "VIDEO" && !strings.HasPrefix(body.ContentType, "video/")) || (evidenceType != "VIDEO" && strings.HasPrefix(body.ContentType, "video/")) {
+		return nil, validation("The file type does not match this submission's evidence requirements")
+	}
 	key, uploadID, err := s.store.Begin(r.Context(), identity(r).Principal.Subject, submissionID, body.ContentType, body.SizeBytes)
 	if err != nil {
 		return nil, validation(err.Error())
 	}
 	var id string
 	var expiresAt time.Time
-	if err := s.db.QueryRow(r.Context(), `INSERT INTO upload_sessions(submission_id,storage_key,provider_upload_id,expected_size_bytes,content_type,status,expires_at) VALUES($1,$2,$3,$4,$5,'INITIALIZED',now()+interval '24 hours') RETURNING id,expires_at`, submissionID, key, uploadID, body.SizeBytes, body.ContentType).Scan(&id, &expiresAt); err != nil {
+	if err := tx.QueryRow(r.Context(), `INSERT INTO upload_sessions(submission_id,storage_key,provider_upload_id,expected_size_bytes,content_type,status,expires_at) VALUES($1,$2,$3,$4,$5,'INITIALIZED',now()+interval '24 hours') RETURNING id,expires_at`, submissionID, key, uploadID, body.SizeBytes, body.ContentType).Scan(&id, &expiresAt); err != nil {
 		return nil, err
 	}
-	if _, err := s.db.Exec(r.Context(), `UPDATE submissions SET status='UPLOADING',updated_at=now() WHERE id=$1`, submissionID); err != nil {
+	if _, err := tx.Exec(r.Context(), `UPDATE submissions SET status='UPLOADING',updated_at=now() WHERE id=$1`, submissionID); err != nil {
+		return nil, err
+	}
+	if _, err = tx.Exec(r.Context(), `UPDATE upload_sessions SET status='ABORTED',updated_at=now() WHERE submission_id=$1 AND id<>$2 AND status IN ('INITIALIZED','UPLOADING')`, submissionID, id); err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(r.Context()); err != nil {
 		return nil, err
 	}
 	created(w, map[string]any{"id": id, "partSizeBytes": 16 * 1024 * 1024, "expiresAt": expiresAt})
@@ -106,6 +174,9 @@ func (s *Server) beginUpload(w http.ResponseWriter, r *http.Request) (any, error
 }
 
 func (s *Server) signUploadPart(_ http.ResponseWriter, r *http.Request) (any, error) {
+	if s.store == nil {
+		return nil, &APIError{Status: 503, Code: "STORAGE_UNAVAILABLE", Message: "Private evidence storage is unavailable"}
+	}
 	uploadID := chi.URLParam(r, "id")
 	part, err := positiveInt(chi.URLParam(r, "partNumber"), 0, 1, 10_000)
 	if !validUUID(uploadID) || err != nil {
@@ -113,7 +184,7 @@ func (s *Server) signUploadPart(_ http.ResponseWriter, r *http.Request) (any, er
 	}
 	var key, providerID string
 	var expiresAt time.Time
-	if err := s.db.QueryRow(r.Context(), `SELECT u.storage_key,u.provider_upload_id,u.expires_at FROM upload_sessions u JOIN submissions s ON s.id=u.submission_id WHERE u.id=$1 AND s.profile_id=$2 AND u.status IN ('INITIALIZED','UPLOADING')`, uploadID, identity(r).ProfileID).Scan(&key, &providerID, &expiresAt); err != nil {
+	if err := s.db.QueryRow(r.Context(), `SELECT u.storage_key,u.provider_upload_id,u.expires_at FROM upload_sessions u JOIN submissions s ON s.id=u.submission_id WHERE u.id=$1 AND s.profile_id=$2 AND u.status IN ('INITIALIZED','UPLOADING') AND s.status='UPLOADING'`, uploadID, identity(r).ProfileID).Scan(&key, &providerID, &expiresAt); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, &APIError{Status: http.StatusNotFound, Code: "NOT_FOUND", Message: "Upload session not found"}
 		}
@@ -145,9 +216,13 @@ type uploadRecord struct {
 	ContentType     string
 	Status          string
 	SubmissionState string
+	ExpiresAt       time.Time
 }
 
 func (s *Server) finalizeUpload(_ http.ResponseWriter, r *http.Request) (any, error) {
+	if s.store == nil {
+		return nil, &APIError{Status: 503, Code: "STORAGE_UNAVAILABLE", Message: "Private evidence storage is unavailable"}
+	}
 	uploadID := chi.URLParam(r, "id")
 	if !validUUID(uploadID) {
 		return nil, validation("upload id must be a UUID")
@@ -159,14 +234,19 @@ func (s *Server) finalizeUpload(_ http.ResponseWriter, r *http.Request) (any, er
 	if len(body.Parts) == 0 || len(body.Parts) > 10_000 {
 		return nil, validation("parts must contain between 1 and 10000 items")
 	}
-	for _, part := range body.Parts {
-		if strings.TrimSpace(part.ETag) == "" || part.PartNumber < 1 || part.PartNumber > 10_000 {
+	for i, part := range body.Parts {
+		if strings.TrimSpace(part.ETag) == "" || part.PartNumber < 1 || part.PartNumber > 10_000 || int(part.PartNumber) != i+1 {
 			return nil, validation("multipart part is invalid")
 		}
 	}
 	owner := identity(r).ProfileID
+	tx, err := s.db.Begin(r.Context())
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(r.Context())
 	var upload uploadRecord
-	err := s.db.QueryRow(r.Context(), `SELECT u.submission_id,u.storage_key,u.provider_upload_id,u.expected_size_bytes,u.content_type,u.status,s.status FROM upload_sessions u JOIN submissions s ON s.id=u.submission_id WHERE u.id=$1 AND s.profile_id=$2`, uploadID, owner).Scan(&upload.SubmissionID, &upload.StorageKey, &upload.ProviderUpload, &upload.ExpectedSize, &upload.ContentType, &upload.Status, &upload.SubmissionState)
+	err = tx.QueryRow(r.Context(), `SELECT u.submission_id,u.storage_key,u.provider_upload_id,u.expected_size_bytes,u.content_type,u.status,s.status,u.expires_at FROM upload_sessions u JOIN submissions s ON s.id=u.submission_id WHERE u.id=$1 AND s.profile_id=$2 FOR UPDATE OF s,u`, uploadID, owner).Scan(&upload.SubmissionID, &upload.StorageKey, &upload.ProviderUpload, &upload.ExpectedSize, &upload.ContentType, &upload.Status, &upload.SubmissionState, &upload.ExpiresAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, &APIError{Status: http.StatusNotFound, Code: "NOT_FOUND", Message: "Upload session not found"}
@@ -176,10 +256,16 @@ func (s *Server) finalizeUpload(_ http.ResponseWriter, r *http.Request) (any, er
 	if upload.Status == "COMPLETED" {
 		var evidenceID string
 		var retainUntil time.Time
-		if err := s.db.QueryRow(r.Context(), `SELECT id,retain_until FROM submission_evidence WHERE upload_session_id=$1`, uploadID).Scan(&evidenceID, &retainUntil); err != nil {
+		if err := tx.QueryRow(r.Context(), `SELECT id,retain_until FROM submission_evidence WHERE upload_session_id=$1`, uploadID).Scan(&evidenceID, &retainUntil); err != nil {
 			return nil, err
 		}
-		return map[string]any{"evidenceId": evidenceID, "retainUntil": retainUntil, "status": "PENDING_REVIEW"}, nil
+		return map[string]any{"evidenceId": evidenceID, "retainUntil": retainUntil, "status": upload.SubmissionState}, nil
+	}
+	if time.Now().After(upload.ExpiresAt) {
+		return nil, &APIError{Status: 410, Code: "UPLOAD_EXPIRED", Message: "Upload session expired"}
+	}
+	if upload.SubmissionState != "UPLOADING" {
+		return nil, &APIError{Status: 409, Code: "INVALID_STATE", Message: "Submission is no longer accepting evidence"}
 	}
 	if upload.Status != "INITIALIZED" && upload.Status != "UPLOADING" {
 		return nil, &APIError{Status: http.StatusConflict, Code: "INVALID_STATE", Message: "Upload cannot be finalized"}
@@ -191,14 +277,9 @@ func (s *Server) finalizeUpload(_ http.ResponseWriter, r *http.Request) (any, er
 	if size != upload.ExpectedSize {
 		return nil, &APIError{Status: http.StatusUnprocessableEntity, Code: "SIZE_MISMATCH", Message: "Uploaded evidence size did not match the declared size"}
 	}
-	tx, err := s.db.Begin(r.Context())
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback(r.Context()) //nolint:errcheck
 	var evidenceID string
 	var retainUntil time.Time
-	if err := tx.QueryRow(r.Context(), `INSERT INTO submission_evidence(submission_id,upload_session_id,storage_key,content_type,size_bytes,checksum,retain_until) VALUES($1,$2,$3,$4,$5,$6,now()+($7||' days')::interval) RETURNING id,retain_until`, upload.SubmissionID, uploadID, upload.StorageKey, upload.ContentType, upload.ExpectedSize, body.Checksum, s.config.EvidenceRetentionDays).Scan(&evidenceID, &retainUntil); err != nil {
+	if err := tx.QueryRow(r.Context(), `INSERT INTO submission_evidence(submission_id,upload_session_id,storage_key,content_type,size_bytes,checksum,retain_until) VALUES($1,$2,$3,$4,$5,$6,now()+$7::int*interval '1 day') RETURNING id,retain_until`, upload.SubmissionID, uploadID, upload.StorageKey, upload.ContentType, upload.ExpectedSize, body.Checksum, s.config.EvidenceRetentionDays).Scan(&evidenceID, &retainUntil); err != nil {
 		return nil, err
 	}
 	if _, err := tx.Exec(r.Context(), `UPDATE upload_sessions SET status='COMPLETED',completed_at=now(),updated_at=now() WHERE id=$1`, uploadID); err != nil {

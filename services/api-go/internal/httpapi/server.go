@@ -213,7 +213,14 @@ func (s *Server) writeError(w http.ResponseWriter, r *http.Request, err error) {
 	} else if errors.Is(err, pgx.ErrNoRows) {
 		apiErr = &APIError{Status: http.StatusNotFound, Code: "NOT_FOUND", Message: "Resource not found"}
 	} else {
-		s.logger.Error("request failed", "request_id", middleware.GetReqID(r.Context()), "error", err)
+		var constraint *pgconn.PgError
+		if errors.As(err, &constraint) && constraint.Code == "23505" {
+			apiErr = &APIError{Status: 409, Code: "ALREADY_EXISTS", Message: "A record with these identifiers already exists"}
+		} else if errors.As(err, &constraint) && (constraint.Code == "23503" || constraint.Code == "23514") {
+			apiErr = &APIError{Status: 422, Code: "INVALID_REFERENCE", Message: "The record references unavailable or invalid configuration"}
+		} else {
+			s.logger.Error("request failed", "request_id", middleware.GetReqID(r.Context()), "error", err)
+		}
 	}
 	writeJSON(w, apiErr.Status, map[string]any{"error": map[string]any{"code": apiErr.Code, "message": apiErr.Message, "requestId": middleware.GetReqID(r.Context()), "details": apiErr.Details}})
 }

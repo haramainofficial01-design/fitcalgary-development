@@ -1,37 +1,26 @@
 # Phase 2 delivery plan
 
-Updated September 3, 2026 — America/Edmonton.
+Updated September 5, 2026 — America/Edmonton.
 
-Phase 1 is accepted, fully paid and CLOSED. Its milestone stays unchanged. Phase 2
-is authorized. September 8 morning is the complete Phase 2 review-package target,
-with afternoon/evening reserved as contingency. This is a delivery target, not a
-guarantee or permission to omit agreed functionality or claim untested completion.
-Pull later work forward and finish earlier whenever dependencies and honest verification
-permit; do not pace implementation merely to consume every scheduled block.
+Phase 1 is accepted, fully paid and CLOSED. Phase 2 is authorized. The Developer
+has requested finishing now, as early as the required work and verification permit.
+The previous daily automation has been deleted. There are no daily pacing blocks.
+No completion date is guaranteed and no tests or scope may be omitted to meet one.
 
-## Daily execution and acceptance
+## Immediate execution and acceptance
 
-Scheduled work blocks: 08:00, 13:00 and 18:00 Edmonton, September 4–8 inclusive.
-Each block continues the current codebase; it does not restart completed work.
-An automation is an opportunity to run work, not proof that work ran or passed.
+1. Preserve the tested directory/content/profile/competition increment in private Git.
+2. Complete operational administration, private evidence/judge client flows,
+   notification delivery/preferences and public web workflow parity.
+3. Verify the agreed integrations and remaining cross-platform workflows using
+   development data; keep credentials/hardware boundaries explicit.
+4. Run the complete regression/build pass and capture actual visual proof.
+5. Audit all Phase 2 requirements and create/inspect the three-file review package.
+6. Stop for Phase 2 review; no substantial Phase 3 work without authorization.
 
-| Date | Main work | Required evidence before calling the increment complete |
-|---|---|---|
-| September 3 | Gym directory, pricing, saved gyms and account persistence | Signed-in Flutter client browses actual Go/PostgreSQL data, compares memberships, saves/removes a gym and reloads persisted profile state |
-| September 4 | Clubs/events and athlete profile depth | API-backed search/detail and profile workflows; permissions, persistence and client navigation tests |
-| September 5 | Disciplines/divisions, official/community boards and results | Deterministic ranking tests; correct status/division isolation; operational result workflow |
-| September 6 | Private evidence and judging | Upload/access boundaries, review comments, approve/reject/resubmit and ranking publication tested end to end |
-| September 7 | Admin CRUD, notifications, integrations and platform regression | Operational permissions and workflow checks; iOS/Android/web/watchOS regressions; begin real visual captures and review-document layout |
-| September 8 morning | Integrated acceptance and complete client package | Full agreed Phase 2 requirement audit, important end-to-end tests, final captures, rendered PDF inspection and MP4 playback/privacy checks |
-| September 8 afternoon/evening | Contingency | Resolve acceptance defects and regenerate affected evidence; report any unmet requirement explicitly |
-
-Morning blocks prioritize implementation and the highest-risk unmet acceptance
-criteria. Afternoon blocks finish integration and platform testing. Evening blocks
-resolve failures, preserve meaningful private Git commits and assess the next day's
-critical path. Carry unfinished work forward explicitly; do not equate a date with
-completion. Notify the Developer promptly if scope, failures, environment access or
-external dependencies put September 8 at risk. Preserve time for verification and
-packaging rather than treating them as optional work after the deadline.
+Do not defer useful work to a later calendar date. Keep meaningful authentic commits,
+preserve existing functionality and report unfinished work separately from external
+credentials/data dependencies.
 
 ## Complete client package
 

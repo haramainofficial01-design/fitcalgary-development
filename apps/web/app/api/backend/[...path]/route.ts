@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { oidcConfig, readSession, refreshSession, setSession } from '@/lib/server-auth';
+import { trustedMutation } from '@/lib/request-security';
 
 async function proxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
+  if (!trustedMutation(request, process.env.WEB_PUBLIC_URL)) {
+    return NextResponse.json({ error: { code: 'FORBIDDEN_ORIGIN', message: 'Request origin is not permitted' } }, { status: 403 });
+  }
   try {
     const current = await readSession(request);
     if (!current) return NextResponse.json({ error: { code: 'UNAUTHENTICATED', message: 'Sign in required' } }, { status: 401 });
@@ -32,9 +36,9 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
     });
     if (refreshed.changed) await setSession(response, refreshed.session);
     return response;
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { error: { code: 'WEB_SESSION_ERROR', message: error instanceof Error ? error.message : 'Request failed' } },
+      { error: { code: 'WEB_SESSION_ERROR', message: 'Your session or the service is unavailable. Please sign in again or retry shortly.' } },
       { status: 503 },
     );
   }

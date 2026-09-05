@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { oidcConfig, readSession, sessionCookie } from '@/lib/server-auth';
+import { trustedMutation } from '@/lib/request-security';
 
 export async function POST(request: NextRequest) {
+  if (!trustedMutation(request, process.env.WEB_PUBLIC_URL)) {
+    return NextResponse.json({ error: { code: 'FORBIDDEN_ORIGIN', message: 'Request origin is not permitted' } }, { status: 403 });
+  }
   try {
     const session = await readSession(request);
     const config = oidcConfig();

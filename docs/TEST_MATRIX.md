@@ -3,6 +3,27 @@
 Phase 1 is accepted, paid and closed per the Developer's confirmation. The platform
 matrix below is historical evidence, not a pending acceptance list.
 
+## Phase 2 increment — 2026-09-05
+
+| Check | Result | Boundary |
+|---|---|---|
+| Flutter analysis and complete widget/unit suite | PASS | 16 tests; real board projections, verification labels, configured metrics/checklists, normal-user review controls, notification preference save |
+| Go tests, vet and `go build -o /tmp/fitcalgary-phase2-api ./cmd/api` | PASS | All packages; PostgreSQL-enabled directory and competition regression |
+| `TestCompetitionDatabaseWorkflow` with `DIRECTORY_TEST_DATABASE_URL` | PASS | Actual PostgreSQL: config CRUD/role boundaries; validation; multipart state/ownership; decisions/corrections/cancelled retry; best-result ranks; time/repetition metrics; privacy; notification preference merging and owner-only opened state |
+| Evidence provider boundary in that Go test | MOCKED | Verifies API/SQL transactions, not actual object transfer, production storage or video playback |
+| Migrations 0003 + 0004 | PASS | Applied to disposable development database; ranking view, workflow constraints and cancelled-correction uniqueness |
+| iOS `flutter test integration_test/competition_flow_test.dart` | PASS | Fresh simulator build/run; client submits a community weight result to Go/PostgreSQL, retrieves board/PB, normal-user judge rejection |
+| Android same scenario on emulator-5554 | PASS | Fresh APK build/install/run; same actual client/API/database flow |
+| Web `pnpm test:auth`, `pnpm exec tsc --noEmit`, `pnpm lint` | PASS | Encrypted sessions/PKCE; exact-origin checks on cookie-authenticated writes; configuration forms |
+| Latest full-platform release regression and final client package | NOT YET COMPLETE | AAB, watchOS, web/mobile acceptance and actual recordings will be rerun for the final candidate |
+
+Temporary local mobile run logs: `/tmp/fitcalgary-competition-verify.BWfSwn/ios.log`
+and `/tmp/fitcalgary-competition-android.5Ckfwj/android.log`. These are internal
+increment evidence, not the final Client deliverables. Subsequent preference/security
+fixes passed automated regressions but have not yet had a new mobile recording.
+All identity data is development-only; physical devices and production services
+remain NOT VERIFIED. No Phase 2 completion, Client acceptance or payment is claimed.
+
 ## Phase 2 increment — 2026-09-04 evening
 
 | Check | Result | Boundary |

@@ -12,54 +12,83 @@ class BrandHeader extends StatelessWidget {
     child: LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 440;
-        return Container(
-          height: 74,
-          padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 20),
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: FitColors.ink)),
-          ),
-          child: Row(
-            children: [
-              Text(
+        final largeText = MediaQuery.textScalerOf(context).scale(12) > 18;
+        final branding = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
                 'FITCALGARY',
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
-                  fontSize: compact ? 15 : 18,
+                  fontSize: 18,
                   letterSpacing: -.6,
                 ),
               ),
-              SizedBox(width: compact ? 6 : 10),
-              Text(
-                'INDEX',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: compact ? 7 : 9,
-                  letterSpacing: compact ? 1.7 : 2.4,
-                  color: FitColors.muted,
+            ),
+            const Text(
+              'INDEX',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 8,
+                letterSpacing: 2.4,
+                color: FitColors.muted,
+              ),
+            ),
+          ],
+        );
+        final actions = Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            OutlinedButton(
+              onPressed: () => context.push('/signin'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(0, 44),
+                padding: const EdgeInsets.symmetric(horizontal: 9),
+                textStyle: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-              const Spacer(),
-              if (showActions) ...[
-                OutlinedButton(
-                  onPressed: () => context.push('/signin'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 42),
-                    padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 12),
-                  ),
-                  child: const Text('SIGN IN'),
+              child: const Text('SIGN IN'),
+            ),
+            FilledButton(
+              onPressed: () => context.push('/submit'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(0, 44),
+                padding: const EdgeInsets.symmetric(horizontal: 9),
+                textStyle: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
                 ),
-                const SizedBox(width: 6),
-                FilledButton(
-                  onPressed: () => context.push('/submit'),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(0, 42),
-                    padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 12),
-                  ),
-                  child: Text(compact ? 'POST RESULT' : 'POST A RESULT'),
-                ),
-              ],
-            ],
+              ),
+              child: Text(compact ? 'POST RESULT' : 'POST A RESULT'),
+            ),
+          ],
+        );
+        return Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 12 : 20,
+            vertical: 14,
           ),
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: FitColors.ink)),
+          ),
+          child: largeText && showActions
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [branding, const SizedBox(height: 12), actions],
+                )
+              : Row(
+                  children: [
+                    Expanded(child: branding),
+                    if (showActions) ...[const SizedBox(width: 10), actions],
+                  ],
+                ),
         );
       },
     ),

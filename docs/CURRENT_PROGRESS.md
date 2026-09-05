@@ -1,6 +1,23 @@
 # Current progress
 
-Last updated: 2026-09-04 evening (America/Edmonton).
+Last updated: 2026-09-05 (America/Edmonton).
+
+## Latest verified continuation
+
+The daily development automation has been deleted at the Developer's request.
+Continue immediately and finish as early as verification permits. Phase 2 is NOT
+yet feature-complete and the final Client review package has not been generated.
+
+Real configured boards, result entry, submission/judge/correction workflows,
+configuration administration and notification inbox/preferences are implemented.
+The result-entry → Go/PostgreSQL → board/profile scenario passed on iOS Simulator
+and Android emulator. Latest checks: Flutter analysis/16 tests, Go tests/vet/build,
+web auth/type/lint. Judge/upload transaction tests use mocked storage explicitly.
+See the September 5 entry in `TEST_MATRIX.md` for precise evidence boundaries.
+
+Next: operational admin and web parity, real evidence transport/judging,
+notification delivery, complete platform regression and final review artifacts.
+Historical checkpoints below remain valid but do not describe all current changes.
 
 ## Current phase
 

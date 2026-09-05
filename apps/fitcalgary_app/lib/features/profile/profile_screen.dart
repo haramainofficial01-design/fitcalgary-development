@@ -318,6 +318,18 @@ class _ProfileIdentity extends ConsumerWidget {
         const SizedBox(height: 18),
         const Chip(label: Text('VERIFIED TRAINER PROFILE')),
       ],
+      const SizedBox(height: 12),
+      OutlinedButton.icon(
+        onPressed: () => context.push('/notifications'),
+        icon: const Icon(Icons.notifications_none),
+        label: const Text('NOTIFICATIONS'),
+      ),
+      if (profile.roles.contains('JUDGE') || profile.roles.contains('ADMIN'))
+        OutlinedButton.icon(
+          onPressed: () => context.push('/judge'),
+          icon: const Icon(Icons.fact_check_outlined),
+          label: const Text('JUDGE REVIEW QUEUE'),
+        ),
       const SizedBox(height: 22),
       OutlinedButton(
         onPressed: () async {
@@ -675,7 +687,10 @@ class _SubmissionRow extends StatelessWidget {
             ],
           ),
         ),
-        Chip(label: Text(submission.status.replaceAll('_', ' '))),
+        TextButton(
+          onPressed: () => context.push('/submissions/${submission.id}'),
+          child: Text(submission.status.replaceAll('_', ' ')),
+        ),
       ],
     ),
   );

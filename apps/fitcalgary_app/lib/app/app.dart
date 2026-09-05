@@ -12,7 +12,9 @@ import '../features/home/home_screen.dart';
 import '../features/leaderboards/leaderboards_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/profile/notifications_screen.dart';
 import '../features/submissions/submit_screen.dart';
+import '../features/submissions/review_screen.dart';
 
 class FitCalgaryApp extends StatefulWidget {
   const FitCalgaryApp({this.onboardingStore, super.key});
@@ -93,6 +95,11 @@ class _FitCalgaryAppState extends State<FitCalgaryApp> {
               path: '/leaderboards',
               builder: (_, _) => const LeaderboardsScreen(),
             ),
+            GoRoute(
+              path: '/leaderboards/:id',
+              builder: (_, state) =>
+                  LeaderboardsScreen(boardId: state.pathParameters['id']!),
+            ),
             GoRoute(path: '/events', builder: (_, _) => const EventsScreen()),
             GoRoute(
               path: '/events/:slug',
@@ -125,7 +132,23 @@ class _FitCalgaryAppState extends State<FitCalgaryApp> {
             );
           },
         ),
-        GoRoute(path: '/submit', builder: (_, _) => const SubmitScreen()),
+        GoRoute(
+          path: '/submit',
+          builder: (_, state) => SubmitScreen(
+            parentId: state.uri.queryParameters['parent'],
+            draftId: state.uri.queryParameters['draft'],
+          ),
+        ),
+        GoRoute(
+          path: '/submissions/:id',
+          builder: (_, state) =>
+              SubmissionDetailScreen(id: state.pathParameters['id']!),
+        ),
+        GoRoute(path: '/judge', builder: (_, _) => const JudgeQueueScreen()),
+        GoRoute(
+          path: '/notifications',
+          builder: (_, _) => const NotificationsScreen(),
+        ),
       ],
     );
 
@@ -179,6 +202,8 @@ class AppShell extends StatelessWidget {
         ? 1
         : location.startsWith('/events/') || location.startsWith('/clubs/')
         ? 3
+        : location.startsWith('/leaderboards/')
+        ? 2
         : paths.indexOf(location);
     return Scaffold(
       body: Center(

@@ -1,6 +1,6 @@
 # Phase 2 — Core Product
 
-Updated: 2026-09-04 evening, America/Edmonton.
+Updated: 2026-09-05, America/Edmonton.
 
 ## Authority and target
 
@@ -9,8 +9,40 @@ Developer. There is no outstanding Phase 1 acceptance, payment or development wo
 Preserve its existing Git checkpoint as a historical baseline without rewriting it.
 All new implementation belongs to Phase 2, which is explicitly authorized.
 
-September 8 is the internal Phase 2 acceptance-candidate target, not an automatic
-completion date. Substantial Phase 3 work still requires explicit authorization.
+The Developer has requested immediate completion where achievable, without daily
+pacing. The former daily automation has been deleted. Completion depends on the
+remaining workflow and platform acceptance checks, not a date. Substantial Phase 3
+work still requires explicit authorization.
+
+## Current position — September 5
+
+Phase 2 remains IN PROGRESS; the final Client package is not yet ready.
+
+- Configurable discipline/division/board APIs and web-admin configuration forms
+  now operate against PostgreSQL. Rule edits cannot reinterpret existing results;
+  active submissions protect their rules from administrative changes.
+- Official and community boards now use real deterministic best-per-athlete ranks,
+  privacy-safe names, division/region isolation and distinct verification labels.
+- Submission creation, required checks, private-upload authorization, owner detail,
+  withdrawal, judge decisions/comments, correction requests and resubmission operate
+  through Go. Approved results publish to the ranking view transactionally.
+- Flutter now has result entry, board/detail routes, submission history/actions,
+  judge queue/review controls and a notification inbox/preferences editor.
+- The actual Flutter community-result → Go → PostgreSQL → board/profile flow passed
+  on iOS Simulator and Android emulator. These runs use ephemeral test identities.
+- Database workflow tests cover approval/rejection/corrections, duplicate protection,
+  permissions, private identity display, ranking direction/ties and notification
+  ownership. Their evidence store is explicitly mocked: external object-storage
+  transfer/playback is NOT verified by these tests.
+- Latest regression: Flutter analysis + 16 tests; Go tests/vet/API build;
+  web auth tests, type checking and lint all pass. The preceding configuration-form
+  web production build passed; later security changes require a final build rerun.
+
+Remaining developer work includes full operational admin/review/moderation depth,
+actual private-storage transport and client judging demonstrations, delivery adapters
+and preference enforcement, web workflow parity, full-platform regression and the
+three-file Client review package. These are not labelled external blockers.
+Production credentials/data and physical hardware remain separately external/later.
 
 ## Current verified increment
 
@@ -118,9 +150,9 @@ Carry unfinished higher-risk work forward honestly instead of declaring a day's
 scope complete because its calendar date passed. Commit logical tested increments
 with real timestamps to the private development remote only.
 
-The dated work split, three daily blocks and September 8 complete-package target
-are documented in `PHASE_2_DELIVERY_PLAN.md`. Flag schedule risk promptly; a
-scheduled run or target date does not guarantee product acceptance.
+The priority-based execution path is documented in `PHASE_2_DELIVERY_PLAN.md`.
+The former daily schedule is cancelled; older dated increments above are history,
+not instructions to defer work.
 
 ## Dependencies
 

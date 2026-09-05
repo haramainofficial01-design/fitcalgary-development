@@ -17,6 +17,7 @@ import (
 var slugPattern = regexp.MustCompile(`^[a-z0-9-]+$`)
 
 func (s *Server) registerAdminRoutes(router chi.Router) {
+	s.registerCompetitionAdmin(router)
 	router.Get("/admin/overview", s.handle(s.adminOverview))
 	router.Get("/admin/reference-data", s.handle(s.adminReferenceData))
 	router.Get("/admin/users", s.handle(s.adminUsers))
@@ -123,6 +124,12 @@ type gymInput struct {
 }
 
 func validateGym(body *gymInput) error {
+	if !safeContentURL(body.WebsiteURL) || !safeContentURL(body.SourceURL) {
+		return validation("Gym links must be HTTP(S) without embedded credentials")
+	}
+	if err := contentStrings(body.Operator, body.Description, body.AddressLine1, body.Neighbourhood, body.PostalCode, body.Telephone); err != nil {
+		return err
+	}
 	body.Name = strings.TrimSpace(body.Name)
 	if !validUUID(body.CityID) || (body.BrandID != nil && !validUUID(*body.BrandID)) || !slugPattern.MatchString(body.Slug) || len(body.Slug) > 140 || len(body.Name) < 2 || len(body.Name) > 180 {
 		return validation("gym identity fields are invalid")
@@ -153,11 +160,19 @@ func (s *Server) adminCreateGym(w http.ResponseWriter, r *http.Request) (any, er
 	if err := validateGym(&body); err != nil {
 		return nil, err
 	}
-	rows, err := queryMaps(r.Context(), s.db, `INSERT INTO gyms(city_id,brand_id,slug,name,operator,description,address_line1,neighbourhood,postal_code,website_url,telephone,categories,amenities,source_url,publish_status,last_verified_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,CASE WHEN $15='PUBLISHED' THEN now() END) RETURNING *`, body.CityID, body.BrandID, body.Slug, body.Name, body.Operator, body.Description, body.AddressLine1, body.Neighbourhood, body.PostalCode, body.WebsiteURL, body.Telephone, body.Categories, body.Amenities, body.SourceURL, body.PublishStatus)
+	tx, err := s.db.Begin(r.Context())
 	if err != nil {
 		return nil, err
 	}
-	if err := s.audit(r, "GYM_CREATED", "GYM", rows[0]["id"], nil, rows[0]); err != nil {
+	defer tx.Rollback(r.Context())
+	rows, err := queryMaps(r.Context(), tx, `INSERT INTO gyms(city_id,brand_id,slug,name,operator,description,address_line1,neighbourhood,postal_code,website_url,telephone,categories,amenities,source_url,publish_status,last_verified_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,CASE WHEN $15='PUBLISHED' THEN now() END) RETURNING *`, body.CityID, body.BrandID, body.Slug, body.Name, body.Operator, body.Description, body.AddressLine1, body.Neighbourhood, body.PostalCode, body.WebsiteURL, body.Telephone, body.Categories, body.Amenities, body.SourceURL, body.PublishStatus)
+	if err != nil {
+		return nil, err
+	}
+	if err := auditTransaction(r, tx, "GYM_CREATED", "GYM", rows[0]["id"], nil, rows[0]); err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(r.Context()); err != nil {
 		return nil, err
 	}
 	created(w, rows[0])
@@ -179,18 +194,26 @@ func (s *Server) adminUpdateGym(_ http.ResponseWriter, r *http.Request) (any, er
 	if err := validateGym(&body); err != nil {
 		return nil, err
 	}
-	before, err := queryMaps(r.Context(), s.db, `SELECT * FROM gyms WHERE id=$1`, id)
+	tx, err := s.db.Begin(r.Context())
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(r.Context())
+	before, err := queryMaps(r.Context(), tx, `SELECT * FROM gyms WHERE id=$1`, id)
 	if err != nil {
 		return nil, err
 	}
 	if len(before) == 0 {
 		return nil, &APIError{Status: http.StatusNotFound, Code: "NOT_FOUND", Message: "Gym not found"}
 	}
-	rows, err := queryMaps(r.Context(), s.db, `UPDATE gyms SET city_id=$2,brand_id=$3,slug=$4,name=$5,operator=$6,description=$7,address_line1=$8,neighbourhood=$9,postal_code=$10,website_url=$11,telephone=$12,categories=$13,amenities=$14,source_url=$15,publish_status=$16,last_verified_at=CASE WHEN $16='PUBLISHED' THEN COALESCE(last_verified_at,now()) ELSE last_verified_at END,updated_at=now() WHERE id=$1 RETURNING *`, id, body.CityID, body.BrandID, body.Slug, body.Name, body.Operator, body.Description, body.AddressLine1, body.Neighbourhood, body.PostalCode, body.WebsiteURL, body.Telephone, body.Categories, body.Amenities, body.SourceURL, body.PublishStatus)
+	rows, err := queryMaps(r.Context(), tx, `UPDATE gyms SET city_id=$2,brand_id=$3,slug=$4,name=$5,operator=$6,description=$7,address_line1=$8,neighbourhood=$9,postal_code=$10,website_url=$11,telephone=$12,categories=$13,amenities=$14,source_url=$15,publish_status=$16,last_verified_at=CASE WHEN $16='PUBLISHED' THEN COALESCE(last_verified_at,now()) ELSE last_verified_at END,updated_at=now() WHERE id=$1 RETURNING *`, id, body.CityID, body.BrandID, body.Slug, body.Name, body.Operator, body.Description, body.AddressLine1, body.Neighbourhood, body.PostalCode, body.WebsiteURL, body.Telephone, body.Categories, body.Amenities, body.SourceURL, body.PublishStatus)
 	if err != nil {
 		return nil, err
 	}
-	if err := s.audit(r, "GYM_UPDATED", "GYM", id, before[0], rows[0]); err != nil {
+	if err := auditTransaction(r, tx, "GYM_UPDATED", "GYM", id, before[0], rows[0]); err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(r.Context()); err != nil {
 		return nil, err
 	}
 	return rows[0], nil
@@ -247,11 +270,19 @@ func (s *Server) adminCreatePricing(w http.ResponseWriter, r *http.Request) (any
 		return nil, err
 	}
 	normalized := domain.NormalizePrice(domain.PriceInput{RecurringCents: body.RecurringCents, Frequency: body.BillingFrequency, MandatoryRecurringFeeCents: body.MandatoryRecurringFeeCents, MandatoryAnnualFeeCents: body.MandatoryAnnualFeeCents, InitiationFeeCents: body.InitiationFeeCents, Complete: body.PricingComplete})
-	rows, err := queryMaps(r.Context(), s.db, `INSERT INTO gym_pricing(gym_id,plan_name,recurring_cents,billing_frequency,mandatory_recurring_fee_cents,mandatory_annual_fee_cents,initiation_fee_cents,ongoing_monthly_cents,first_year_monthly_cents,pricing_complete,source_url,effective_from,last_verified_at,effective_to,membership_type,contract_months,eligibility,drop_in_cents,trial_details,notes) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,now(),$13,$14,$15,$16,$17,$18,$19) RETURNING *`, gymID, body.PlanName, body.RecurringCents, body.BillingFrequency, body.MandatoryRecurringFeeCents, body.MandatoryAnnualFeeCents, body.InitiationFeeCents, normalized.OngoingMonthlyCents, normalized.FirstYearMonthlyCents, body.PricingComplete, body.SourceURL, body.EffectiveFrom, body.EffectiveTo, body.MembershipType, body.ContractMonths, body.Eligibility, body.DropInCents, body.TrialDetails, body.Notes)
+	tx, err := s.db.Begin(r.Context())
 	if err != nil {
 		return nil, err
 	}
-	if err := s.audit(r, "GYM_PRICING_CREATED", "GYM", gymID, nil, rows[0]); err != nil {
+	defer tx.Rollback(r.Context())
+	rows, err := queryMaps(r.Context(), tx, `INSERT INTO gym_pricing(gym_id,plan_name,recurring_cents,billing_frequency,mandatory_recurring_fee_cents,mandatory_annual_fee_cents,initiation_fee_cents,ongoing_monthly_cents,first_year_monthly_cents,pricing_complete,source_url,effective_from,last_verified_at,effective_to,membership_type,contract_months,eligibility,drop_in_cents,trial_details,notes) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,now(),$13,$14,$15,$16,$17,$18,$19) RETURNING *`, gymID, body.PlanName, body.RecurringCents, body.BillingFrequency, body.MandatoryRecurringFeeCents, body.MandatoryAnnualFeeCents, body.InitiationFeeCents, normalized.OngoingMonthlyCents, normalized.FirstYearMonthlyCents, body.PricingComplete, body.SourceURL, body.EffectiveFrom, body.EffectiveTo, body.MembershipType, body.ContractMonths, body.Eligibility, body.DropInCents, body.TrialDetails, body.Notes)
+	if err != nil {
+		return nil, err
+	}
+	if err := auditTransaction(r, tx, "GYM_PRICING_CREATED", "GYM", gymID, nil, rows[0]); err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(r.Context()); err != nil {
 		return nil, err
 	}
 	created(w, rows[0])
@@ -308,12 +339,17 @@ func (s *Server) adminUpdateSetting(_ http.ResponseWriter, r *http.Request) (any
 	if err := decodeJSON(r, &body); err != nil {
 		return nil, err
 	}
-	before, err := queryMaps(r.Context(), s.db, `SELECT * FROM app_settings WHERE key=$1`, key)
+	tx, err := s.db.Begin(r.Context())
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(r.Context())
+	before, err := queryMaps(r.Context(), tx, `SELECT * FROM app_settings WHERE key=$1`, key)
 	if err != nil {
 		return nil, err
 	}
 	encoded, _ := json.Marshal(body.Value)
-	rows, err := queryMaps(r.Context(), s.db, `INSERT INTO app_settings(key,value,public,updated_by) VALUES($1,$2,$3,$4) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,public=EXCLUDED.public,updated_by=EXCLUDED.updated_by,updated_at=now() RETURNING *`, key, encoded, body.Public, identity(r).ProfileID)
+	rows, err := queryMaps(r.Context(), tx, `INSERT INTO app_settings(key,value,public,updated_by) VALUES($1,$2,$3,$4) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,public=EXCLUDED.public,updated_by=EXCLUDED.updated_by,updated_at=now() RETURNING *`, key, encoded, body.Public, identity(r).ProfileID)
 	if err != nil {
 		return nil, err
 	}
@@ -321,7 +357,10 @@ func (s *Server) adminUpdateSetting(_ http.ResponseWriter, r *http.Request) (any
 	if len(before) > 0 {
 		old = before[0]
 	}
-	if err := s.audit(r, "SETTING_UPDATED", "SETTING", key, old, rows[0]); err != nil {
+	if err := auditTransaction(r, tx, "SETTING_UPDATED", "SETTING", key, old, rows[0]); err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(r.Context()); err != nil {
 		return nil, err
 	}
 	return rows[0], nil
@@ -335,10 +374,18 @@ func (s *Server) adminGrantRole(w http.ResponseWriter, r *http.Request) (any, er
 	if !validUUID(profileID) || !validRole(role) {
 		return nil, validation("profile id or role is invalid")
 	}
-	if _, err := s.db.Exec(r.Context(), `INSERT INTO user_roles(profile_id,role,granted_by) VALUES($1,$2,$3) ON CONFLICT DO NOTHING`, profileID, role, identity(r).ProfileID); err != nil {
+	tx, err := s.db.Begin(r.Context())
+	if err != nil {
 		return nil, err
 	}
-	if err := s.audit(r, "ROLE_GRANTED", "PROFILE", profileID, nil, map[string]string{"role": role}); err != nil {
+	defer tx.Rollback(r.Context())
+	if _, err := tx.Exec(r.Context(), `INSERT INTO user_roles(profile_id,role,granted_by) VALUES($1,$2,$3) ON CONFLICT DO NOTHING`, profileID, role, identity(r).ProfileID); err != nil {
+		return nil, err
+	}
+	if err := auditTransaction(r, tx, "ROLE_GRANTED", "PROFILE", profileID, nil, map[string]string{"role": role}); err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(r.Context()); err != nil {
 		return nil, err
 	}
 	noContent(w)
@@ -356,10 +403,18 @@ func (s *Server) adminRevokeRole(w http.ResponseWriter, r *http.Request) (any, e
 	if profileID == identity(r).ProfileID && role == "ADMIN" {
 		return nil, &APIError{Status: http.StatusConflict, Code: "SELF_ADMIN_REMOVAL", Message: "An administrator cannot remove their own admin role"}
 	}
-	if _, err := s.db.Exec(r.Context(), `DELETE FROM user_roles WHERE profile_id=$1 AND role=$2`, profileID, role); err != nil {
+	tx, err := s.db.Begin(r.Context())
+	if err != nil {
 		return nil, err
 	}
-	if err := s.audit(r, "ROLE_REVOKED", "PROFILE", profileID, map[string]string{"role": role}, nil); err != nil {
+	defer tx.Rollback(r.Context())
+	if _, err := tx.Exec(r.Context(), `DELETE FROM user_roles WHERE profile_id=$1 AND role=$2`, profileID, role); err != nil {
+		return nil, err
+	}
+	if err := auditTransaction(r, tx, "ROLE_REVOKED", "PROFILE", profileID, map[string]string{"role": role}, nil); err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(r.Context()); err != nil {
 		return nil, err
 	}
 	noContent(w)

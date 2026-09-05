@@ -1,113 +1,207 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../app/providers.dart';
 import '../../app/widgets.dart';
 import '../../core/theme.dart';
-import '../../domain/models.dart';
+import 'competition_providers.dart';
 
 class LeaderboardsScreen extends ConsumerStatefulWidget {
-  const LeaderboardsScreen({super.key});
-
+  const LeaderboardsScreen({this.boardId, super.key});
+  final String? boardId;
   @override
   ConsumerState<LeaderboardsScreen> createState() => _LeaderboardsScreenState();
 }
 
 class _LeaderboardsScreenState extends ConsumerState<LeaderboardsScreen> {
-  String? selectedDiscipline;
-  String selectedDivision = 'OPEN';
+  String kind = 'OFFICIAL';
+  String? selected;
+  int page = 1;
+  @override
+  void initState() {
+    super.initState();
+    selected = widget.boardId;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final disciplines = ref.watch(disciplinesProvider);
+    final linked = ref
+        .watch(boardsProvider)
+        .asData
+        ?.value
+        .where((b) => b['id'] == selected)
+        .firstOrNull;
+    final activeKind = linked?['board_type'] as String? ?? kind;
     return Scaffold(
       body: Column(
         children: [
           const BrandHeader(),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(22, 34, 22, 34),
-              children: [
-                const Overline('Community + official'),
-                const SizedBox(height: 16),
-                const Text(
-                  'The city,\nranked.',
-                  style: TextStyle(
-                    fontSize: 48,
-                    height: .95,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -2.8,
+            child: RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(boardsProvider);
+                ref.invalidate(boardProvider);
+              },
+              child: ListView(
+                padding: const EdgeInsets.all(22),
+                children: [
+                  const Overline('Community + official'),
+                  const SizedBox(height: 14),
+                  const Text(
+                    'The city,\nranked.',
+                    style: TextStyle(
+                      fontSize: 46,
+                      height: 1,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -2,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Official event results stay distinct from evidence-reviewed community marks.',
-                  style: TextStyle(color: FitColors.muted, height: 1.5),
-                ),
-                const SizedBox(height: 26),
-                disciplines.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (error, _) => ErrorPanel(
-                    message: 'Leaderboards are temporarily unavailable.',
-                    onRetry: () => ref.invalidate(disciplinesProvider),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Official boards contain verified performances. Community boards also welcome unverified personal claims. Each athlete’s best eligible result earns a place.',
                   ),
-                  data: (items) {
-                    if (items.isEmpty) {
-                      return const EmptyPanel(
-                        title: 'No active boards yet',
-                        body: 'An administrator can configure disciplines and publish boards without a new app release.',
-                      );
-                    }
-                    final active = items.firstWhere(
-                      (item) => item.id == selectedDiscipline,
-                      orElse: () => items.first,
-                    );
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Wrap(
-                          spacing: 7,
-                          runSpacing: 7,
-                          children: items
-                              .map(
-                                (item) => _BoardFilter(
-                                  label: item.displayName.toUpperCase(),
-                                  selected: active.id == item.id,
-                                  onPressed: () => setState(
-                                    () => selectedDiscipline = item.id,
-                                  ),
-                                ),
-                              )
-                              .toList(growable: false),
+                  const SizedBox(height: 20),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final type in ['OFFICIAL', 'COMMUNITY'])
+                        ChoiceChip(
+                          label: Text(
+                            type == 'OFFICIAL'
+                                ? 'Official · verified'
+                                : 'Community',
+                          ),
+                          selected: activeKind == type,
+                          onSelected: (_) => setState(() {
+                            kind = type;
+                            selected = null;
+                            page = 1;
+                          }),
                         ),
-                        const SizedBox(height: 9),
-                        Wrap(
-                          spacing: 7,
-                          runSpacing: 7,
-                          children:
-                              ['OPEN', 'U23', '30–39', '40+', 'MASTERS 50+']
-                                  .map(
-                                    (division) => _BoardFilter(
-                                      label: division,
-                                      selected: selectedDivision == division,
-                                      onPressed: () => setState(
-                                        () => selectedDivision = division,
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ref
+                      .watch(boardsProvider)
+                      .when(
+                        loading: () => const LinearProgressIndicator(),
+                        error: (_, _) => ErrorPanel(
+                          message: 'Boards could not be loaded.',
+                          onRetry: () => ref.invalidate(boardsProvider),
+                        ),
+                        data: (all) {
+                          final boards = all
+                              .where((b) => b['board_type'] == activeKind)
+                              .toList();
+                          if (boards.isEmpty) {
+                            return const EmptyPanel(
+                              title: 'No published boards yet',
+                              body: 'Boards appear when eligible results are recorded.',
+                            );
+                          }
+                          final active = boards.firstWhere(
+                            (b) => b['id'] == selected,
+                            orElse: () => boards.first,
+                          );
+                          final id = active['id'] as String;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              DropdownButtonFormField<String>(
+                                key: ValueKey('$kind-$id'),
+                                initialValue: id,
+                                isExpanded: true,
+                                decoration: const InputDecoration(
+                                  labelText: 'Discipline · division · region',
+                                ),
+                                items: boards
+                                    .map(
+                                      (b) => DropdownMenuItem(
+                                        value: b['id'] as String,
+                                        child: Text(
+                                          "${b['discipline_name']} · ${b['division_label']} · ${b['region_name']}",
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (v) => setState(() {
+                                  selected = v;
+                                  page = 1;
+                                }),
+                              ),
+                              const SizedBox(height: 18),
+                              Text(
+                                "${active['entry_count']} athletes ranked",
+                                style: const TextStyle(color: FitColors.muted),
+                              ),
+                              const SizedBox(height: 10),
+                              ref
+                                  .watch(boardProvider((id, page)))
+                                  .when(
+                                    loading: () =>
+                                        const LinearProgressIndicator(),
+                                    error: (_, _) => ErrorPanel(
+                                      message: 'Results could not be loaded.',
+                                      onRetry: () => ref.invalidate(
+                                        boardProvider((id, page)),
                                       ),
                                     ),
-                                  )
-                                  .toList(growable: false),
-                        ),
-                        const SizedBox(height: 24),
-                        _DevelopmentBoard(
-                          discipline: active,
-                          division: selectedDivision,
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ],
+                                    data: (board) {
+                                      final entries = (board['entries'] as List)
+                                          .cast<Map<String, dynamic>>();
+                                      return Column(
+                                        children: [
+                                          if (entries.isEmpty)
+                                            const EmptyPanel(
+                                              title: 'No results on this page',
+                                              body: 'Return to the previous page or choose another board.',
+                                            ),
+                                          for (final row in entries)
+                                            _ResultRow(row: row, boardId: id),
+                                          const SizedBox(height: 14),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              TextButton(
+                                                onPressed: page > 1
+                                                    ? () =>
+                                                          setState(() => page--)
+                                                    : null,
+                                                child: const Text('PREVIOUS'),
+                                              ),
+                                              Text('Page $page'),
+                                              TextButton(
+                                                onPressed:
+                                                    page * 20 <
+                                                        (active['entry_count']
+                                                                as num? ??
+                                                            0)
+                                                    ? () =>
+                                                          setState(() => page++)
+                                                    : null,
+                                                child: const Text('NEXT'),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                            ],
+                          );
+                        },
+                      ),
+                  const SizedBox(height: 20),
+                  FilledButton.icon(
+                    onPressed: () => context.push('/submit'),
+                    icon: const Icon(Icons.add),
+                    label: const Text('POST A RESULT'),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -116,147 +210,107 @@ class _LeaderboardsScreenState extends ConsumerState<LeaderboardsScreen> {
   }
 }
 
-class _BoardFilter extends StatelessWidget {
-  const _BoardFilter({
-    required this.label,
-    required this.selected,
-    required this.onPressed,
-  });
-  final String label;
-  final bool selected;
-  final VoidCallback onPressed;
-
+class _ResultRow extends StatelessWidget {
+  const _ResultRow({required this.row, required this.boardId});
+  final Map<String, dynamic> row;
+  final String boardId;
   @override
-  Widget build(BuildContext context) => OutlinedButton(
-    onPressed: onPressed,
-    style: OutlinedButton.styleFrom(
-      backgroundColor: selected ? FitColors.coral : Colors.transparent,
-      foregroundColor: selected ? FitColors.white : FitColors.ink,
-      side: BorderSide(color: selected ? FitColors.coral : FitColors.line),
-      minimumSize: const Size(0, 44),
-      padding: const EdgeInsets.symmetric(horizontal: 13),
-    ),
-    child: Text(label),
-  );
-}
-
-class _DevelopmentBoard extends StatelessWidget {
-  const _DevelopmentBoard({required this.discipline, required this.division});
-  final Discipline discipline;
-  final String division;
-
-  String _mark(int index) {
-    switch (discipline.metricType.toUpperCase()) {
-      case 'TIME':
-        return ['15:42', '16:08', '16:31', '17:04', '17:22'][index];
-      case 'COUNT':
-        return ['42', '38', '35', '32', '30'][index];
-      default:
-        return ['125', '118', '111', '104', '98'][index];
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => Container(
-    decoration: BoxDecoration(border: Border.all(color: FitColors.line)),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Container(
-          color: FitColors.black,
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget build(BuildContext context) {
+    final verified = row['verification_type'] != 'UNVERIFIED';
+    final rank = (row['rank'] as num).toInt();
+    final previous = (row['previous_rank'] as num?)?.toInt();
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: FitColors.white,
+        border: Border.all(color: FitColors.line),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: rank <= 3 ? FitColors.coral : FitColors.ink,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              '$rank',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  row['display_name'] as String,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+                if (row['gym_name'] != null)
+                  Text(
+                    row['gym_name'] as String,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: FitColors.muted,
+                    ),
+                  ),
+                Text(
+                  verified ? 'Verified performance' : 'Unverified claim',
+                  style: const TextStyle(fontSize: 11, color: FitColors.muted),
+                ),
+                if (previous != null && previous != rank)
+                  Text(
+                    previous > rank
+                        ? '↑ Up ${previous - rank}'
+                        : '↓ Down ${rank - previous}',
+                    style: const TextStyle(fontSize: 11),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Overline('Development data · $division', light: true),
-              const SizedBox(height: 10),
               Text(
-                discipline.displayName,
+                row['display_metric'] as String,
                 style: const TextStyle(
-                  color: FitColors.white,
-                  fontSize: 25,
+                  fontSize: 20,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: 5),
-              const Text(
-                'Interaction preview — final verified rankings are completed in Phase 2.',
-                style: TextStyle(color: Color(0xFFB5B5B1), fontSize: 10),
-              ),
+              if (row['profile_id'] != null)
+                IconButton(
+                  tooltip: 'Copy result',
+                  icon: const Icon(Icons.ios_share, size: 18),
+                  onPressed: () async {
+                    await Clipboard.setData(
+                      ClipboardData(
+                        text:
+                            "${row['display_name']} · ${row['display_metric']} · #$rank · ${verified ? 'Verified' : 'Unverified'}\nFitCalgary Index · Board $boardId",
+                      ),
+                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Result copied for sharing.'),
+                        ),
+                      );
+                    }
+                  },
+                ),
             ],
           ),
-        ),
-        ...List.generate(
-          5,
-          (index) => _RankRow(rank: index + 1, mark: _mark(index)),
-        ),
-      ],
-    ),
-  );
-}
-
-class _RankRow extends StatelessWidget {
-  const _RankRow({required this.rank, required this.mark});
-  final int rank;
-  final String mark;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-    decoration: const BoxDecoration(
-      border: Border(bottom: BorderSide(color: FitColors.line)),
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 38,
-          height: 38,
-          alignment: Alignment.center,
-          color: rank <= 3 ? FitColors.coral : FitColors.black,
-          child: Text(
-            '$rank',
-            style: const TextStyle(
-              color: FitColors.white,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ),
-        const SizedBox(width: 13),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Development Athlete ${String.fromCharCode(64 + rank)}',
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Calgary · demonstration record',
-                style: TextStyle(fontSize: 9, color: FitColors.muted),
-              ),
-            ],
-          ),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              mark,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-            ),
-            const Text(
-              'PREVIEW',
-              style: TextStyle(
-                fontSize: 7,
-                color: FitColors.coralDark,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1,
-              ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }

@@ -26,6 +26,8 @@ func (s *Server) registerPublicRoutes(router chi.Router) {
 	router.Get("/events", s.handle(s.listEvents))
 	router.Get("/events/{slug}", s.handle(s.getEvent))
 	router.Get("/disciplines", s.handle(s.listDisciplines))
+	router.Get("/divisions", s.handle(s.listDivisions))
+	router.Get("/cities", s.handle(s.listCities))
 	router.Get("/leaderboards", s.handle(s.listLeaderboards))
 	router.Get("/leaderboards/{id}", s.handle(s.getLeaderboard))
 }
@@ -112,7 +114,7 @@ func (s *Server) listEvents(_ http.ResponseWriter, r *http.Request) (any, error)
 }
 
 func (s *Server) listDisciplines(_ http.ResponseWriter, r *http.Request) (any, error) {
-	rows, err := queryMaps(r.Context(), s.db, `SELECT id,slug,display_name,metric_type,unit,ranking_direction,evidence_type,official_eligible,community_eligible,rules_version FROM disciplines WHERE active=true ORDER BY display_name`)
+	rows, err := queryMaps(r.Context(), s.db, `SELECT id,slug,display_name,metric_type,unit,ranking_direction,evidence_type,official_eligible,community_eligible,rules_version,minimum_metric,maximum_metric,verification_checklist FROM disciplines WHERE active=true ORDER BY display_name`)
 	return map[string]any{"data": rows}, err
 }
 
@@ -124,7 +126,7 @@ func (s *Server) listLeaderboards(_ http.ResponseWriter, r *http.Request) (any, 
 	if boardType != nil && !oneOf(*boardType, "OFFICIAL", "COMMUNITY") {
 		return nil, validation("boardType must be OFFICIAL or COMMUNITY")
 	}
-	rows, err := queryMaps(r.Context(), s.db, `SELECT l.id,l.board_type,l.visible,l.event_id,d.id AS discipline_id,d.slug AS discipline_slug,d.display_name AS discipline_name,d.metric_type,d.unit,d.ranking_direction,v.id AS division_id,v.slug AS division_slug,v.display_label AS division_label,r.id AS region_id,r.slug AS region_slug,r.name AS region_name,e.name AS event_name,(SELECT count(*) FROM results rs WHERE rs.leaderboard_id=l.id AND rs.invalidated_at IS NULL) AS entry_count FROM leaderboards l JOIN disciplines d ON d.id=l.discipline_id JOIN divisions v ON v.id=l.division_id JOIN regions r ON r.id=l.region_id LEFT JOIN events e ON e.id=l.event_id WHERE l.visible=true AND ($1::text IS NULL OR d.slug=$1) AND ($2::text IS NULL OR v.slug=$2) AND ($3::text IS NULL OR r.slug=$3) AND ($4::text IS NULL OR l.board_type=$4) ORDER BY d.display_name,v.minimum_age NULLS FIRST,v.display_label,l.board_type`, discipline, division, region, boardType)
+	rows, err := queryMaps(r.Context(), s.db, `SELECT l.id,l.board_type,l.visible,l.event_id,d.id AS discipline_id,d.slug AS discipline_slug,d.display_name AS discipline_name,d.metric_type,d.unit,d.ranking_direction,v.id AS division_id,v.slug AS division_slug,v.display_label AS division_label,r.id AS region_id,r.slug AS region_slug,r.name AS region_name,e.name AS event_name,(SELECT count(*) FROM ranked_results rs WHERE rs.leaderboard_id=l.id) AS entry_count FROM leaderboards l JOIN disciplines d ON d.id=l.discipline_id JOIN divisions v ON v.id=l.division_id JOIN regions r ON r.id=l.region_id LEFT JOIN events e ON e.id=l.event_id WHERE l.visible=true AND d.active AND v.active AND ($1::text IS NULL OR d.slug=$1) AND ($2::text IS NULL OR v.slug=$2) AND ($3::text IS NULL OR r.slug=$3) AND ($4::text IS NULL OR l.board_type=$4) ORDER BY d.display_name,v.minimum_age NULLS FIRST,v.display_label,l.board_type`, discipline, division, region, boardType)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +138,7 @@ func (s *Server) getLeaderboard(_ http.ResponseWriter, r *http.Request) (any, er
 	if _, err := uuid.Parse(id); err != nil {
 		return nil, validation("leaderboard id must be a UUID")
 	}
-	boards, err := queryMaps(r.Context(), s.db, `SELECT l.id,l.board_type,d.id AS discipline_id,d.slug,d.display_name,d.metric_type,d.unit,d.ranking_direction,v.id AS division_id,v.display_label,r.id AS region_id,r.name AS region_name FROM leaderboards l JOIN disciplines d ON d.id=l.discipline_id JOIN divisions v ON v.id=l.division_id JOIN regions r ON r.id=l.region_id WHERE l.id=$1 AND l.visible=true`, id)
+	boards, err := queryMaps(r.Context(), s.db, `SELECT l.id,l.board_type,d.id AS discipline_id,d.slug,d.display_name,d.metric_type,d.unit,d.ranking_direction,v.id AS division_id,v.display_label,r.id AS region_id,r.name AS region_name FROM leaderboards l JOIN disciplines d ON d.id=l.discipline_id JOIN divisions v ON v.id=l.division_id JOIN regions r ON r.id=l.region_id WHERE l.id=$1 AND l.visible=true AND d.active AND v.active`, id)
 	if err != nil {
 		return nil, err
 	}
@@ -144,12 +146,18 @@ func (s *Server) getLeaderboard(_ http.ResponseWriter, r *http.Request) (any, er
 		return nil, &APIError{Status: http.StatusNotFound, Code: "NOT_FOUND", Message: "Leaderboard not found"}
 	}
 	board := boards[0]
-	direction, _ := board["ranking_direction"].(string)
-	order := "DESC"
-	if direction == "LOWER_IS_BETTER" {
-		order = "ASC"
+
+	params, err := parseList(r)
+	if err != nil {
+		return nil, err
 	}
-	entries, err := queryMaps(r.Context(), s.db, fmt.Sprintf(`SELECT rs.id AS result_id,ROW_NUMBER() OVER(ORDER BY rs.normalized_metric %s,rs.verified_at,rs.id)::int AS rank,(SELECT rh.previous_rank FROM ranking_history rh WHERE rh.result_id=rs.id ORDER BY rh.calculated_at DESC LIMIT 1) AS previous_rank,p.display_name,g.name AS gym_name,rs.normalized_metric,rs.display_metric,rs.verified_at,rs.verification_type FROM results rs JOIN profiles p ON p.id=rs.profile_id LEFT JOIN gyms g ON g.id=p.home_gym_id WHERE rs.leaderboard_id=$1 AND rs.invalidated_at IS NULL AND COALESCE((p.privacy->>'publicProfile')::boolean,true)=true ORDER BY rank LIMIT 100`, order), id)
+	entries, err := queryMaps(r.Context(), s.db, `SELECT id AS result_id,rank,
+ (SELECT rh.previous_rank FROM ranking_history rh WHERE rh.result_id=ranked_results.id ORDER BY rh.calculated_at DESC,rh.id DESC LIMIT 1) AS previous_rank,
+ CASE WHEN public_profile THEN profile_id END AS profile_id,
+ CASE WHEN public_profile THEN display_name ELSE 'Private athlete' END AS display_name,
+ CASE WHEN public_profile THEN gym_name END AS gym_name,
+ normalized_metric,display_metric,verified_at,verification_type
+ FROM ranked_results WHERE leaderboard_id=$1 ORDER BY rank LIMIT $2 OFFSET $3`, id, params.PageSize, (params.Page-1)*params.PageSize)
 	if err != nil {
 		return nil, err
 	}

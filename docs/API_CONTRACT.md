@@ -1,5 +1,36 @@
 # V1 API foundation contract
 
+## Phase 2 competition and notifications — September 5
+
+- Public `GET /cities`, `/divisions`, `/disciplines` return active configured
+  eligibility, unit, metric bounds and verification checklists. No inferred fixed
+  client ranking rules replace this configuration.
+- Board list/detail use the shared PostgreSQL best-per-athlete ranking view.
+  `GET /leaderboards/{id}?page=1&pageSize=20` returns real ranks and explicit
+  verification state; private identities are masked without changing positions.
+- Protected `POST /results/community` accepts `disciplineId`, optional
+  `divisionId` and positive eligible `metric`. It creates an UNVERIFIED community
+  result, never an official one. Profile city/birth/sex determine eligibility.
+- Submission creation accepts optional `divisionId`, `boardType` and
+  `parentSubmissionId`. Official approval requires evidence and configured checks.
+  `GET /submissions/{id}` returns owner/authorized-reviewer details and history;
+  `POST /submissions/{id}/cancel` withdraws eligible owned pending/draft work.
+  Correction requests become CHANGES_REQUESTED; a cancelled correction does not
+  block a subsequent replacement. Decisions and published ranks commit atomically.
+- `POST/PUT /admin/disciplines[/{id}]`, `/admin/divisions[/{id}]` and
+  `/admin/leaderboards[/{id}]` require ADMIN, validate typed rules and audit writes.
+  Configurations in use cannot reinterpret existing performances.
+- `PATCH /profile` accepts `cityId` and partial `notificationPreferences`
+  with boolean `eventUpdates` / `announcements` only. Preferences merge rather
+  than erase other values. `PUT /notifications/{id}/opened` is owner-only and
+  idempotent; another owner gets 404.
+- Web cookie-authenticated mutation proxy/logout requests require an exact
+  configured same-origin request. Upstream/session failures return safe messages.
+
+Evidence: `competition_integration_test.go`, `competition_test.go`,
+`competition_widgets_test.dart`, `notification_widgets_test.dart`,
+`competition_flow_test.dart` and `server-auth.test.mjs`.
+
 ## Phase 2 athlete profile — September 4 evening
 
 - `GET /profile` now returns the owner’s ranking-eligibility fields, privacy

@@ -27,6 +27,7 @@ func (s *Server) registerAccountRoutes(router chi.Router) {
 	router.Put("/saved-gyms/{gymId}", s.handle(s.saveGym))
 	router.Delete("/saved-gyms/{gymId}", s.handle(s.unsaveGym))
 	router.Get("/notifications", s.handle(s.listNotifications))
+	router.Put("/notifications/{id}/opened", s.handle(s.openNotification))
 	router.Get("/notification-devices", s.handle(s.listNotificationDevices))
 	router.Post("/notification-devices", s.handle(s.registerNotificationDevice))
 	router.Put("/notification-devices/{id}", s.handle(s.refreshNotificationDevice))
@@ -40,7 +41,7 @@ func (s *Server) authContext(_ http.ResponseWriter, r *http.Request) (any, error
 }
 
 func (s *Server) getProfile(_ http.ResponseWriter, r *http.Request) (any, error) {
-	rows, err := queryMaps(r.Context(), s.db, `SELECT p.id,p.username,p.display_name,p.photo_url,p.bio,p.date_of_birth,p.sex_category,p.home_gym_id,p.privacy,p.created_at,g.name AS home_gym_name,c.name AS city FROM profiles p LEFT JOIN gyms g ON g.id=p.home_gym_id LEFT JOIN cities c ON c.id=p.city_id WHERE p.id=$1`, identity(r).ProfileID)
+	rows, err := queryMaps(r.Context(), s.db, `SELECT p.id,p.username,p.display_name,p.photo_url,p.bio,p.date_of_birth,p.sex_category,p.home_gym_id,p.city_id,p.notification_preferences,p.privacy,p.created_at,g.name AS home_gym_name,c.name AS city FROM profiles p LEFT JOIN gyms g ON g.id=p.home_gym_id LEFT JOIN cities c ON c.id=p.city_id WHERE p.id=$1`, identity(r).ProfileID)
 	if err != nil {
 		return nil, err
 	}
@@ -53,37 +54,13 @@ func (s *Server) getProfile(_ http.ResponseWriter, r *http.Request) (any, error)
 
 func (s *Server) getProfilePerformance(_ http.ResponseWriter, r *http.Request) (any, error) {
 	owner := identity(r).ProfileID
-	rows, err := queryMaps(r.Context(), s.db, `WITH ranked AS (
-SELECT rs.id AS result_id,rs.profile_id,rs.normalized_metric,rs.display_metric,rs.verified_at,rs.verification_type,
-l.id AS leaderboard_id,l.board_type,d.id AS discipline_id,d.slug AS discipline_slug,d.display_name AS discipline_name,
-d.metric_type,d.unit,d.ranking_direction,v.display_label AS division_label,
-ROW_NUMBER() OVER(PARTITION BY l.id ORDER BY
-CASE WHEN d.ranking_direction='LOWER_IS_BETTER' THEN rs.normalized_metric END ASC NULLS LAST,
-CASE WHEN d.ranking_direction='HIGHER_IS_BETTER' THEN rs.normalized_metric END DESC NULLS LAST,
-rs.verified_at,rs.id)::int AS rank
-FROM results rs JOIN leaderboards l ON l.id=rs.leaderboard_id
-JOIN disciplines d ON d.id=l.discipline_id JOIN divisions v ON v.id=l.division_id
-WHERE rs.invalidated_at IS NULL)
-SELECT result_id,normalized_metric,display_metric,verified_at,verification_type,leaderboard_id,board_type,
-discipline_id,discipline_slug,discipline_name,metric_type,unit,ranking_direction,division_label,rank
-FROM ranked WHERE profile_id=$1 ORDER BY verified_at DESC,result_id LIMIT 100`, owner)
+	rows, err := queryMaps(r.Context(), s.db, `SELECT rs.id AS result_id,rs.normalized_metric,rs.display_metric,rs.verified_at,rs.verification_type,rs.leaderboard_id,l.board_type,d.id AS discipline_id,d.slug AS discipline_slug,d.display_name AS discipline_name,d.metric_type,d.unit,d.ranking_direction,v.display_label AS division_label,rr.rank
+ FROM results rs JOIN leaderboards l ON l.id=rs.leaderboard_id JOIN disciplines d ON d.id=l.discipline_id JOIN divisions v ON v.id=l.division_id LEFT JOIN ranked_results rr ON rr.id=rs.id WHERE rs.profile_id=$1 AND rs.invalidated_at IS NULL AND l.visible AND d.active AND v.active ORDER BY rs.verified_at DESC,rs.id LIMIT 100`, owner)
 	if err != nil {
 		return nil, err
 	}
-	best, err := queryMaps(r.Context(), s.db, `WITH candidates AS (
-SELECT rs.id AS result_id,rs.profile_id,rs.normalized_metric,rs.display_metric,rs.verified_at,rs.verification_type,
-l.id AS leaderboard_id,l.board_type,d.id AS discipline_id,d.slug AS discipline_slug,d.display_name AS discipline_name,
-d.metric_type,d.unit,d.ranking_direction,v.display_label AS division_label,
-ROW_NUMBER() OVER(PARTITION BY rs.profile_id,d.id,l.board_type ORDER BY
-CASE WHEN d.ranking_direction='LOWER_IS_BETTER' THEN rs.normalized_metric END ASC NULLS LAST,
-CASE WHEN d.ranking_direction='HIGHER_IS_BETTER' THEN rs.normalized_metric END DESC NULLS LAST,
-rs.verified_at,rs.id)::int AS best_ordinal
-FROM results rs JOIN leaderboards l ON l.id=rs.leaderboard_id
-JOIN disciplines d ON d.id=l.discipline_id JOIN divisions v ON v.id=l.division_id
-WHERE rs.invalidated_at IS NULL)
-SELECT result_id,normalized_metric,display_metric,verified_at,verification_type,leaderboard_id,board_type,
-discipline_id,discipline_slug,discipline_name,metric_type,unit,ranking_direction,division_label
-FROM candidates WHERE profile_id=$1 AND best_ordinal=1 ORDER BY discipline_name,board_type`, owner)
+	best, err := queryMaps(r.Context(), s.db, `WITH candidates AS (SELECT *,ROW_NUMBER() OVER(PARTITION BY discipline_id,board_type ORDER BY CASE WHEN ranking_direction='LOWER_IS_BETTER' THEN normalized_metric END ASC NULLS LAST,CASE WHEN ranking_direction='HIGHER_IS_BETTER' THEN normalized_metric END DESC NULLS LAST,verified_at,id) AS best_ordinal FROM ranked_results WHERE profile_id=$1 AND visible)
+ SELECT id AS result_id,normalized_metric,display_metric,verified_at,verification_type,leaderboard_id,board_type,discipline_id,discipline_slug,discipline_name,metric_type,unit,ranking_direction,division_label,rank FROM candidates WHERE best_ordinal=1 ORDER BY discipline_name,board_type`, owner)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +119,7 @@ func (s *Server) updateProfile(_ http.ResponseWriter, r *http.Request) (any, err
 	if err := decodeJSON(r, &body); err != nil {
 		return nil, err
 	}
-	allowed := map[string]bool{"username": true, "displayName": true, "bio": true, "dateOfBirth": true, "sexCategory": true, "homeGymId": true, "privacy": true}
+	allowed := map[string]bool{"username": true, "displayName": true, "bio": true, "dateOfBirth": true, "sexCategory": true, "homeGymId": true, "cityId": true, "notificationPreferences": true, "privacy": true}
 	for key := range body {
 		if !allowed[key] {
 			return nil, validation("unknown profile field: " + key)
@@ -154,7 +131,7 @@ func (s *Server) updateProfile(_ http.ResponseWriter, r *http.Request) (any, err
 		args = append(args, value)
 		sets = append(sets, fmt.Sprintf(expression, len(args)))
 	}
-	for _, key := range []string{"username", "displayName", "bio", "dateOfBirth", "sexCategory", "homeGymId", "privacy"} {
+	for _, key := range []string{"username", "displayName", "bio", "dateOfBirth", "sexCategory", "homeGymId", "cityId", "notificationPreferences", "privacy"} {
 		raw, present := body[key]
 		if !present {
 			continue
@@ -210,6 +187,31 @@ func (s *Server) updateProfile(_ http.ResponseWriter, r *http.Request) (any, err
 				}
 			}
 			add("home_gym_id=$%d::uuid", value)
+		case "cityId":
+			var value string
+			if json.Unmarshal(raw, &value) != nil || !validUUID(value) {
+				return nil, validation("cityId must identify an active city")
+			}
+			var active bool
+			if err := s.db.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM cities WHERE id=$1 AND active)`, value).Scan(&active); err != nil {
+				return nil, err
+			}
+			if !active {
+				return nil, validation("cityId must identify an active city")
+			}
+			add("city_id=$%d::uuid", value)
+		case "notificationPreferences":
+			var value map[string]bool
+			if json.Unmarshal(raw, &value) != nil || value == nil {
+				return nil, validation("notification preferences are invalid")
+			}
+			for k := range value {
+				if k != "eventUpdates" && k != "announcements" {
+					return nil, validation("unknown notification preference")
+				}
+			}
+			encoded, _ := json.Marshal(value)
+			add("notification_preferences=notification_preferences||$%d::jsonb", encoded)
 		case "privacy":
 			var value map[string]bool
 			if json.Unmarshal(raw, &value) != nil {
@@ -360,7 +362,7 @@ func (s *Server) watchSummary(_ http.ResponseWriter, r *http.Request) (any, erro
 	if err != nil || len(profiles) == 0 {
 		return nil, err
 	}
-	rankings, err := queryMaps(r.Context(), s.db, `WITH ranked AS (SELECT rs.id,rs.profile_id,l.board_type,d.display_name AS discipline,v.display_label AS division,ROW_NUMBER() OVER(PARTITION BY l.id ORDER BY CASE WHEN d.ranking_direction='LOWER_IS_BETTER' THEN rs.normalized_metric END ASC NULLS LAST,CASE WHEN d.ranking_direction='HIGHER_IS_BETTER' THEN rs.normalized_metric END DESC NULLS LAST,rs.verified_at,rs.id)::int AS rank FROM results rs JOIN leaderboards l ON l.id=rs.leaderboard_id JOIN disciplines d ON d.id=l.discipline_id JOIN divisions v ON v.id=l.division_id WHERE rs.invalidated_at IS NULL) SELECT id,discipline,rank,division,board_type FROM ranked WHERE profile_id=$1 ORDER BY rank LIMIT 8`, owner)
+	rankings, err := queryMaps(r.Context(), s.db, `SELECT id,discipline_name AS discipline,rank,division_label AS division,board_type FROM ranked_results WHERE profile_id=$1 AND visible ORDER BY rank LIMIT 8`, owner)
 	if err != nil {
 		return nil, err
 	}

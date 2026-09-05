@@ -2,6 +2,30 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { open, pkceChallenge, seal } from '../lib/server-auth.ts';
+import { trustedMutation } from '../lib/request-security.ts';
+
+test('cookie-authenticated writes require the exact configured origin', () => {
+  const check = (method, origin, site, publicUrl = 'https://fitcalgary.example') => {
+    const headers = new Headers();
+    if (origin) headers.set('origin', origin);
+    if (site) headers.set('sec-fetch-site', site);
+    return trustedMutation({ method, headers }, publicUrl);
+  };
+  for (const method of ['POST', 'PUT', 'PATCH', 'DELETE']) {
+    assert.equal(check(method, 'https://fitcalgary.example', 'same-origin'), true);
+    assert.equal(check(method, 'https://evil.example', 'cross-site'), false);
+    assert.equal(check(method, 'https://fitcalgary.example.evil.example'), false);
+    assert.equal(check(method, 'https://fitcalgary.example:8443'), false);
+    assert.equal(check(method, 'http://fitcalgary.example'), false);
+    assert.equal(check(method, 'https://fitcalgary.example', 'cross-site'), false);
+    assert.equal(check(method, 'https://fitcalgary.example/path'), false);
+    assert.equal(check(method, 'null'), false);
+    assert.equal(check(method, undefined), false);
+    assert.equal(check(method, 'https://fitcalgary.example', undefined, ''), false);
+  }
+  assert.equal(check('POST', 'http://localhost:3000', 'same-origin', 'http://localhost:3000'), true);
+  assert.equal(check('GET', undefined), true);
+});
 
 test('web session is encrypted, authenticated, and bound to its secret', async () => {
   const secret = 'phase-1-session-secret-at-least-32-bytes';

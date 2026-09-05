@@ -97,7 +97,7 @@ func renderNotification(payload notificationPayload) (renderedNotification, erro
 		return renderedNotification{Title: "Result received", Body: "Your evidence is in the review queue.", DeepLink: "fitcalgary://submissions/" + payload.SubmissionID}, nil
 	case "SUBMISSION_APPROVED":
 		return renderedNotification{Title: "Result verified", Body: "Your result is now on the leaderboard.", DeepLink: "fitcalgary://submissions/" + payload.SubmissionID}, nil
-	case "SUBMISSION_REJECTED":
+	case "SUBMISSION_REJECTED", "SUBMISSION_CHANGES_REQUESTED":
 		return renderedNotification{Title: "Result needs attention", Body: "Review the judge's feedback in your submission.", DeepLink: "fitcalgary://submissions/" + payload.SubmissionID}, nil
 	case "LEADERBOARD_PASSED":
 		name := payload.PassingAthleteDisplayName

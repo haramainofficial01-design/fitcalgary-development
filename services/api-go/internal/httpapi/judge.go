@@ -3,7 +3,6 @@ package httpapi
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -13,7 +12,6 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"fitcalgary.ca/index/api/internal/auth"
-	"fitcalgary.ca/index/api/internal/domain"
 )
 
 func (s *Server) registerJudgeRoutes(router chi.Router) {
@@ -27,11 +25,14 @@ func (s *Server) judgeQueue(_ http.ResponseWriter, r *http.Request) (any, error)
 		return nil, err
 	}
 	current := identity(r)
-	rows, err := queryMaps(r.Context(), s.db, `SELECT s.id,s.claimed_metric,s.evidence_type,s.submitted_at,s.assigned_judge_id,d.display_name AS discipline,p.display_name AS athlete,e.retain_until,e.evidence_deleted_at,(s.parent_submission_id IS NOT NULL) AS resubmission FROM submissions s JOIN disciplines d ON d.id=s.discipline_id JOIN profiles p ON p.id=s.profile_id LEFT JOIN submission_evidence e ON e.submission_id=s.id WHERE s.status='PENDING_REVIEW' AND (s.assigned_judge_id IS NULL OR s.assigned_judge_id=$1 OR $2::boolean) ORDER BY e.retain_until NULLS LAST,s.submitted_at LIMIT 100`, current.ProfileID, current.Principal.HasRole(auth.RoleAdmin))
+	rows, err := queryMaps(r.Context(), s.db, `SELECT s.id,s.board_type,s.claimed_metric,s.evidence_type,s.submitted_at,s.assigned_judge_id,d.display_name AS discipline,d.verification_checklist,d.metric_type,d.unit,p.display_name AS athlete,e.retain_until,e.evidence_deleted_at,(s.parent_submission_id IS NOT NULL) AS resubmission FROM submissions s JOIN disciplines d ON d.id=s.discipline_id JOIN profiles p ON p.id=s.profile_id LEFT JOIN submission_evidence e ON e.submission_id=s.id WHERE s.status='PENDING_REVIEW' AND (s.assigned_judge_id IS NULL OR s.assigned_judge_id=$1 OR $2::boolean) ORDER BY e.retain_until NULLS LAST,s.submitted_at LIMIT 100`, current.ProfileID, current.Principal.HasRole(auth.RoleAdmin))
 	return map[string]any{"data": rows}, err
 }
 
 func (s *Server) judgeEvidence(_ http.ResponseWriter, r *http.Request) (any, error) {
+	if s.store == nil {
+		return nil, &APIError{Status: 503, Code: "STORAGE_UNAVAILABLE", Message: "Private evidence storage is unavailable"}
+	}
 	if err := requireRole(r, auth.RoleJudge, auth.RoleAdmin); err != nil {
 		return nil, err
 	}
@@ -41,8 +42,9 @@ func (s *Server) judgeEvidence(_ http.ResponseWriter, r *http.Request) (any, err
 	}
 	var key string
 	var deletedAt *time.Time
+	var retainUntil time.Time
 	var assignedJudge *string
-	if err := s.db.QueryRow(r.Context(), `SELECT e.storage_key,e.evidence_deleted_at,s.assigned_judge_id FROM submission_evidence e JOIN submissions s ON s.id=e.submission_id WHERE s.id=$1`, submissionID).Scan(&key, &deletedAt, &assignedJudge); err != nil {
+	if err := s.db.QueryRow(r.Context(), `SELECT e.storage_key,e.evidence_deleted_at,s.assigned_judge_id,e.retain_until FROM submission_evidence e JOIN submissions s ON s.id=e.submission_id WHERE s.id=$1`, submissionID).Scan(&key, &deletedAt, &assignedJudge, &retainUntil); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, &APIError{Status: http.StatusNotFound, Code: "NOT_FOUND", Message: "Evidence not found"}
 		}
@@ -52,7 +54,7 @@ func (s *Server) judgeEvidence(_ http.ResponseWriter, r *http.Request) (any, err
 	if assignedJudge != nil && *assignedJudge != current.ProfileID && !current.Principal.HasRole(auth.RoleAdmin) {
 		return nil, &APIError{Status: http.StatusForbidden, Code: "NOT_ASSIGNED", Message: "Submission is assigned to another judge"}
 	}
-	if deletedAt != nil {
+	if deletedAt != nil || time.Now().After(retainUntil) {
 		return nil, &APIError{Status: http.StatusGone, Code: "EVIDENCE_DELETED", Message: "Evidence was deleted under the retention policy"}
 	}
 	if _, err := s.db.Exec(r.Context(), `INSERT INTO audit_logs(actor_profile_id,action,entity_type,entity_id,request_id) VALUES($1,'EVIDENCE_VIEWED','SUBMISSION',$2,$3)`, current.ProfileID, submissionID, middleware.GetReqID(r.Context())); err != nil {
@@ -83,6 +85,11 @@ type lockedSubmission struct {
 	DisplayName      string
 	SexCategory      *string
 	HomeGymID        *string
+	DivisionID       *string
+	BoardType        string
+	MetricType       string
+	Unit             string
+	Checklist        []byte
 }
 
 type rankedResult struct {
@@ -119,7 +126,7 @@ func (s *Server) judgeDecision(_ http.ResponseWriter, r *http.Request) (any, err
 	}
 	defer tx.Rollback(r.Context()) //nolint:errcheck
 	var submission lockedSubmission
-	err = tx.QueryRow(r.Context(), `SELECT s.id,s.profile_id,s.discipline_id,s.claimed_metric,s.status,s.assigned_judge_id,d.ranking_direction,d.rules_version,p.display_name,p.sex_category,p.home_gym_id FROM submissions s JOIN disciplines d ON d.id=s.discipline_id JOIN profiles p ON p.id=s.profile_id WHERE s.id=$1 FOR UPDATE OF s`, submissionID).Scan(&submission.ID, &submission.ProfileID, &submission.DisciplineID, &submission.ClaimedMetric, &submission.Status, &submission.AssignedJudgeID, &submission.RankingDirection, &submission.RulesVersion, &submission.DisplayName, &submission.SexCategory, &submission.HomeGymID)
+	err = tx.QueryRow(r.Context(), `SELECT s.id,s.profile_id,s.discipline_id,s.claimed_metric,s.status,s.assigned_judge_id,d.ranking_direction,d.rules_version,p.display_name,p.sex_category,p.home_gym_id,s.division_id,s.board_type,d.metric_type,d.unit,d.verification_checklist FROM submissions s JOIN disciplines d ON d.id=s.discipline_id JOIN profiles p ON p.id=s.profile_id WHERE s.id=$1 FOR UPDATE OF s`, submissionID).Scan(&submission.ID, &submission.ProfileID, &submission.DisciplineID, &submission.ClaimedMetric, &submission.Status, &submission.AssignedJudgeID, &submission.RankingDirection, &submission.RulesVersion, &submission.DisplayName, &submission.SexCategory, &submission.HomeGymID, &submission.DivisionID, &submission.BoardType, &submission.MetricType, &submission.Unit, &submission.Checklist)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, &APIError{Status: http.StatusNotFound, Code: "NOT_FOUND", Message: "Submission not found"}
@@ -136,11 +143,27 @@ func (s *Server) judgeDecision(_ http.ResponseWriter, r *http.Request) (any, err
 	if submission.AssignedJudgeID != nil && *submission.AssignedJudgeID != current.ProfileID && !current.Principal.HasRole(auth.RoleAdmin) {
 		return nil, &APIError{Status: http.StatusForbidden, Code: "NOT_ASSIGNED", Message: "Submission is assigned to another judge"}
 	}
+
+	if body.Decision == "APPROVED" {
+		if err = checkRequiredChecklist(submission.Checklist, body.ChecklistResponses); err != nil {
+			return nil, err
+		}
+		var available bool
+		if err = tx.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM submission_evidence WHERE submission_id=$1 AND evidence_deleted_at IS NULL AND retain_until>now())`, submissionID).Scan(&available); err != nil {
+			return nil, err
+		}
+		if !available {
+			return nil, &APIError{Status: 410, Code: "EVIDENCE_UNAVAILABLE", Message: "Available private evidence is required before approval"}
+		}
+	}
 	checklist, _ := json.Marshal(body.ChecklistResponses)
 	if _, err := tx.Exec(r.Context(), `INSERT INTO submission_reviews(submission_id,judge_profile_id,decision,checklist_responses,comments) VALUES($1,$2,$3,$4,$5)`, submissionID, current.ProfileID, body.Decision, checklist, body.Comments); err != nil {
 		return nil, err
 	}
 	finalStatus := "REJECTED"
+	if body.Decision == "RESUBMISSION_REQUESTED" {
+		finalStatus = "CHANGES_REQUESTED"
+	}
 	if body.Decision == "APPROVED" {
 		finalStatus = "APPROVED"
 	}
@@ -167,22 +190,12 @@ func (s *Server) judgeDecision(_ http.ResponseWriter, r *http.Request) (any, err
 }
 
 func (s *Server) approveResult(r *http.Request, tx pgx.Tx, current requestIdentity, submission lockedSubmission) error {
-	var regionID, divisionID, divisionLabel string
-	if err := tx.QueryRow(r.Context(), `SELECT r.id,v.id,v.display_label FROM cities c JOIN regions r ON r.id=c.region_id CROSS JOIN divisions v WHERE c.id=(SELECT city_id FROM profiles WHERE id=$1) AND v.slug='open-all'`, submission.ProfileID).Scan(&regionID, &divisionID, &divisionLabel); err != nil {
-		if err == pgx.ErrNoRows {
-			return &APIError{Status: http.StatusUnprocessableEntity, Code: "PROFILE_REGION_REQUIRED", Message: "Profile city is required before a result can be approved"}
-		}
+
+	regionID, divisionID, divisionLabel, err := selectDivision(r, tx, submission.ProfileID, submission.DivisionID)
+	if err != nil {
 		return err
 	}
-	lockKey := regionID + ":" + submission.DisciplineID + ":" + divisionID + ":COMMUNITY"
-	if _, err := tx.Exec(r.Context(), `SELECT pg_advisory_xact_lock(hashtext($1))`, lockKey); err != nil {
-		return err
-	}
-	var boardID string
-	err := tx.QueryRow(r.Context(), `SELECT id FROM leaderboards WHERE region_id=$1 AND discipline_id=$2 AND division_id=$3 AND event_id IS NULL AND board_type='COMMUNITY' LIMIT 1`, regionID, submission.DisciplineID, divisionID).Scan(&boardID)
-	if err == pgx.ErrNoRows {
-		err = tx.QueryRow(r.Context(), `INSERT INTO leaderboards(region_id,discipline_id,division_id,board_type) VALUES($1,$2,$3,'COMMUNITY') RETURNING id`, regionID, submission.DisciplineID, divisionID).Scan(&boardID)
-	}
+	boardID, err := ensureBoard(r, tx, regionID, submission.DisciplineID, divisionID, submission.BoardType)
 	if err != nil {
 		return err
 	}
@@ -190,14 +203,15 @@ func (s *Server) approveResult(r *http.Request, tx pgx.Tx, current requestIdenti
 	if err != nil {
 		return err
 	}
-	displayMetric := domain.FormatTime(submission.ClaimedMetric)
-	if submission.RankingDirection != "LOWER_IS_BETTER" {
-		displayMetric = fmt.Sprintf("%g reps", submission.ClaimedMetric)
+	displayMetric := resultLabel(submission.ClaimedMetric, submission.MetricType, submission.Unit)
+	verification := "VIDEO_REVIEWED"
+	if submission.BoardType == "COMMUNITY" {
+		verification = "COMMUNITY_REVIEWED"
 	}
 	divisionSnapshot, _ := json.Marshal(map[string]any{"id": divisionID, "label": divisionLabel})
 	profileSnapshot, _ := json.Marshal(map[string]any{"displayName": submission.DisplayName, "sexCategory": submission.SexCategory, "homeGymId": submission.HomeGymID})
 	var resultID string
-	if err := tx.QueryRow(r.Context(), `INSERT INTO results(profile_id,submission_id,leaderboard_id,normalized_metric,display_metric,verification_type,verified_at,verified_by,division_snapshot,profile_snapshot,discipline_rules_version) VALUES($1,$2,$3,$4,$5,'COMMUNITY_REVIEWED',now(),$6,$7,$8,$9) RETURNING id`, submission.ProfileID, submission.ID, boardID, submission.ClaimedMetric, displayMetric, current.ProfileID, divisionSnapshot, profileSnapshot, submission.RulesVersion).Scan(&resultID); err != nil {
+	if err := tx.QueryRow(r.Context(), `INSERT INTO results(profile_id,submission_id,leaderboard_id,normalized_metric,display_metric,verification_type,verified_at,verified_by,division_snapshot,profile_snapshot,discipline_rules_version) VALUES($1,$2,$3,$4,$5,$10,now(),$6,$7,$8,$9) RETURNING id`, submission.ProfileID, submission.ID, boardID, submission.ClaimedMetric, displayMetric, current.ProfileID, divisionSnapshot, profileSnapshot, submission.RulesVersion, verification).Scan(&resultID); err != nil {
 		return err
 	}
 	after, err := boardRanks(r.Context(), tx, boardID, submission.RankingDirection)
@@ -206,19 +220,19 @@ func (s *Server) approveResult(r *http.Request, tx pgx.Tx, current requestIdenti
 	}
 	previous := map[string]int{}
 	for _, item := range before {
-		previous[item.ID] = item.Rank
+		previous[item.ProfileID] = item.Rank
 	}
 	for _, item := range after {
 		var prior any
-		if oldRank, exists := previous[item.ID]; exists {
+		if oldRank, exists := previous[item.ProfileID]; exists {
 			prior = oldRank
 		}
 		if _, err := tx.Exec(r.Context(), `INSERT INTO ranking_history(leaderboard_id,result_id,previous_rank,current_rank) VALUES($1,$2,$3,$4)`, boardID, item.ID, prior, item.Rank); err != nil {
 			return err
 		}
-		oldRank, existed := previous[item.ID]
+		oldRank, existed := previous[item.ProfileID]
 		if existed && item.Rank > oldRank {
-			payload, _ := json.Marshal(map[string]any{"type": "LEADERBOARD_PASSED", "leaderboardId": boardID, "newRank": item.Rank, "profileId": item.ProfileID, "passingAthleteDisplayName": submission.DisplayName})
+			payload, _ := json.Marshal(map[string]any{"type": "LEADERBOARD_PASSED", "leaderboardId": boardID, "newRank": item.Rank, "profileId": item.ProfileID, "passingAthleteDisplayName": "An athlete"})
 			if _, err := tx.Exec(r.Context(), `INSERT INTO outbox_jobs(job_type,dedupe_key,payload) VALUES('NOTIFICATION',$1,$2) ON CONFLICT(dedupe_key) DO NOTHING`, "passed:"+resultID+":"+item.ID, payload); err != nil {
 				return err
 			}
@@ -228,11 +242,7 @@ func (s *Server) approveResult(r *http.Request, tx pgx.Tx, current requestIdenti
 }
 
 func boardRanks(ctx context.Context, tx pgx.Tx, boardID, direction string) ([]rankedResult, error) {
-	order := "DESC"
-	if direction == "LOWER_IS_BETTER" {
-		order = "ASC"
-	}
-	rows, err := tx.Query(ctx, fmt.Sprintf(`SELECT rs.id,rs.profile_id,ROW_NUMBER() OVER(ORDER BY rs.normalized_metric %s,rs.verified_at,rs.id)::int AS rank FROM results rs WHERE rs.leaderboard_id=$1 AND rs.invalidated_at IS NULL ORDER BY rank`, order), boardID)
+	rows, err := tx.Query(ctx, `SELECT id,profile_id,rank::int FROM ranked_results WHERE leaderboard_id=$1 ORDER BY rank`, boardID)
 	if err != nil {
 		return nil, err
 	}

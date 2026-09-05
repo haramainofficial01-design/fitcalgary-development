@@ -8,10 +8,12 @@ import 'package:fitcalgary_app/domain/models.dart';
 import 'package:fitcalgary_app/features/profile/profile_screen.dart';
 import 'package:fitcalgary_app/features/gyms/gym_providers.dart';
 import 'package:fitcalgary_app/features/events/content_providers.dart';
+import 'package:fitcalgary_app/features/leaderboards/competition_providers.dart';
 
 void main() {
   ProviderScope testApp(OnboardingStore store) => ProviderScope(
     overrides: [
+      boardsProvider.overrideWith((ref) async => []),
       directoryProvider.overrideWith(
         (ref, query) async => const GymPage([], 0),
       ),

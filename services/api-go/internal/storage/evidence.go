@@ -57,7 +57,7 @@ func NewS3EvidenceStore(ctx context.Context, cfg config.Config) (*S3EvidenceStor
 }
 
 func (s *S3EvidenceStore) validate(contentType string, size int64) error {
-	allowed := map[string]bool{"video/mp4": true, "video/quicktime": true, "application/gpx+xml": true, "image/jpeg": true, "image/png": true}
+	allowed := map[string]bool{"video/mp4": true, "video/quicktime": true, "video/webm": true, "application/gpx+xml": true, "image/jpeg": true, "image/png": true}
 	if !allowed[contentType] {
 		return errors.New("unsupported evidence content type")
 	}
