@@ -3,6 +3,21 @@
 Phase 1 is accepted, paid and closed per the Developer's confirmation. The platform
 matrix below is historical evidence, not a pending acceptance list.
 
+## Phase 2 increment — 2026-09-04 evening
+
+| Check | Result | Boundary |
+|---|---|---|
+| `flutter analyze`; complete `flutter test`; Flutter web release build | PASS | No findings; 11 tests including profile eligibility/privacy parsing and distinct verified/community result presentation; responsive web output rebuilt |
+| `go test ./...`; `go vet ./...`; API production build | PASS | Full Go regression and production entry-point build passed after the final published-gym validation change |
+| `DIRECTORY_TEST_DATABASE_URL=... go test ./internal/httpapi -run TestDirectoryAccountDatabaseFlow -count=1 -v` | PASS | Actual PostgreSQL: owner-only performance, current rank/personal best, no cross-account leakage, eligibility/privacy/gym persistence and missing-gym rejection, plus prior directory/account coverage |
+| iOS `profile_shell_test.dart` | PASS — SIMULATOR | Built/launched on iPhone 17 Pro; profile identity, distinct official/community marks, ranks and edit controls passed; real screenshot captured and visually inspected |
+| Android `profile_shell_test.dart` | PASS — EMULATOR | Debug APK built, installed and the same profile/ranking/privacy presentation assertions passed on Pixel API 36 emulator |
+| Production identity/data and physical devices | NOT VERIFIED | Platform UI uses isolated development presentation records; API/database proof uses ephemeral identities and development data. No private evidence is exposed by the profile contract |
+
+The product-profile screenshot is preparation evidence only; the final Phase 2
+Client package is not yet generated. Ranking configuration and result lifecycle
+remain the next end-to-end increment rather than being inferred from this profile view.
+
 ## Phase 2 increment — 2026-09-04 morning
 
 | Check | Result | Boundary |

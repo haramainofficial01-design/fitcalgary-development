@@ -1,6 +1,6 @@
 # Current progress
 
-Last updated: 2026-09-04 morning (America/Edmonton).
+Last updated: 2026-09-04 evening (America/Edmonton).
 
 ## Current phase
 
@@ -26,7 +26,9 @@ items. Its existing Git checkpoint remains an unchanged historical baseline.
   visibility, filtering, permission and audit-rollback tests. The Flutter Compete
   directory/detail routes and web-admin club creator are integrated. An admin publish
   → Go/PostgreSQL → Flutter event/club scenario passes on both mobile simulators.
-  Athlete profile depth and editable admin content remain today's next work.
+  Athlete profile eligibility, gym/privacy editing, server-ranked performance and
+  visually distinct verified/community history now pass database, widget, iOS
+  Simulator and Android emulator checks. Ranking/result workflows are next.
 
 - Phase 2 API-backed gym directory/detail/comparison, saved gyms and profile persistence.
 - Separate opt-in fixture loader and production data guards are implemented/tested.
@@ -35,12 +37,12 @@ items. Its existing Git checkpoint remains an unchanged historical baseline.
 
 ## In progress
 
-- Remaining Phase 2 Core Product workflows; next focus is clubs/events/profile depth.
+- Remaining Phase 2 Core Product workflows; next focus is configurable boards and results.
 - Production credentials/data and physical-device verification remain explicitly external/later.
 
 ## Tested
 
-- Flutter analysis and seven widget/product tests; new directory/account flow passed
+- Flutter analysis and 11 widget/product tests; directory/account/profile flows passed
   on iOS Simulator and Android emulator using an ephemeral identity and real Go/PostgreSQL.
 - Android and iOS onboarding/primary-route integration demonstrations.
 - Go tests, vet, production build and role authorization tests.
@@ -55,10 +57,13 @@ Production identity/email/social credentials; managed hosting/database/storage; 
 ## Latest private Git commit
 
 Latest verified implementation push:
-`47ea8ffcdf88df2c3f0d3ae7e35fe3d2bfd9dcfa`. Private remote main matched this
-SHA after push. Use `git log -1` for subsequent documentation commits.
+`3833a38` — September 4 evening athlete profile performance, eligibility, gym and
+privacy increment. Record the remote match after the documentation commit/push.
 
 ## Latest tested commit
+
+`3833a38` — September 4 evening athlete profile performance, eligibility, gym and
+privacy controls; checks are recorded in `TEST_MATRIX.md`.
 
 `47ea8ffcdf88df2c3f0d3ae7e35fe3d2bfd9dcfa` — September 4 afternoon
 Client integration: Flutter analysis/nine tests/web build, iOS and Android

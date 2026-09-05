@@ -6,6 +6,8 @@ Phase 1 is accepted, fully paid and CLOSED. Its milestone stays unchanged. Phase
 is authorized. September 8 morning is the complete Phase 2 review-package target,
 with afternoon/evening reserved as contingency. This is a delivery target, not a
 guarantee or permission to omit agreed functionality or claim untested completion.
+Pull later work forward and finish earlier whenever dependencies and honest verification
+permit; do not pace implementation merely to consume every scheduled block.
 
 ## Daily execution and acceptance
 

@@ -1,6 +1,6 @@
 # Phase 2 — Core Product
 
-Updated: 2026-09-04 morning, America/Edmonton.
+Updated: 2026-09-04 evening, America/Edmonton.
 
 ## Authority and target
 
@@ -80,12 +80,31 @@ Flutter client before archiving them. It passes on iOS Simulator and Android emu
 against PostgreSQL. Nine Flutter tests, Flutter analysis/web build, and web-native
 lint/type/production build pass. This is development/simulator evidence—not physical
 device, production identity, or Client-approved production data. Athlete profile
-depth and editable admin content remain today's next work.
+depth continued in the evening increment; full editable admin content remains.
+
+September 4 evening: the athlete profile increment is DEVELOPMENT + PLATFORM-UI
+TESTED. The authenticated profile now carries persisted birth date, board category,
+published gym affiliation and explicit public-profile/gym visibility controls. A new
+owner-only performance contract returns server-ranked official/community results and
+personal bests without returning evidence, email, judge notes or moderation data.
+The Flutter profile clearly distinguishes VERIFIED from COMMUNITY marks and presents
+rank/division, recent results, personal bests, gym affiliation, privacy and truthful
+empty/error/loading states.
+
+The PostgreSQL integration test verifies affiliation/eligibility/privacy persistence,
+server-derived rank and personal best, authentication, cross-account isolation and
+missing-gym rejection. Eleven Flutter tests, analysis, web release build and the full
+Go regression/vet/build pass. The profile presentation and controls also pass after
+fresh app builds on iPhone 17 Pro Simulator and Pixel API 36 emulator; the iOS visual
+capture was inspected. These platform runs validate UI behavior using isolated
+development presentation records, while the separate Go test validates the real
+API/PostgreSQL projection. They are not physical-device, production identity or
+Client-approved data verification.
 
 | Area | Next acceptance evidence | Status |
 |---|---|---|
 | Gyms, pricing, accounts, saved gyms | Signed-in client browse/detail/compare/save, persisted through Go/PostgreSQL | TESTED increment; final content, broader comparison UX and web-native parity remain Phase 2 work |
-| Clubs, events, athlete profiles | Search/detail/profile edits and persistence across clients | IN_PROGRESS foundation; deeper flow verification pending |
+| Clubs, events, athlete profiles | Search/detail/profile edits and persistence across clients | TESTED increment; full admin edit depth and Client content remain |
 | Official/community boards | Configured disciplines/divisions, correct ranking and clear verification status | IN_PROGRESS foundation; end-to-end acceptance pending |
 | Submission, evidence and judging | Private upload, permissions, comments, decisions, resubmission and ranking publication | IN_PROGRESS foundation; full acceptance pending |
 | Administration | Actual content/user/role/review operations with server permission tests | IN_PROGRESS foundation; full CRUD depth pending |
