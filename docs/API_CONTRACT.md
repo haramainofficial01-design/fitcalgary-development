@@ -1,5 +1,24 @@
 # V1 API foundation contract
 
+## Phase 2 athlete profile — September 4 evening
+
+- `GET /profile` now returns the owner’s ranking-eligibility fields, privacy
+  preferences, city and current published-gym affiliation. `PATCH /profile`
+  accepts validated birth date, board category, published home gym and the two
+  supported privacy controls; arbitrary fields and unpublished/missing gyms are
+  rejected. Roles remain outside this self-service contract.
+- `GET /profile/performance` is authenticated and owner-scoped. It returns recent
+  non-invalidated results with server-derived board rank plus one server-selected
+  personal best per discipline and board type. Official and community board types
+  remain explicit in every result; no evidence object, account email, judge notes
+  or moderation data is returned.
+
+The Flutter profile consumes these contracts through typed models and presents
+verified and community marks with distinct labels, ranks, personal bests, gym
+affiliation and explicit public-profile controls. Executable proof is in
+`directory_integration_test.go`, `profile_widgets_test.dart` and
+`profile_shell_test.dart`.
+
 ## Phase 2 clubs/events — September 4 morning
 
 - `GET /clubs`, `GET /events`: server search `q`, `city` (default Calgary),
@@ -72,6 +91,7 @@ The production contract is the versioned Go API under `/api/v1`. JSON errors use
 |---|---|---|
 | GET | `/api/v1/auth/context` | Authenticated identity/effective roles |
 | GET, PATCH, DELETE | `/api/v1/profile` | Owner only |
+| GET | `/api/v1/profile/performance` | Owner only; public-safe result projection without private evidence |
 | GET, PUT, DELETE | `/api/v1/saved-gyms[/{gymId}]` | Owner only |
 | GET | `/api/v1/notifications` | Owner only |
 | GET, POST, PUT, DELETE | `/api/v1/notification-devices[/{id}]` | Owner only; tokens encrypted at rest |

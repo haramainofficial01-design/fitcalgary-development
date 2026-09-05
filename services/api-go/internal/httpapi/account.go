@@ -20,6 +20,7 @@ var usernamePattern = regexp.MustCompile(`^[a-z0-9_]{3,30}$`)
 func (s *Server) registerAccountRoutes(router chi.Router) {
 	router.Get("/auth/context", s.handle(s.authContext))
 	router.Get("/profile", s.handle(s.getProfile))
+	router.Get("/profile/performance", s.handle(s.getProfilePerformance))
 	router.Patch("/profile", s.handle(s.updateProfile))
 	router.Delete("/profile", s.handle(s.deleteProfile))
 	router.Get("/saved-gyms", s.handle(s.listSavedGyms))
@@ -39,7 +40,7 @@ func (s *Server) authContext(_ http.ResponseWriter, r *http.Request) (any, error
 }
 
 func (s *Server) getProfile(_ http.ResponseWriter, r *http.Request) (any, error) {
-	rows, err := queryMaps(r.Context(), s.db, `SELECT p.id,p.username,p.display_name,p.photo_url,p.bio,p.date_of_birth,p.sex_category,p.home_gym_id,p.privacy,p.created_at,g.name AS home_gym_name FROM profiles p LEFT JOIN gyms g ON g.id=p.home_gym_id WHERE p.id=$1`, identity(r).ProfileID)
+	rows, err := queryMaps(r.Context(), s.db, `SELECT p.id,p.username,p.display_name,p.photo_url,p.bio,p.date_of_birth,p.sex_category,p.home_gym_id,p.privacy,p.created_at,g.name AS home_gym_name,c.name AS city FROM profiles p LEFT JOIN gyms g ON g.id=p.home_gym_id LEFT JOIN cities c ON c.id=p.city_id WHERE p.id=$1`, identity(r).ProfileID)
 	if err != nil {
 		return nil, err
 	}
@@ -48,6 +49,45 @@ func (s *Server) getProfile(_ http.ResponseWriter, r *http.Request) (any, error)
 	}
 	rows[0]["roles"] = identity(r).Principal.Roles
 	return rows[0], nil
+}
+
+func (s *Server) getProfilePerformance(_ http.ResponseWriter, r *http.Request) (any, error) {
+	owner := identity(r).ProfileID
+	rows, err := queryMaps(r.Context(), s.db, `WITH ranked AS (
+SELECT rs.id AS result_id,rs.profile_id,rs.normalized_metric,rs.display_metric,rs.verified_at,rs.verification_type,
+l.id AS leaderboard_id,l.board_type,d.id AS discipline_id,d.slug AS discipline_slug,d.display_name AS discipline_name,
+d.metric_type,d.unit,d.ranking_direction,v.display_label AS division_label,
+ROW_NUMBER() OVER(PARTITION BY l.id ORDER BY
+CASE WHEN d.ranking_direction='LOWER_IS_BETTER' THEN rs.normalized_metric END ASC NULLS LAST,
+CASE WHEN d.ranking_direction='HIGHER_IS_BETTER' THEN rs.normalized_metric END DESC NULLS LAST,
+rs.verified_at,rs.id)::int AS rank
+FROM results rs JOIN leaderboards l ON l.id=rs.leaderboard_id
+JOIN disciplines d ON d.id=l.discipline_id JOIN divisions v ON v.id=l.division_id
+WHERE rs.invalidated_at IS NULL)
+SELECT result_id,normalized_metric,display_metric,verified_at,verification_type,leaderboard_id,board_type,
+discipline_id,discipline_slug,discipline_name,metric_type,unit,ranking_direction,division_label,rank
+FROM ranked WHERE profile_id=$1 ORDER BY verified_at DESC,result_id LIMIT 100`, owner)
+	if err != nil {
+		return nil, err
+	}
+	best, err := queryMaps(r.Context(), s.db, `WITH candidates AS (
+SELECT rs.id AS result_id,rs.profile_id,rs.normalized_metric,rs.display_metric,rs.verified_at,rs.verification_type,
+l.id AS leaderboard_id,l.board_type,d.id AS discipline_id,d.slug AS discipline_slug,d.display_name AS discipline_name,
+d.metric_type,d.unit,d.ranking_direction,v.display_label AS division_label,
+ROW_NUMBER() OVER(PARTITION BY rs.profile_id,d.id,l.board_type ORDER BY
+CASE WHEN d.ranking_direction='LOWER_IS_BETTER' THEN rs.normalized_metric END ASC NULLS LAST,
+CASE WHEN d.ranking_direction='HIGHER_IS_BETTER' THEN rs.normalized_metric END DESC NULLS LAST,
+rs.verified_at,rs.id)::int AS best_ordinal
+FROM results rs JOIN leaderboards l ON l.id=rs.leaderboard_id
+JOIN disciplines d ON d.id=l.discipline_id JOIN divisions v ON v.id=l.division_id
+WHERE rs.invalidated_at IS NULL)
+SELECT result_id,normalized_metric,display_metric,verified_at,verification_type,leaderboard_id,board_type,
+discipline_id,discipline_slug,discipline_name,metric_type,unit,ranking_direction,division_label
+FROM candidates WHERE profile_id=$1 AND best_ordinal=1 ORDER BY discipline_name,board_type`, owner)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{"results": rows, "personalBests": best}, nil
 }
 
 func (s *Server) deleteProfile(w http.ResponseWriter, r *http.Request) (any, error) {
@@ -159,6 +199,15 @@ func (s *Server) updateProfile(_ http.ResponseWriter, r *http.Request) (any, err
 			var value *string
 			if json.Unmarshal(raw, &value) != nil || (value != nil && !validUUID(*value)) {
 				return nil, validation("homeGymId must be a UUID or null")
+			}
+			if value != nil {
+				var available bool
+				if err := s.db.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM gyms WHERE id=$1 AND publish_status='PUBLISHED')`, *value).Scan(&available); err != nil {
+					return nil, err
+				}
+				if !available {
+					return nil, validation("homeGymId must identify a published gym")
+				}
 			}
 			add("home_gym_id=$%d::uuid", value)
 		case "privacy":

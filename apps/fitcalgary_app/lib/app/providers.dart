@@ -35,6 +35,16 @@ final profileProvider = FutureProvider.autoDispose<AthleteProfile>((ref) async {
   return AthleteProfile.fromJson(response.data ?? const {});
 });
 
+final performanceProvider = FutureProvider.autoDispose<AthletePerformance>((
+  ref,
+) async {
+  final response = await ref
+      .read(apiProvider)
+      .dio
+      .get<Map<String, dynamic>>('/profile/performance');
+  return AthletePerformance.fromJson(response.data ?? const {});
+});
+
 final submissionsProvider = FutureProvider.autoDispose<List<SubmissionRecord>>((
   ref,
 ) async {

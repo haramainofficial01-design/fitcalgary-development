@@ -137,13 +137,16 @@ class _SignedInProfile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(profileProvider);
+    final performance = ref.watch(performanceProvider);
     final submissions = ref.watch(submissionsProvider);
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(profileProvider);
+        ref.invalidate(performanceProvider);
         ref.invalidate(submissionsProvider);
         await Future.wait([
           ref.read(profileProvider.future),
+          ref.read(performanceProvider.future),
           ref.read(submissionsProvider.future),
         ]);
       },
@@ -166,6 +169,19 @@ class _SignedInProfile extends ConsumerWidget {
           OutlinedButton(
             onPressed: () => context.push('/saved-gyms'),
             child: const Text('SAVED GYMS'),
+          ),
+          const SizedBox(height: 28),
+          const Divider(color: FitColors.ink),
+          const SizedBox(height: 22),
+          const Overline('Performance'),
+          const SizedBox(height: 8),
+          performance.when(
+            loading: () => const LinearProgressIndicator(),
+            error: (_, _) => ErrorPanel(
+              message: 'Your performance history could not be synchronized.',
+              onRetry: () => ref.invalidate(performanceProvider),
+            ),
+            data: (value) => _PerformancePanel(performance: value),
           ),
           const Divider(color: FitColors.ink),
           const SizedBox(height: 22),
@@ -192,6 +208,7 @@ class _SignedInProfile extends ConsumerWidget {
             onPressed: () async {
               await ref.read(authServiceProvider).signOut();
               ref.invalidate(profileProvider);
+              ref.invalidate(performanceProvider);
               ref.invalidate(savedGymsProvider);
               ref.invalidate(submissionsProvider);
               if (context.mounted) context.go('/');
@@ -234,6 +251,7 @@ class _SignedInProfile extends ConsumerWidget {
       await ref.read(authServiceProvider).signOut();
       ref.invalidate(savedGymsProvider);
       ref.invalidate(profileProvider);
+      ref.invalidate(performanceProvider);
       ref.invalidate(submissionsProvider);
       if (context.mounted) context.go('/');
     } on DioException {
@@ -272,6 +290,25 @@ class _ProfileIdentity extends ConsumerWidget {
       if (profile.gymName != null) ...[
         const SizedBox(height: 12),
         Text(profile.gymName!, style: const TextStyle(color: FitColors.muted)),
+      ],
+      if (profile.city != null || profile.sexCategory != null) ...[
+        const SizedBox(height: 8),
+        Text(
+          [
+            if (profile.city != null) profile.city!,
+            if (profile.sexCategory != null &&
+                profile.sexCategory != 'UNDISCLOSED')
+              profile.sexCategory == 'MEN'
+                  ? 'Men’s division'
+                  : 'Women’s division',
+          ].join(' · '),
+          style: const TextStyle(
+            fontSize: 10,
+            color: FitColors.muted,
+            fontWeight: FontWeight.w700,
+            letterSpacing: .8,
+          ),
+        ),
       ],
       if (profile.bio != null && profile.bio!.isNotEmpty) ...[
         const SizedBox(height: 18),
@@ -313,6 +350,13 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   late final TextEditingController bio = TextEditingController(
     text: widget.profile.bio,
   );
+  late final TextEditingController dateOfBirth = TextEditingController(
+    text: widget.profile.dateOfBirth?.toIso8601String().split('T').first ?? '',
+  );
+  late String? sexCategory = widget.profile.sexCategory;
+  late String? homeGymId = widget.profile.homeGymId;
+  late bool publicProfile = widget.profile.publicProfile;
+  late bool showGym = widget.profile.showGym;
   bool busy = false;
   String? error;
 
@@ -320,14 +364,17 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
   void dispose() {
     name.dispose();
     bio.dispose();
+    dateOfBirth.dispose();
     super.dispose();
   }
 
   Future<void> save() async {
-    if (name.text.trim().length < 2 || bio.text.length > 280) {
+    final birthDate = dateOfBirth.text.trim();
+    if (name.text.trim().length < 2 ||
+        bio.text.length > 280 ||
+        (birthDate.isNotEmpty && DateTime.tryParse(birthDate) == null)) {
       setState(
-        () => error =
-            'Use a name of at least 2 characters and a bio no longer than 280.',
+        () => error = 'Use a valid name, a bio up to 280 characters and a YYYY-MM-DD birth date.',
       );
       return;
     }
@@ -341,7 +388,14 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
           .dio
           .patch<void>(
             '/profile',
-            data: {'displayName': name.text.trim(), 'bio': bio.text.trim()},
+            data: {
+              'displayName': name.text.trim(),
+              'bio': bio.text.trim(),
+              'dateOfBirth': birthDate.isEmpty ? null : birthDate,
+              'sexCategory': sexCategory,
+              'homeGymId': homeGymId,
+              'privacy': {'publicProfile': publicProfile, 'showGym': showGym},
+            },
           );
       if (mounted) Navigator.pop(context, true);
     } on DioException {
@@ -384,6 +438,88 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
             maxLines: 4,
             decoration: const InputDecoration(labelText: 'BIO'),
           ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: dateOfBirth,
+            keyboardType: TextInputType.datetime,
+            decoration: const InputDecoration(
+              labelText: 'DATE OF BIRTH',
+              hintText: 'YYYY-MM-DD',
+            ),
+          ),
+          const SizedBox(height: 14),
+          DropdownButtonFormField<String?>(
+            initialValue: sexCategory,
+            decoration: const InputDecoration(labelText: 'BOARD CATEGORY'),
+            items: const [
+              DropdownMenuItem(value: null, child: Text('Not set')),
+              DropdownMenuItem(value: 'MEN', child: Text('Men’s boards')),
+              DropdownMenuItem(value: 'WOMEN', child: Text('Women’s boards')),
+              DropdownMenuItem(
+                value: 'UNDISCLOSED',
+                child: Text('Prefer not to show'),
+              ),
+            ],
+            onChanged: (value) => setState(() => sexCategory = value),
+          ),
+          const SizedBox(height: 14),
+          ref
+              .watch(gymsProvider)
+              .when(
+                loading: () => const LinearProgressIndicator(),
+                error: (_, _) => const Text(
+                  'Gym choices are temporarily unavailable. Your current affiliation will be kept.',
+                  style: TextStyle(fontSize: 11, color: FitColors.muted),
+                ),
+                data: (gyms) {
+                  final choices = [...gyms];
+                  if (homeGymId != null &&
+                      choices.every((gym) => gym.id != homeGymId) &&
+                      widget.profile.gymName != null) {
+                    choices.add(
+                      Gym(
+                        id: homeGymId!,
+                        name: widget.profile.gymName!,
+                        operatorName: '',
+                        city: widget.profile.city ?? 'Calgary',
+                      ),
+                    );
+                  }
+                  return DropdownButtonFormField<String?>(
+                    initialValue: homeGymId,
+                    decoration: const InputDecoration(labelText: 'HOME GYM'),
+                    items: [
+                      const DropdownMenuItem(
+                        value: null,
+                        child: Text('No gym affiliation'),
+                      ),
+                      ...choices.map(
+                        (gym) => DropdownMenuItem(
+                          value: gym.id,
+                          child: Text(gym.name),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) => setState(() => homeGymId = value),
+                  );
+                },
+              ),
+          const SizedBox(height: 12),
+          SwitchListTile.adaptive(
+            contentPadding: EdgeInsets.zero,
+            value: publicProfile,
+            title: const Text('Public athlete profile'),
+            subtitle: const Text('Allows verified results to appear publicly.'),
+            onChanged: (value) => setState(() => publicProfile = value),
+          ),
+          SwitchListTile.adaptive(
+            contentPadding: EdgeInsets.zero,
+            value: showGym,
+            title: const Text('Show gym affiliation'),
+            onChanged: publicProfile
+                ? (value) => setState(() => showGym = value)
+                : null,
+          ),
           if (error != null)
             Text(error!, style: const TextStyle(color: FitColors.coralDark)),
           const SizedBox(height: 14),
@@ -393,6 +529,112 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
           ),
         ],
       ),
+    ),
+  );
+}
+
+class _PerformancePanel extends StatelessWidget {
+  const _PerformancePanel({required this.performance});
+
+  final AthletePerformance performance;
+
+  @override
+  Widget build(BuildContext context) {
+    if (performance.results.isEmpty) {
+      return const EmptyPanel(
+        title: 'No recorded results yet',
+        body: 'Verified placements and community marks will appear here without exposing private evidence.',
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (performance.personalBests.isNotEmpty) ...[
+          const Text(
+            'PERSONAL BESTS',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.1,
+            ),
+          ),
+          ...performance.personalBests.map(
+            (result) => _ResultRow(result: result),
+          ),
+          const SizedBox(height: 20),
+        ],
+        const Text(
+          'RECENT RESULTS',
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.1,
+          ),
+        ),
+        ...performance.results
+            .take(8)
+            .map((result) => _ResultRow(result: result)),
+      ],
+    );
+  }
+}
+
+class _ResultRow extends StatelessWidget {
+  const _ResultRow({required this.result});
+
+  final AthleteResult result;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(vertical: 15),
+    decoration: const BoxDecoration(
+      border: Border(bottom: BorderSide(color: FitColors.line)),
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                result.discipline,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                [
+                  if (result.division != null) result.division!,
+                  if (result.rank != null) 'Rank ${result.rank}',
+                ].join(' · '),
+                style: const TextStyle(fontSize: 11, color: FitColors.muted),
+              ),
+            ],
+          ),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              result.displayMetric,
+              style: const TextStyle(fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 5),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              color: result.official ? FitColors.coral : FitColors.line,
+              child: Text(
+                result.official ? 'VERIFIED' : 'COMMUNITY',
+                style: TextStyle(
+                  color: result.official ? Colors.white : FitColors.ink,
+                  fontSize: 8,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: .8,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     ),
   );
 }

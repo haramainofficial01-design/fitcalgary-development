@@ -32,6 +32,9 @@ void main() {
         (ref) async =>
             const AthleteProfile(id: 'test-user', displayName: 'Test Athlete'),
       ),
+      performanceProvider.overrideWith(
+        (ref) async => const AthletePerformance(),
+      ),
     ],
     child: FitCalgaryApp(onboardingStore: store),
   );

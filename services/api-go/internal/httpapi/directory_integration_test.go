@@ -110,6 +110,36 @@ func TestDirectoryAccountDatabaseFlow(t *testing.T) {
 	if updated["id"] != profile["id"] || updated["display_name"] != "Development Updated Athlete" {
 		t.Fatal("profile did not persist")
 	}
+	request("GET", "/api/v1/profile/performance", "", "", 401)
+	var boardID string
+	if err := pool.QueryRow(ctx, `INSERT INTO leaderboards(region_id,discipline_id,division_id,board_type)
+SELECT r.id,d.id,v.id,'OFFICIAL' FROM regions r,disciplines d,divisions v
+WHERE r.slug='calgary-region' AND d.slug='5k-run' AND v.slug='open-all' LIMIT 1 RETURNING id`).Scan(&boardID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO results(profile_id,leaderboard_id,normalized_metric,display_metric,verification_type,verified_at,verified_by,division_snapshot,profile_snapshot,discipline_rules_version)
+VALUES($1,$2,1185,'19:45','IN_PERSON',now(),$1,'{"label":"Open"}'::jsonb,'{"displayName":"Development Updated Athlete"}'::jsonb,1)`, profile["id"], boardID); err != nil {
+		t.Fatal(err)
+	}
+	performance := request("GET", "/api/v1/profile/performance", "first", "", 200)
+	results := performance["results"].([]any)
+	personalBests := performance["personalBests"].([]any)
+	if len(results) != 1 || len(personalBests) != 1 {
+		t.Fatal("profile performance did not return the athlete result and personal best")
+	}
+	entry := results[0].(map[string]any)
+	if entry["board_type"] != "OFFICIAL" || entry["rank"] != float64(1) || entry["display_metric"] != "19:45" {
+		t.Fatalf("unexpected profile performance: %#v", entry)
+	}
+	if len(request("GET", "/api/v1/profile/performance", "second", "", 200)["results"].([]any)) != 0 {
+		t.Fatal("another athlete's performance leaked into the profile")
+	}
+	request("PATCH", "/api/v1/profile", "first", `{"homeGymId":"`+a["id"].(string)+`","dateOfBirth":"1992-08-31","sexCategory":"WOMEN","privacy":{"publicProfile":true,"showGym":true}}`, 200)
+	affiliated := request("GET", "/api/v1/profile", "first", "", 200)
+	if affiliated["home_gym_name"] != a["name"] || affiliated["sex_category"] != "WOMEN" || affiliated["date_of_birth"] != "1992-08-31T00:00:00Z" {
+		t.Fatalf("athlete eligibility or gym affiliation did not persist: %#v", affiliated)
+	}
+	request("PATCH", "/api/v1/profile", "first", `{"homeGymId":"`+uuid.NewString()+`"}`, 422)
 	request("PATCH", "/api/v1/profile", "first", `{"roles":["ADMIN"]}`, 422)
 	path := "/api/v1/saved-gyms/" + a["id"].(string)
 	request("PUT", path, "", "", 401)

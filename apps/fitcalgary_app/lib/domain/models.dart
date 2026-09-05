@@ -265,6 +265,12 @@ class AthleteProfile {
     this.bio,
     this.city,
     this.gymName,
+    this.homeGymId,
+    this.photoUrl,
+    this.dateOfBirth,
+    this.sexCategory,
+    this.publicProfile = true,
+    this.showGym = true,
     this.roles = const [],
   });
 
@@ -273,19 +279,89 @@ class AthleteProfile {
   final String? bio;
   final String? city;
   final String? gymName;
+  final String? homeGymId;
+  final String? photoUrl;
+  final DateTime? dateOfBirth;
+  final String? sexCategory;
+  final bool publicProfile;
+  final bool showGym;
   final List<String> roles;
 
-  factory AthleteProfile.fromJson(Json json) => AthleteProfile(
-    id: _string(json, 'id') ?? '',
-    displayName:
-        _string(json, 'display_name', 'displayName') ?? 'FitCalgary athlete',
-    bio: _string(json, 'bio'),
-    city: _string(json, 'city'),
-    gymName:
-        _string(json, 'home_gym_name', 'homeGymName') ??
-        _string(json, 'gym_name', 'gymName'),
-    roles: (json['roles'] as List? ?? const [])
-        .map((value) => value.toString())
+  factory AthleteProfile.fromJson(Json json) {
+    final privacy = json['privacy'] is Json
+        ? json['privacy'] as Json
+        : const <String, dynamic>{};
+    return AthleteProfile(
+      id: _string(json, 'id') ?? '',
+      displayName:
+          _string(json, 'display_name', 'displayName') ?? 'FitCalgary athlete',
+      bio: _string(json, 'bio'),
+      city: _string(json, 'city'),
+      gymName:
+          _string(json, 'home_gym_name', 'homeGymName') ??
+          _string(json, 'gym_name', 'gymName'),
+      homeGymId: _string(json, 'home_gym_id', 'homeGymId'),
+      photoUrl: _string(json, 'photo_url', 'photoUrl'),
+      dateOfBirth: _date(json, 'date_of_birth', 'dateOfBirth'),
+      sexCategory: _string(json, 'sex_category', 'sexCategory'),
+      publicProfile: privacy['publicProfile'] != false,
+      showGym: privacy['showGym'] != false,
+      roles: (json['roles'] as List? ?? const [])
+          .map((value) => value.toString())
+          .toList(growable: false),
+    );
+  }
+}
+
+class AthleteResult {
+  const AthleteResult({
+    required this.id,
+    required this.discipline,
+    required this.displayMetric,
+    required this.boardType,
+    this.division,
+    this.rank,
+    this.verifiedAt,
+  });
+
+  final String id;
+  final String discipline;
+  final String displayMetric;
+  final String boardType;
+  final String? division;
+  final int? rank;
+  final DateTime? verifiedAt;
+
+  bool get official => boardType == 'OFFICIAL';
+
+  factory AthleteResult.fromJson(Json json) => AthleteResult(
+    id: _string(json, 'result_id', 'resultId') ?? '',
+    discipline:
+        _string(json, 'discipline_name', 'disciplineName') ?? 'Discipline',
+    displayMetric:
+        _string(json, 'display_metric', 'displayMetric') ?? 'Recorded result',
+    boardType: _string(json, 'board_type', 'boardType') ?? 'COMMUNITY',
+    division: _string(json, 'division_label', 'divisionLabel'),
+    rank: _int(json, 'rank'),
+    verifiedAt: _date(json, 'verified_at', 'verifiedAt'),
+  );
+}
+
+class AthletePerformance {
+  const AthletePerformance({
+    this.results = const [],
+    this.personalBests = const [],
+  });
+
+  final List<AthleteResult> results;
+  final List<AthleteResult> personalBests;
+
+  factory AthletePerformance.fromJson(Json json) => AthletePerformance(
+    results: (json['results'] as List? ?? const [])
+        .map((value) => AthleteResult.fromJson(Json.from(value as Map)))
+        .toList(growable: false),
+    personalBests: (json['personalBests'] as List? ?? const [])
+        .map((value) => AthleteResult.fromJson(Json.from(value as Map)))
         .toList(growable: false),
   );
 }
