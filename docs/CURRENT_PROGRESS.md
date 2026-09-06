@@ -1,8 +1,16 @@
 # Current progress
 
-Last updated: 2026-09-05 (America/Edmonton).
+Last updated: 2026-09-06 (America/Edmonton).
 
 ## Latest verified continuation
+
+September 6: the website now has a real signed-in profile/preferences page,
+saved-gym add/remove flow, notification list/read controls, logout and ordinary-user
+administration isolation. Sign-in routes to the profile rather than administration.
+The browser regression proves profile/preference persistence after reload, saved-gym
+roundtrip, logout-cookie removal and community result entry → Go/PostgreSQL → board
+and athlete history. Web type checking/lint/build pass. Official private-video web
+submission and the remaining Phase 2 scope are still open; no final package exists.
 
 Consumer web home placeholders have been replaced by the read-only Go-backed
 directory. Search, paging, retry/empty states and gym/event/board detail routes are

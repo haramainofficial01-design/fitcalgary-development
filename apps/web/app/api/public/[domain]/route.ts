@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 // Deliberately read-only and allowlisted: never forward cookies or bearer tokens.
 export async function GET(request: NextRequest, context: { params: Promise<{ domain: string }> }) {
   const { domain } = await context.params;
-  if (!['gyms', 'events', 'leaderboards', 'clubs'].includes(domain)) {
+  if (!['gyms', 'events', 'leaderboards', 'clubs', 'disciplines', 'divisions', 'cities'].includes(domain)) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
   const base = process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL;

@@ -3,6 +3,18 @@
 Phase 1 is accepted, paid and closed per the Developer's confirmation. The platform
 matrix below is historical evidence, not a pending acceptance list.
 
+## Phase 2 increment — 2026-09-06
+
+`test/admin-browser.mjs` PASS in Chrome with actual Go/PostgreSQL and ephemeral
+development identity: profile editing and preferences survive reload; ordinary users
+cannot enter admin; saving a gym on its detail page appears on the profile and removal
+persists; sign-out removes the cookie and returns to sign-in; sign-in targets profile.
+Community Bench Press entry also passes through the website to PostgreSQL, its board
+and the owner performance endpoint. Existing directory/admin/browser checks pass.
+Web TypeScript, lint and production build pass. These are not live Keycloak/social
+sign-in, push delivery, physical-device or production-data verification. Notification
+read controls are implemented but not yet included in this browser scenario.
+
 ## Phase 2 increment — 2026-09-05
 
 ### Subsequent role, administration and presentation verification

@@ -15,7 +15,7 @@ export function PublicShell({ children, active }: { children: ReactNode; active?
         <a className={active === 'gyms' ? 'active' : ''} href="/gyms"><Dumbbell /><span>Gyms</span></a>
         <a className={active === 'board' ? 'active' : ''} href="/leaderboards"><ChartNoAxesColumnIncreasing /><span>Board</span></a>
         <a className={active === 'events' ? 'active' : ''} href="/events"><CalendarDays /><span>Compete</span></a>
-        <a className={active === 'profile' ? 'active' : ''} href="/signin"><UserRound /><span>Me</span></a>
+        <a className={active === 'profile' ? 'active' : ''} href="/profile"><UserRound /><span>Me</span></a>
       </nav>
     </main>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { DataState } from './public-shell';
+import { SaveGym } from './save-gym';
 
 type Row = Record<string, unknown>;
 const text = (value: unknown) => typeof value === 'string' ? value : '';
@@ -31,6 +32,7 @@ export function PublicDetail({ domain, id }: { domain: 'gyms' | 'events' | 'lead
     <a className="secondary-button" href={`/${domain}`}>Back to {domain === 'leaderboards' ? 'boards' : domain}</a>
     <p className="overline detail-overline">{domain === 'leaderboards' ? record.boardType === 'OFFICIAL' ? 'Official board' : 'Community board' : text(record.city)}</p>
     <h1>{text(record.name) || text(discipline?.name)}</h1>
+    {domain === 'gyms' && <SaveGym id={text(record.id)} />}
     {text(record.description) && <p className="directory-intro">{text(record.description)}</p>}
     {domain === 'gyms' && <><p>{text(record.address)} {text(record.neighbourhood)}</p><h2>Membership costs</h2><div className="directory-list">{plans.map(plan => <article key={text(plan.id)}><div className="detail-plan"><h3>{text(plan.plan_name)}</h3><p>Advertised: {money(plan.recurring_cents)} · {text(plan.billing_frequency).toLowerCase().replaceAll('_', ' ')}</p><p>Ongoing monthly: {plan.pricing_complete ? money(plan.ongoing_monthly_cents) : 'Confirm with the gym'}</p><p>First-year monthly: {plan.pricing_complete ? money(plan.first_year_monthly_cents) : 'Confirm with the gym'}</p>{text(plan.terms) && <p>{text(plan.terms)}</p>}</div></article>)}</div>{!plans.length && <p>Contact the gym for current membership pricing.</p>}</>}
     {domain === 'events' && <div className="data-panel"><h2>Event details</h2><p>{text(record.venue_name)} {text(record.location)}</p>{text(record.starts_at) && <p><time dateTime={text(record.starts_at)}>{new Date(text(record.starts_at)).toLocaleString('en-CA', { timeZone: 'America/Edmonton' })} · Calgary time</time></p>}<p>{text(record.entry_requirements)}</p><p>{text(record.organizer)}</p></div>}

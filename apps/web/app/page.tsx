@@ -44,7 +44,7 @@ export default function Home() {
         <PublicDirectory domain="events" preview />
       </section>
 
-      <nav className="mobile-dock" aria-label="Mobile navigation"><a className="active" href="#top"><HomeIcon /><span>Home</span></a><a href="#gyms"><Dumbbell /><span>Gyms</span></a><a href="#board"><ChartNoAxesColumnIncreasing /><span>Board</span></a><a href="#compete"><CalendarDays /><span>Compete</span></a><a href="/signin"><UserRound /><span>Me</span></a></nav>
+      <nav className="mobile-dock" aria-label="Mobile navigation"><a className="active" href="#top"><HomeIcon /><span>Home</span></a><a href="#gyms"><Dumbbell /><span>Gyms</span></a><a href="#board"><ChartNoAxesColumnIncreasing /><span>Board</span></a><a href="#compete"><CalendarDays /><span>Compete</span></a><a href="/profile"><UserRound /><span>Me</span></a></nav>
     </main>
   );
 }
