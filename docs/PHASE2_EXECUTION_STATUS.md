@@ -16,7 +16,7 @@ its obsolete daily schedule. Technical test details remain in TEST_MATRIX.md.
 
 ## COMPLETE + VERIFIED — bounded evidence, not whole-phase acceptance
 
-- Repository continuity, private history: current private main `30066fe`; prior
+- Repository continuity, private history: current private main `5ffb124`; prior `30066fe`,
   `54fc23b`, `ee59ff9`. No Client-repository push or history rewrite.
 - Flutter directory/detail/comparison/favourites/profile persistence: earlier real
   iOS/Android → Go → PostgreSQL tests. Structured normalized ongoing/year-one prices.
@@ -29,7 +29,11 @@ its obsolete daily schedule. Technical test details remain in TEST_MATRIX.md.
   against real private S3-compatible storage. Chrome official upload → playable
   private evidence → correction/resubmission → approval → official board → inbox
   PASS (September 6). Synthetic transport clip, not a genuine athlete performance.
-  Flutter real-storage/client loop and practical large-file acceptance remain open.
+  Flutter real-storage/client loop also PASS on iOS Simulator and Android emulator
+  (September 6). OS file picker and identity supplied by test boundaries; actual
+  Flutter form, local file, multipart transport, Go/SQL and storage used. Judge
+  correction/approval called through API; browser judge UI independently verified.
+  Practical large-file acceptance remains open.
 - Roles: per-request local restrictions override old/new provider claims; restore,
   repeat revoke, self-escalation denial; account role endpoints agree. Browser
   grant/revoke passes. Refreshed/re-login identity in SQL tests is simulated.
@@ -75,7 +79,8 @@ its obsolete daily schedule. Technical test details remain in TEST_MATRIX.md.
 4. Community result → correct board/profile: mobile/web tested.
 5. **Athlete submission → real private evidence → judge correction → resubmission →
    approval → verified result → correct official rank → notification:** highest
-   priority; real storage + SQL + Chrome loop PASS. Flutter private-video loop pending.
+   priority; real storage + SQL + Chrome loop PASS. Flutter iOS/Android private-file
+   loop PASS, including correction form, published board navigation and inbox check.
 6. Unauthorized account/role/object access rejected; revocation/restoration across
    dashboard and clients: backend/browser tested; full platform lifecycle pending.
 7. Moderation and notifications/preferences/delivery: incomplete.
@@ -142,11 +147,20 @@ Comprehensive release/environment/store/public-cleanliness audit remains Phase 3
 - Latest tests: Chrome admin/public/profile/community SQL-backed scenario PASS;
   web type/lint/build PASS. Earlier Flutter19 tests and iOS/Android profile PASS.
 - Known failing test: none at last verified increment; full acceptance not run.
-- Current unfinished work: Flutter real private-evidence acceptance, notification
+- Current unfinished work: notification
   preference/delivery operations, moderation and the remaining checklist above.
 - September 6 rerun: actual storage/Go/SQL/Chrome full correction-to-rank-to-inbox
   workflow PASS after profile navigation updates; Go all tests/vet/build PASS;
   web type/lint/production build PASS; four auth/link unit tests PASS.
+- September 6 mobile evidence run: `private_evidence_flow_test.dart` PASS on
+  iPhone 17 Pro/iOS 26.5 and Pixel emulator/API 36. Flutter analysis and all 19
+  widget/unit tests PASS. Added normal detail refresh/back navigation and a testable
+  OS file-selection boundary. Initial Android run waited on emulator boot; rerun PASS.
+- Current independent increment: audited account notes/suspension/ban/restoration,
+  immediate-token denial tests PASS in Go/SQL; browser moderation test pending.
+  Notification opt-out/opt-in, essential inbox, inactive-account suppression and
+  five-attempt poison-job limit PASS against isolated actual PostgreSQL tables.
+  Administrative send UI and provider delivery remain open, not production verified.
 - **Next action:** inspect S3 evidence adapter and local storage availability; bring
   up isolated compatible storage, test real multipart upload/private playback, then
   integrate web judge/submission and Flutter acceptance against it. Update this ledger

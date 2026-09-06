@@ -143,7 +143,25 @@ class _SubmissionDetailScreenState
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Result & review')),
+    appBar: AppBar(
+      title: const Text('Result & review'),
+      leading: IconButton(
+        tooltip: 'Back to your profile',
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () =>
+            context.canPop() ? context.pop() : context.go('/profile'),
+      ),
+      actions: [
+        IconButton(
+          tooltip: 'Refresh submission',
+          icon: const Icon(Icons.refresh),
+          onPressed: () {
+            ref.invalidate(submissionDetailProvider(widget.id));
+            ref.invalidate(profileProvider);
+          },
+        ),
+      ],
+    ),
     body: ref
         .watch(submissionDetailProvider(widget.id))
         .when(

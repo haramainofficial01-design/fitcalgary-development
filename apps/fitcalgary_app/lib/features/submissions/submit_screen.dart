@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/providers.dart';
 import '../../app/widgets.dart';
 import '../../core/evidence_uploader.dart';
+import '../../core/evidence_picker.dart';
 import '../../core/theme.dart';
 import '../leaderboards/competition_providers.dart';
 import 'submission_feedback.dart';
@@ -364,12 +365,9 @@ class _SubmitScreenState extends ConsumerState<SubmitScreen> {
                       onPressed: busy
                           ? null
                           : () async {
-                              final file = await picker.FilePicker.pickFile(
-                                type: picker.FileType.custom,
-                                allowedExtensions: d['evidence_type'] == 'VIDEO'
-                                    ? ['mp4', 'mov']
-                                    : ['gpx'],
-                              );
+                              final file = await ref.read(
+                                evidencePickerProvider,
+                              )(d['evidence_type'] == 'VIDEO');
                               if (file == null || !mounted) return;
                               final size = await file.length();
                               if (!mounted) return;
