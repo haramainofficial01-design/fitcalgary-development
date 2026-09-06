@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -9,8 +10,11 @@ import (
 	"fitcalgary.ca/index/api/internal/storage"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"io"
 	"log/slog"
+	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -76,7 +80,19 @@ func TestCompetitionDatabaseWorkflow(t *testing.T) {
 		t.Fatal("development marker required")
 	}
 	var logs strings.Builder
-	router := NewServer(pool, workflowVerifier{uuid.NewString()}, workflowStore{}, nil, config.Config{MaxEvidenceBytes: 1024, EvidenceRetentionDays: 14, SignedURLTTL: time.Minute}, slog.New(slog.NewTextHandler(&logs, nil))).Router()
+	var evidenceStore storage.EvidenceStore = workflowStore{}
+	realStorage := os.Getenv("STORAGE_TEST_ENDPOINT") != ""
+	if realStorage {
+		endpoint, parseErr := url.Parse(os.Getenv("STORAGE_TEST_ENDPOINT"))
+		if parseErr != nil || endpoint.Hostname() != "127.0.0.1" {
+			t.Fatal("loopback evidence storage required")
+		}
+		evidenceStore, err = storage.NewS3EvidenceStore(ctx, config.Config{S3Endpoint: endpoint.String(), S3Region: "us-east-1", S3Bucket: "fitcalgary-evidence-test", S3AccessKeyID: os.Getenv("STORAGE_TEST_ACCESS_KEY"), S3SecretAccessKey: os.Getenv("STORAGE_TEST_SECRET_KEY"), SignedURLTTL: time.Minute, MaxEvidenceBytes: 1024})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	router := NewServer(pool, workflowVerifier{uuid.NewString()}, evidenceStore, nil, config.Config{MaxEvidenceBytes: 1024, EvidenceRetentionDays: 14, SignedURLTTL: time.Minute}, slog.New(slog.NewTextHandler(&logs, nil))).Router()
 	request := func(method, path, token string, body any, status int) map[string]any {
 		t.Helper()
 		raw, _ := json.Marshal(body)
@@ -204,10 +220,28 @@ func TestCompetitionDatabaseWorkflow(t *testing.T) {
 	upload := func(id, token string) {
 		t.Helper()
 		u := request("POST", "/submissions/"+id+"/uploads", token, map[string]any{"contentType": "video/mp4", "sizeBytes": 100}, 201)["id"].(string)
-		request("POST", "/uploads/"+u+"/parts/1", "other", nil, 404)
-		request("POST", "/uploads/"+u+"/parts/1", token, nil, 200)
+		intruder := "other"
+		if token == "other" {
+			intruder = "athlete"
+		}
+		request("POST", "/uploads/"+u+"/parts/1", intruder, nil, 404)
+		partURL := request("POST", "/uploads/"+u+"/parts/1", token, nil, 200)["url"].(string)
+		etag := "part"
+		if realStorage {
+			req, _ := http.NewRequestWithContext(ctx, http.MethodPut, partURL, bytes.NewReader(bytes.Repeat([]byte{42}, 100)))
+			response, uploadErr := http.DefaultClient.Do(req)
+			if uploadErr != nil {
+				t.Fatal("real signed upload failed")
+			}
+			io.Copy(io.Discard, response.Body)
+			response.Body.Close()
+			if response.StatusCode != 200 {
+				t.Fatalf("real upload status %d", response.StatusCode)
+			}
+			etag = response.Header.Get("ETag")
+		}
 		request("POST", "/uploads/"+u+"/finalize", token, map[string]any{"parts": []any{map[string]any{"ETag": "part", "PartNumber": 2}}}, 422)
-		parts := map[string]any{"parts": []any{map[string]any{"ETag": "part", "PartNumber": 1}}}
+		parts := map[string]any{"parts": []any{map[string]any{"ETag": etag, "PartNumber": 1}}}
 		if request("POST", "/uploads/"+u+"/finalize", token, parts, 200)["status"] != "PENDING_REVIEW" {
 			t.Fatal("finalization returned stale state")
 		}
@@ -218,7 +252,18 @@ func TestCompetitionDatabaseWorkflow(t *testing.T) {
 	request("POST", "/judge/submissions/"+first+"/decision", "athlete", approval, 403)
 	request("POST", "/judge/submissions/"+first+"/decision", "judge", map[string]any{"decision": "APPROVED"}, 422)
 	request("GET", "/judge/submissions/"+first+"/evidence", "other", nil, 403)
-	request("GET", "/judge/submissions/"+first+"/evidence", "judge", nil, 200)
+	playback := request("GET", "/judge/submissions/"+first+"/evidence", "judge", nil, 200)
+	if realStorage {
+		response, fetchErr := http.Get(playback["url"].(string))
+		if fetchErr != nil {
+			t.Fatal("judge playback unavailable")
+		}
+		data, readErr := io.ReadAll(response.Body)
+		response.Body.Close()
+		if readErr != nil || response.StatusCode != 200 || !bytes.Equal(data, bytes.Repeat([]byte{42}, 100)) {
+			t.Fatal("judge playback did not return uploaded bytes")
+		}
+	}
 	request("POST", "/judge/submissions/"+first+"/decision", "judge", approval, 200)
 	request("POST", "/judge/submissions/"+first+"/decision", "judge", approval, 409)
 	detail := request("GET", "/submissions/"+first, "athlete", nil, 200)
@@ -243,8 +288,7 @@ func TestCompetitionDatabaseWorkflow(t *testing.T) {
 	}
 	// A second athlete overtakes, using a separately owned submission.
 	second := request("POST", "/submissions", "other", body(30), 201)["id"].(string)
-	u := request("POST", "/submissions/"+second+"/uploads", "other", map[string]any{"contentType": "video/mp4", "sizeBytes": 100}, 201)["id"].(string)
-	request("POST", "/uploads/"+u+"/finalize", "other", map[string]any{"parts": []any{map[string]any{"ETag": "part", "PartNumber": 1}}}, 200)
+	upload(second, "other")
 	request("POST", "/judge/submissions/"+second+"/decision", "judge", approval, 200)
 	if list := entries(board); len(list) != 2 || list[0].(map[string]any)["display_metric"] != "30 reps" {
 		t.Fatal("higher-is-better ranking failed")
@@ -294,5 +338,5 @@ func TestCompetitionDatabaseWorkflow(t *testing.T) {
 	if err = pool.QueryRow(ctx, `SELECT count(*) FROM outbox_jobs WHERE payload->>'leaderboardId'=$1 AND payload->>'type'='LEADERBOARD_PASSED'`, board).Scan(&notifications); err != nil || notifications != 1 {
 		t.Fatal("rank movement notification missing or duplicated")
 	}
-	t.Log("Verified creation, private evidence permissions, review validation, repeat approval protection, official/community separation, best-result ranking, privacy and resubmission against PostgreSQL; storage mocked.")
+	t.Logf("Verified creation, private evidence permissions, review validation, repeat approval protection, official/community separation, best-result ranking, privacy and resubmission against PostgreSQL; real storage: %t", realStorage)
 }

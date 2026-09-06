@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 
 	"fitcalgary.ca/index/api/internal/config"
 )
@@ -103,7 +104,13 @@ func (s *S3EvidenceStore) Complete(ctx context.Context, key, uploadID string, co
 		parts = append(parts, types.CompletedPart{ETag: &part.ETag, PartNumber: &part.PartNumber})
 	}
 	if _, err := s.client.CompleteMultipartUpload(ctx, &s3.CompleteMultipartUploadInput{Bucket: &s.bucket, Key: &key, UploadId: &uploadID, MultipartUpload: &types.CompletedMultipartUpload{Parts: parts}}); err != nil {
-		return 0, err
+		// A successful provider completion can precede a failed SQL commit or lost
+		// response. The random, owner-scoped object key is stable for this upload.
+		// Only recover a missing upload if the completed object actually exists.
+		var apiError smithy.APIError
+		if !errors.As(err, &apiError) || apiError.ErrorCode() != "NoSuchUpload" {
+			return 0, err
+		}
 	}
 	head, err := s.client.HeadObject(ctx, &s3.HeadObjectInput{Bucket: &s.bucket, Key: &key})
 	if err != nil {

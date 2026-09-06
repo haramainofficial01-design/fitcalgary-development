@@ -3,6 +3,14 @@ import test from 'node:test';
 
 import { open, pkceChallenge, seal } from '../lib/server-auth.ts';
 import { trustedMutation } from '../lib/request-security.ts';
+import { productLink } from '../lib/product-link.ts';
+
+test('notification links only open supported internal destinations', () => {
+  assert.equal(productLink('fitcalgary://submissions/abc-123'), '/submissions/abc-123');
+  for (const input of ['https://evil.example', 'javascript:alert(1)', 'fitcalgary://admin/users', 'fitcalgary://events/../admin', 'fitcalgary://events/x?redirect=evil', null]) {
+    assert.equal(productLink(input), undefined);
+  }
+});
 
 test('cookie-authenticated writes require the exact configured origin', () => {
   const check = (method, origin, site, publicUrl = 'https://fitcalgary.example') => {

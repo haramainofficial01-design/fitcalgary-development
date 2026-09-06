@@ -153,7 +153,7 @@ func (s *Server) beginUpload(w http.ResponseWriter, r *http.Request) (any, error
 	}
 	key, uploadID, err := s.store.Begin(r.Context(), identity(r).Principal.Subject, submissionID, body.ContentType, body.SizeBytes)
 	if err != nil {
-		return nil, validation(err.Error())
+		return nil, &APIError{Status: 503, Code: "STORAGE_UNAVAILABLE", Message: "Evidence upload could not start. Please retry."}
 	}
 	var id string
 	var expiresAt time.Time

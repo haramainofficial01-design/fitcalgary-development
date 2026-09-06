@@ -153,9 +153,10 @@ try{
   await page.getByText('No saved gyms yet.',{exact:false}).waitFor();
   assert.equal((await call('/saved-gyms','GET',undefined,user)).data.some(item=>item.id===gym.id),false);
   await page.goto(origin+'/submit');
-  await page.locator('select').nth(0).selectOption({label:'Bench Press'});
-  await page.locator('select[name="city"]').selectOption(city);
-  await page.locator('input[name="metric"]').fill('125.5');
+  const communityForm=page.locator('form').filter({has:page.getByRole('heading',{name:'Community result',exact:true})});
+  await communityForm.locator('select').nth(0).selectOption({label:'Bench Press'});
+  await communityForm.locator('select[name="city"]').selectOption(city);
+  await communityForm.locator('input[name="metric"]').fill('125.5');
   await page.getByRole('button',{name:'Post community result',exact:true}).click();
   await page.getByRole('heading',{name:'Result posted',exact:true}).waitFor();
   await page.getByRole('link',{name:'View your board',exact:true}).click();
@@ -163,6 +164,52 @@ try{
   await page.getByRole('heading',{name:'Browser athlete '+suffix,exact:true}).waitFor();
   assert.ok((await call('/profile/performance','GET',undefined,user)).results.some(result=>result.display_metric==='125.5 kg'));
   console.log('PASS: website community result entry to Go/PostgreSQL, board and athlete history.');
+  if(process.env.TEST_EVIDENCE_VIDEO){
+    async function submitEvidence(parent){
+      await identity(user);await page.goto(origin+'/submit'+(parent?'?parent='+parent:''));
+      await page.locator('#official-discipline').selectOption({label:'Bench Press'});
+      await page.locator('#official-city').selectOption(city);
+      await page.locator('#official-metric').fill('130');
+      const form=page.locator('form').filter({has:page.locator('#official-file')});
+      for(const checkbox of await form.getByRole('checkbox').all()) await checkbox.check();
+      await page.locator('#official-file').setInputFiles(process.env.TEST_EVIDENCE_VIDEO);
+      await page.getByRole('button',{name:'Send for review',exact:true}).click();
+      await page.getByRole('heading',{name:'Ready for review',exact:true}).waitFor();
+      const link=await page.getByRole('link',{name:'View submission',exact:true}).getAttribute('href');
+      assert.ok(link);await page.goto(origin+link);return link.split('/').at(-1);
+    }
+    const original=await submitEvidence();
+    assert.equal((await fetch(api+'/judge/submissions/'+original+'/evidence',{headers:{authorization:`Bearer ${user}`}})).status,403);
+    await identity(admin);await page.goto(origin+'/submissions/'+original);
+    await page.getByRole('button',{name:'Open private evidence',exact:true}).click();
+    await page.waitForFunction(()=>document.querySelector('video')?.readyState>=2);
+    await page.getByLabel('Feedback',{exact:true}).fill('Please include the full setup in the correction.');
+    await page.getByLabel('Decision',{exact:true}).selectOption('RESUBMISSION_REQUESTED');
+    await page.getByRole('button',{name:'Save decision',exact:true}).click();
+    await page.getByRole('heading',{name:'Review feedback',exact:true}).waitFor();
+    await identity(user);await page.reload();
+    await page.getByRole('link',{name:'Correct and resubmit',exact:true}).waitFor();
+    const corrected=await submitEvidence(original);
+    await identity(admin);await page.goto(origin+'/submissions/'+corrected);
+    await page.getByRole('button',{name:'Open private evidence',exact:true}).click();
+    await page.waitForFunction(()=>document.querySelector('video')?.readyState>=2);
+    for(const checkbox of await page.getByRole('checkbox').all())await checkbox.check();
+    await page.getByLabel('Feedback',{exact:true}).fill('Correction reviewed against the configured checklist.');
+    await page.getByLabel('Decision',{exact:true}).selectOption('APPROVED');
+    await page.getByRole('button',{name:'Save decision',exact:true}).click();
+    await page.getByRole('link',{name:/View verified placement/}).waitFor();
+    await identity(user);await page.reload();
+    await page.getByRole('link',{name:/View verified placement/}).click();
+    await page.getByRole('heading',{name:'Browser athlete '+suffix,exact:true}).waitFor();
+    for(let i=0;i<40;i++){
+      const notifications=(await call('/notifications','GET',undefined,user)).data;
+      if(notifications.some(n=>n.type==='SUBMISSION_APPROVED'&&n.deep_link.endsWith(corrected)))break;
+      if(i===39)throw new Error('Approved notification was not delivered to the inbox');
+      await pause(500);
+    }
+    await page.screenshot({path:path.join(output,'verified-official-result.png')});
+    console.log('PASS: real playable private video upload, unauthorized evidence rejection, judge playback, correction/resubmission, approval, official board and notification inbox; synthetic test clip, not an athlete verification claim.');
+  }
   await page.goto(origin+'/profile');
   await page.getByRole('heading',{name:'Profile & preferences'}).waitFor();
   await page.getByRole('button',{name:'Sign out',exact:true}).click();

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { PublicShell, DataState } from '@/components/public-shell';
+import { productLink } from '@/lib/product-link';
 
 type Row = Record<string, unknown>;
 class AccountError extends Error { constructor(public status: number) { super('Account request failed'); } }
@@ -18,13 +19,15 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Row>();
   const [saved, setSaved] = useState<Row[]>([]);
   const [notices, setNotices] = useState<Row[]>([]);
+  const [submissions, setSubmissions] = useState<Row[]>([]);
   const [failure, setFailure] = useState(0);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const load = useCallback(async () => {
     try {
-      const [current, gyms, notifications] = await Promise.all([account('/profile'), account('/saved-gyms'), account('/notifications')]);
+      const [current, gyms, notifications, entries] = await Promise.all([account('/profile'), account('/saved-gyms'), account('/notifications'), account('/submissions')]);
       setProfile(current); setSaved(rows(gyms)); setNotices(rows(notifications)); setFailure(0);
+      setSubmissions(rows(entries));
     } catch (error) { setFailure(error instanceof AccountError ? error.status : 503); }
   }, []);
   useEffect(() => {
@@ -59,8 +62,12 @@ export default function ProfilePage() {
         <button disabled={busy} className="primary-button">{busy ? 'Saving…' : 'Save profile'}</button>
       </form>
       <p role="status">{message}</p>
+      <h2>Your submissions</h2><a className="primary-button detail-link" href="/submit">Post a result</a>
+      <div className="directory-list">{submissions.map(item => <article key={String(item.id)}><div className="detail-plan"><h3><a href={`/submissions/${String(item.id)}`}>{String(item.discipline)}</a></h3><p>{String(item.claimed_metric)} · {String(item.status).toLowerCase().replaceAll('_', ' ')}</p></div></article>)}</div>
+      {!submissions.length && <p>Your submissions and feedback will appear here.</p>}
+      {Array.isArray(profile.roles) && profile.roles.some(role => role === 'JUDGE' || role === 'ADMIN') && <a className="secondary-button detail-link" href="/judge">Review queue</a>}
       <h2>Saved gyms</h2><div className="directory-list">{saved.map(gym => <article key={String(gym.id)}><div className="detail-plan"><h3><a href={`/gyms/${encodeURIComponent(String(gym.slug))}`}>{String(gym.name)}</a></h3><button disabled={busy} className="secondary-button" onClick={() => void mutate(`/saved-gyms/${String(gym.id)}`, 'DELETE')}>Remove saved gym</button></div></article>)}</div>{!saved.length && <p>No saved gyms yet. <a href="/gyms">Explore the index.</a></p>}
-      <h2>Notifications</h2><div className="directory-list">{notices.map(notice => <article key={String(notice.id)}><div className="detail-plan"><h3>{String(notice.title)}</h3><p>{String(notice.body)}</p>{!notice.opened_at && <button disabled={busy} className="secondary-button" onClick={() => void mutate(`/notifications/${String(notice.id)}/opened`, 'PUT')}>Mark as read</button>}</div></article>)}</div>{!notices.length && <p>You’re all caught up.</p>}
+      <h2>Notifications</h2><div className="directory-list">{notices.map(notice => <article key={String(notice.id)}><div className="detail-plan"><h3>{productLink(notice.deep_link) ? <a href={productLink(notice.deep_link)}>{String(notice.title)}</a> : String(notice.title)}</h3><p>{String(notice.body)}</p>{!notice.opened_at && <button disabled={busy} className="secondary-button" onClick={() => void mutate(`/notifications/${String(notice.id)}/opened`, 'PUT')}>Mark as read</button>}</div></article>)}</div>{!notices.length && <p>You’re all caught up.</p>}
       {Array.isArray(profile.roles) && profile.roles.includes('ADMIN') && <a className="secondary-button detail-link" href="/admin">Administration</a>}
       <button disabled={busy} className="secondary-button detail-link" onClick={async () => {
         setBusy(true);

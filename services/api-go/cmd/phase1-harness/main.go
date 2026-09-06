@@ -11,6 +11,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -21,6 +22,8 @@ import (
 	database "fitcalgary.ca/index/api/internal/db"
 	"fitcalgary.ca/index/api/internal/httpapi"
 	"fitcalgary.ca/index/api/internal/security"
+	"fitcalgary.ca/index/api/internal/storage"
+	"fitcalgary.ca/index/api/internal/workers"
 )
 
 type developmentVerifier struct {
@@ -90,10 +93,26 @@ func main() {
 		log.Fatal(err)
 	}
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	var evidence storage.EvidenceStore
+	if endpoint := os.Getenv("STORAGE_TEST_ENDPOINT"); endpoint != "" {
+		parsed, parseErr := url.Parse(endpoint)
+		if parseErr != nil || parsed.Hostname() != "127.0.0.1" {
+			log.Fatal("development evidence endpoint must be loopback")
+		}
+		evidence, err = storage.NewS3EvidenceStore(ctx, config.Config{
+			S3Endpoint: endpoint, S3Region: "us-east-1", S3Bucket: "fitcalgary-evidence-test",
+			S3AccessKeyID: os.Getenv("STORAGE_TEST_ACCESS_KEY"), S3SecretAccessKey: os.Getenv("STORAGE_TEST_SECRET_KEY"),
+			SignedURLTTL: 5 * time.Minute, MaxEvidenceBytes: 4_294_967_296,
+		})
+		if err != nil {
+			log.Fatal("development evidence configuration failed")
+		}
+	}
+	go workers.RunNotificationOutbox(ctx, pool, logger)
 	server := httpapi.NewServer(pool, developmentVerifier{
 		userToken:  userToken,
 		adminToken: adminToken,
-	}, nil, cipher, config.Config{
+	}, evidence, cipher, config.Config{
 		Environment:           "development",
 		WebPublicURL:          "http://localhost:3000",
 		SignedURLTTL:          5 * time.Minute,
