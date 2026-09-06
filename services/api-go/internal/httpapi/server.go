@@ -153,6 +153,27 @@ func (s *Server) authenticate(next http.Handler) http.Handler {
 		}
 		roleNames = append(roleNames, stored...)
 		principal.Roles = auth.ClaimsRoles(roleNames)
+		restrictionRows, err := s.db.Query(r.Context(), `SELECT role FROM user_role_restrictions WHERE profile_id=$1`, profileID)
+		if err != nil {
+			s.writeError(w, r, err)
+			return
+		}
+		restricted, err := pgx.CollectRows(restrictionRows, pgx.RowTo[string])
+		if err != nil {
+			s.writeError(w, r, err)
+			return
+		}
+		denied := map[auth.Role]bool{}
+		for _, role := range restricted {
+			denied[auth.Role(role)] = true
+		}
+		effective := make([]auth.Role, 0, len(principal.Roles))
+		for _, role := range principal.Roles {
+			if !denied[role] {
+				effective = append(effective, role)
+			}
+		}
+		principal.Roles = effective
 		identity := requestIdentity{Principal: principal, ProfileID: profileID}
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), identityKey, identity)))
 	})

@@ -154,7 +154,7 @@ class HomeScreen extends ConsumerWidget {
                   loading: () => const LinearProgressIndicator(),
                   error: (_, _) => const EmptyPanel(
                     title: 'Events reconnecting',
-                    body: 'The product shell remains available while the development service reconnects.',
+                    body: 'We could not load the latest updates. Please try again.',
                   ),
                   data: (items) => items.isEmpty
                       ? const EmptyPanel(
@@ -222,7 +222,7 @@ class _SnapshotGrid extends StatelessWidget {
       ('${gymCount ?? '—'}', 'GYMS INDEXED'),
       ('${eventCount ?? '—'}', 'UPCOMING EVENTS'),
       ('${boardCount ?? '—'}', 'ACTIVE BOARDS'),
-      ('OIDC', 'SECURE ACCOUNT'),
+      ('YOU', 'YOUR NEXT BEST'),
     ];
     return Container(
       decoration: const BoxDecoration(

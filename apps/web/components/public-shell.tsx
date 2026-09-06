@@ -22,5 +22,5 @@ export function PublicShell({ children, active }: { children: ReactNode; active?
 }
 
 export function DataState({ title, children }: { title: string; children: ReactNode }) {
-  return <div className="data-panel"><p className="operator">Live platform data</p><h3>{title}</h3><div>{children}</div></div>;
+  return <div className="data-panel"><p className="operator">FitCalgary Index</p><h3>{title}</h3><div>{children}</div></div>;
 }

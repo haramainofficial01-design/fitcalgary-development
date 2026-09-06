@@ -38,6 +38,11 @@ func (workflowStore) Delete(context.Context, string) error { return nil }
 type workflowVerifier struct{ prefix string }
 
 func (v workflowVerifier) Verify(_ context.Context, token string) (auth.Principal, error) {
+	// Model new provider tokens retaining the same subject and stale role claim.
+	// This tests application authorization, not the provider's token exchange.
+	if token == "judge-refreshed" || token == "judge-relogin" {
+		token = "judge"
+	}
 	roles := []auth.Role{auth.RoleUser}
 	switch token {
 	case "athlete", "other":
@@ -93,6 +98,51 @@ func TestCompetitionDatabaseWorkflow(t *testing.T) {
 		return result
 	}
 	city := request("GET", "/cities", "", nil, 200)["data"].([]any)[0].(map[string]any)["id"]
+	judgeID := request("GET", "/profile", "judge", nil, 200)["id"].(string)
+	rolePath := "/admin/users/" + judgeID + "/roles/JUDGE"
+	request("DELETE", rolePath, "athlete", nil, 403)
+	request("DELETE", rolePath, "admin", nil, 204)
+	assertJudge := func(token string, allowed bool) {
+		t.Helper()
+		status := 403
+		if allowed {
+			status = 200
+		}
+		request("GET", "/judge/queue", token, nil, status)
+		for _, path := range []string{"/profile", "/auth/context"} {
+			response := request("GET", path, token, nil, 200)
+			found := false
+			for _, role := range response["roles"].([]any) {
+				if role == "JUDGE" {
+					found = true
+				}
+			}
+			if found != allowed {
+				t.Fatalf("%s %s: inconsistent effective roles: %v", token, path, response["roles"])
+			}
+		}
+	}
+	for _, token := range []string{"judge", "judge-refreshed", "judge-relogin"} {
+		assertJudge(token, false)
+		request("PUT", rolePath, token, nil, 403)
+		request("DELETE", rolePath, token, nil, 403)
+		request("PATCH", "/profile", token, map[string]any{"roles": []string{"ADMIN", "JUDGE"}}, 422)
+		assertJudge(token, false)
+	}
+	request("PUT", rolePath, "admin", nil, 204)
+	for _, token := range []string{"judge", "judge-refreshed", "judge-relogin"} {
+		assertJudge(token, true)
+	}
+	// A subsequent revocation must also override the newly stored local grant.
+	request("DELETE", rolePath, "admin", nil, 204)
+	assertJudge("judge-relogin", false)
+	request("PUT", rolePath, "admin", nil, 204)
+	assertJudge("judge", true)
+	athleteID := request("GET", "/profile", "athlete", nil, 200)["id"].(string)
+	request("PUT", "/admin/users/"+athleteID+"/roles/ADMIN", "athlete", nil, 403)
+	request("PATCH", "/profile", "athlete", map[string]any{"roles": []string{"ADMIN"}}, 422)
+	request("GET", "/admin/users", "athlete", nil, 403)
+	request("DELETE", "/admin/users/"+judgeID+"/roles/USER", "admin", nil, 422)
 	for _, token := range []string{"athlete", "other", "judge"} {
 		request("PATCH", "/profile", token, map[string]any{"cityId": city, "dateOfBirth": "1992-08-31", "sexCategory": "WOMEN"}, 200)
 	}

@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SyntheticEvent } from 'react';
+import { contentFields, contentPayload, contentValue } from '@/lib/admin-content';
 import { Activity, BadgeDollarSign, Bell, CalendarDays, ChartNoAxesCombined, ClipboardCheck, Dumbbell, FileClock, Flag, Gauge, Layers3, ListChecks, Settings, ShieldCheck, Tags, Users } from 'lucide-react';
 
 type Json = Record<string, unknown>;
@@ -53,8 +54,13 @@ export default function AdminPage() {
   const [error, setError] = useState<string>();
   const [notice, setNotice] = useState<string>();
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const loadSequence = useRef(0);
+  const userArea = active === 'users' || active === 'roles';
+  const remoteSearch = userArea ? search : '';
 
-  const load = useCallback(async (section: string) => {
+  const load = useCallback(async (section: string, query = '', pageNumber = 1) => {
+    const sequence = ++loadSequence.current;
     const endpoint = sectionFor(section)?.[3];
     setBusy(true);
     setError(undefined);
@@ -64,12 +70,15 @@ export default function AdminPage() {
       return;
     }
     try {
-      setData(await backend(endpoint));
+      const suffix = section === 'users' || section === 'roles' ? `?q=${encodeURIComponent(query)}&page=${pageNumber}&pageSize=50` : '';
+      const result = await backend(endpoint+suffix);
+      if (sequence === loadSequence.current) setData(result);
     } catch (reason) {
+      if (sequence !== loadSequence.current) return;
       setData({});
       setError(reason instanceof Error ? reason.message : 'Unable to load this area.');
     } finally {
-      setBusy(false);
+      if (sequence === loadSequence.current) setBusy(false);
     }
   }, []);
 
@@ -82,8 +91,7 @@ export default function AdminPage() {
           const requested = new URLSearchParams(location.search).get('section') ?? 'overview';
           const initial = sectionFor(requested) ? requested : 'overview';
           setActive(initial);
-          void load(initial);
-          void backend('admin/reference-data').then(setReference).catch(() => undefined);
+          void Promise.all([backend('admin/reference-data'), backend('admin/gyms')]).then(([ref, gyms]) => setReference({...ref, gyms:gyms.data})).catch(() => undefined);
         } else {
           setBusy(false);
         }
@@ -94,12 +102,18 @@ export default function AdminPage() {
       });
   }, [load]);
 
+  useEffect(() => {
+    if (!session?.authenticated || !session.roles?.map(role => role.toUpperCase()).includes('ADMIN')) return;
+    const timer = setTimeout(() => void load(active, remoteSearch, page), remoteSearch ? 250 : 0);
+    return () => clearTimeout(timer);
+  }, [active, remoteSearch, page, session, load]);
+
   const select = (section: string) => {
     setActive(section);
     setNotice(undefined);
     setSearch('');
     history.replaceState(null, '', `/admin?section=${encodeURIComponent(section)}`);
-    void load(section);
+    setPage(1);
   };
 
   if (!session) return <AdminGate title="Checking your secure session…" />;
@@ -110,23 +124,28 @@ export default function AdminPage() {
     <main className="admin-shell">
       <aside className="admin-sidebar">
         <a className="wordmark admin-wordmark" href="/"><strong>FITCALGARY</strong><span>ADMIN</span></a>
-        <nav aria-label="Admin areas">{sections.map(([key, label, Icon]) => <button key={key} className={active === key ? 'active' : ''} aria-current={active === key ? 'page' : undefined} onClick={() => select(key)}><Icon size={17} /><span>{label}</span></button>)}</nav>
+        <nav aria-label="Admin areas">{sections.map(([key, label, Icon]) => <button key={key} aria-label={label} title={label} className={active === key ? 'active' : ''} aria-current={active === key ? 'page' : undefined} onClick={() => select(key)}><Icon size={17} /><span>{label}</span></button>)}</nav>
         <div className="admin-user"><span>{session.displayName}</span><button onClick={async () => { await fetch('/api/auth/logout', { method: 'POST' }); location.href = '/'; }}>Sign out</button></div>
       </aside>
       <section className="admin-main">
         <header><div><p className="overline">Operations console</p><h1>{sections.find(([key]) => key === active)?.[1]}</h1></div><span className="connection-chip"><i /> Authoritative API</span></header>
         {notice && <div className="admin-notice">{notice}</div>}
-        {error && <div className="admin-error"><strong>Could not load this area.</strong><p>{error}</p><button onClick={() => void load(active)}>Retry</button></div>}
+        {error && <div className="admin-error"><strong>Could not load this area.</strong><p>{error}</p><button onClick={() => void load(active, remoteSearch, page)}>Retry</button></div>}
         {busy ? <div className="admin-loading"><div className="loading-bar" /></div> : !error && (
           <AdminContent
             active={active}
             data={data}
             reference={reference}
             search={search}
-            setSearch={setSearch}
-            onChanged={async (message) => { setNotice(message); await Promise.all([load(active), backend('admin/reference-data').then(setReference)]); }}
+            setSearch={value => { setSearch(value); setPage(1); }}
+            onChanged={async (message) => { setNotice(message); await Promise.all([load(active, remoteSearch, page), Promise.all([backend('admin/reference-data'), backend('admin/gyms')]).then(([ref, gyms]) => setReference({...ref, gyms:gyms.data}))]); }}
           />
         )}
+        {userArea && !busy && !error && <div className="admin-pagination">
+          <button disabled={page===1} onClick={()=>setPage(p=>p-1)}>Previous</button>
+          <span>Page {page} · {String(data.total??0)} accounts</span>
+          <button disabled={page*50>=Number(data.total??0)} onClick={()=>setPage(p=>p+1)}>Next</button>
+        </div>}
       </section>
     </main>
   );
@@ -142,9 +161,32 @@ function AdminContent({ active, data, reference, search, setSearch, onChanged }:
   const rows = Array.isArray(data.data) ? data.data as Json[] : [];
   const visible = rows.filter((row) => JSON.stringify(row).toLowerCase().includes(search.toLowerCase()));
   return <div className="admin-content">
-    <div className="admin-toolbar"><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Search ${active}`} />{active === 'gyms' && <CreateGym reference={reference} onChanged={onChanged} />}{active === 'clubs' && <CreateClub reference={reference} onChanged={onChanged} />}{active === 'events' && <CreateEvent reference={reference} onChanged={onChanged} />}{['disciplines','divisions','leaderboards'].includes(active) && <CompetitionForm area={active} reference={reference} onChanged={onChanged} />}</div>
-    {visible.length ? <AdminTable rows={visible} actions={['disciplines','divisions','leaderboards'].includes(active) ? (row) => <CompetitionForm area={active} reference={reference} record={row} onChanged={onChanged}/> : undefined} /> : <div className="admin-empty"><h2>No records returned</h2><p>This connected area is ready for authorized client content. Empty production data is never replaced with fabricated records.</p></div>}
+    <div className="admin-toolbar"><input aria-label={`Search ${active}`} value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Search ${active}`} />{contentFields[active] && <ContentEditor area={active} reference={reference} onChanged={onChanged}/ >}{['disciplines','divisions','leaderboards'].includes(active) && <CompetitionForm area={active} reference={reference} onChanged={onChanged} />}</div>
+    {visible.length ? <AdminTable rows={visible} actions={row => <AdminRowActions area={active} row={row} reference={reference} onChanged={onChanged}/>} /> : <div className="admin-empty"><h2>No records returned</h2><p>Client-approved content can be added here. Empty production data is never replaced with fabricated records.</p></div>}
   </div>;
+}
+
+function AdminRowActions({area,row,reference,onChanged}: {area:string;row:Json;reference:Json;onChanged:(message:string)=>Promise<void>}) {
+  if(contentFields[area]) return <ContentEditor area={area} reference={reference} record={row} onChanged={onChanged}/>;
+  if(['disciplines','divisions','leaderboards'].includes(area)) return <CompetitionForm area={area} reference={reference} record={row} onChanged={onChanged}/>;
+  if(['users','roles'].includes(area)) return <AdminCreate label="Manage permissions" onSubmit={async form=>{
+    const role=String(form.get('role'));
+    await backend(`admin/users/${String(row.id)}/roles/${role}`,{method:form.get('action')==='GRANT'?'PUT':'DELETE'});
+    await onChanged('Permission change saved and audited. It applies to subsequent protected requests.');
+  }}>
+    <p>{String(row.display_name)} · {String(row.email??'No email supplied')}</p>
+    <p>Additional application grants: {display(row.roles)}. Explicit restrictions: {display(row.restricted_roles)}.</p>
+    <label>Role<select name="role" aria-label="Role" required>{['MODERATOR','ADMIN','PERSONAL_TRAINER','JUDGE'].map(role=><option key={role}>{role}</option>)}</select></label>
+    <label>Change<select name="action" aria-label="Permission change" required><option value="">Choose a change</option><option value="GRANT">Grant access</option><option value="REVOKE">Revoke access, including identity-provider claims</option></select></label>
+    <p>USER is the base account role. An administrator cannot revoke their own ADMIN access.</p>
+  </AdminCreate>;
+  if(area==='settings') return <AdminCreate label="Edit setting" onSubmit={async form=>{
+    let value:unknown;
+    try { value=JSON.parse(String(form.get('value'))); } catch { throw new Error('Enter valid JSON for this setting.'); }
+    await backend(`admin/settings/${encodeURIComponent(String(row.key))}`,{method:'PUT',body:JSON.stringify({value,public:form.has('public')})});
+    await onChanged('Application setting saved and audited.');
+  }}><p>{String(row.key)}. Never enter passwords, tokens or provider credentials here.</p><label>Value (JSON)<textarea name="value" aria-label="Value (JSON)" defaultValue={JSON.stringify(row.value,null,2)} rows={8} required/></label><label><input type="checkbox" name="public" defaultChecked={row.public===true}/>Public setting</label></AdminCreate>;
+  return <span>Read-only record</span>;
 }
 
 function PlannedAdminArea({ active }: { active: string }) {
@@ -165,8 +207,12 @@ function Overview({ data }: { data: Json }) {
 }
 
 function AdminTable({ rows, actions }: { rows: Json[]; actions?: (row: Json) => React.ReactNode }) {
-  const columns = useMemo(() => Array.from(new Set(rows.flatMap((row) => Object.keys(row)))).filter((key) => !['before_data', 'after_data', 'privacy', 'description'].includes(key)).slice(0, 7), [rows]);
-  return <div className="admin-table-wrap"><table><thead><tr>{columns.map((column) => <th key={column}>{column.replaceAll('_', ' ')}</th>)}{actions && <th>Actions</th>}</tr></thead><tbody>{rows.map((row, index) => <tr key={String(row.id ?? index)}>{columns.map((column) => <td key={column}>{display(row[column])}</td>)}{actions && <td>{actions(row)}</td>}</tr>)}</tbody></table></div>;
+  const columns = useMemo(() => {
+    const available=Array.from(new Set(rows.flatMap(row=>Object.keys(row))));
+    const preferred=['name','plan_name','display_name','title','athlete','discipline','division','region','gym','email','publish_status','event_status','status','delivery_status','account_status','roles','recurring_cents','billing_frequency','ongoing_monthly_cents','start_at','sport','city','action','reason','created_at'];
+    return Array.from(new Set([...preferred,...available])).filter(key=>available.includes(key)&&!['id','before_data','after_data','privacy','description','total'].includes(key)&&!key.endsWith('_id')).slice(0,7);
+  },[rows]);
+  return <div className="admin-table-wrap"><table><thead><tr>{columns.map((column) => <th key={column}>{column.replaceAll('_', ' ')}</th>)}{actions && <th>Actions</th>}</tr></thead><tbody>{rows.map((row, index) => <tr key={String(row.id ?? index)}>{columns.map((column) => <td key={column}>{column.endsWith('_cents') && row[column] != null ? new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD'}).format(Number(row[column])/100) : display(row[column])}</td>)}{actions && <td>{actions(row)}</td>}</tr>)}</tbody></table></div>;
 }
 
 function display(value: unknown) {
@@ -175,37 +221,45 @@ function display(value: unknown) {
   return String(value);
 }
 
-function CreateGym({ reference, onChanged }: { reference: Json; onChanged: (message: string) => Promise<void> }) {
-  const cities = Array.isArray(reference.cities) ? reference.cities as Json[] : [];
-  return <AdminCreate label="Add gym" onSubmit={async (form) => {
-    const cityId = String(form.get('cityId') ?? cities[0]?.id ?? '');
-    await backend('admin/gyms', { method: 'POST', body: JSON.stringify({ cityId, slug: form.get('slug'), name: form.get('name'), operator: form.get('operator') || null, neighbourhood: form.get('neighbourhood') || null, categories: [], amenities: [], publishStatus: form.get('publishStatus') }) });
-    await onChanged('Gym saved. Published changes are immediately available to every client through the shared API.');
-  }}><label>City<select name="cityId" required>{cities.map((city) => <option key={String(city.id)} value={String(city.id)}>{String(city.name)}</option>)}</select></label><label>Name<input name="name" required minLength={2} /></label><label>Slug<input name="slug" required pattern="[a-z0-9-]+" /></label><label>Operator<input name="operator" /></label><label>Neighbourhood<input name="neighbourhood" /></label><label>Status<select name="publishStatus"><option>DRAFT</option><option>PUBLISHED</option><option>ARCHIVED</option></select></label></AdminCreate>;
-}
-
-function CreateEvent({ reference, onChanged }: { reference: Json; onChanged: (message: string) => Promise<void> }) {
-  const cities = Array.isArray(reference.cities) ? reference.cities as Json[] : [];
-  return <AdminCreate label="Add event" onSubmit={async (form) => {
-    const cityId = String(form.get('cityId') ?? cities[0]?.id ?? '');
-    await backend('admin/events', { method: 'POST', body: JSON.stringify({ cityId, slug: form.get('slug'), name: form.get('name'), startAt: new Date(String(form.get('startAt'))).toISOString(), registrationStatus: 'OPEN', eventStatus: 'ACTIVE', publishStatus: form.get('publishStatus'), tags: [] }) });
-    await onChanged('Event saved. Published changes are immediately available to web, iOS, Android, and watch clients.');
-  }}><label>City<select name="cityId" required>{cities.map((city) => <option key={String(city.id)} value={String(city.id)}>{String(city.name)}</option>)}</select></label><label>Name<input name="name" required minLength={2} /></label><label>Slug<input name="slug" required pattern="[a-z0-9-]+" /></label><label>Starts<input name="startAt" type="datetime-local" required /></label><label>Status<select name="publishStatus"><option>DRAFT</option><option>PUBLISHED</option><option>ARCHIVED</option></select></label></AdminCreate>;
-}
-
-function CreateClub({ reference, onChanged }: { reference: Json; onChanged: (message: string) => Promise<void> }) {
-  const cities = Array.isArray(reference.cities) ? reference.cities as Json[] : [];
-  return <AdminCreate label="Add club" onSubmit={async (form) => {
-    const cityId = String(form.get('cityId') ?? cities[0]?.id ?? '');
-    await backend('admin/clubs', { method: 'POST', body: JSON.stringify({ cityId, slug: form.get('slug'), name: form.get('name'), sport: form.get('sport'), category: form.get('category') || null, websiteUrl: form.get('websiteUrl') || null, tags: [], ageCategories: [], publishStatus: form.get('publishStatus') }) });
-    await onChanged('Club saved. Published changes are immediately available to every client through the shared API.');
-  }}><label>City<select name="cityId" required>{cities.map((city) => <option key={String(city.id)} value={String(city.id)}>{String(city.name)}</option>)}</select></label><label>Name<input name="name" required minLength={2} /></label><label>Slug<input name="slug" required pattern="[a-z0-9-]+" /></label><label>Sport<input name="sport" required minLength={2} /></label><label>Category<input name="category" /></label><label>Website<input name="websiteUrl" type="url" /></label><label>Status<select name="publishStatus"><option>DRAFT</option><option>PUBLISHED</option><option>ARCHIVED</option></select></label></AdminCreate>;
+function ContentEditor({area,reference,record,onChanged}: {area:string;reference:Json;record?:Json;onChanged:(message:string)=>Promise<void>}) {
+  const r=record??{};
+  const refs=(key:string)=>Array.isArray(reference[key])?reference[key] as Json[]:[];
+  const fields=contentFields[area];
+  return <AdminCreate label={record?'Edit record':area==='pricing'?'Add pricing plan':`Add ${area.slice(0,-1)}`} onSubmit={async form=>{
+    const body=contentPayload(area,form);
+    const gym=String(record?.gym_id??form.get('gymId')??'');
+    const endpoint=area==='pricing'?`admin/gyms/${encodeURIComponent(gym)}/pricing`:`admin/${area}`;
+    await backend(endpoint+(record?`/${String(record.id)}`:''),{method:record?'PUT':'POST',body:JSON.stringify(body)});
+    await onChanged('Record saved and audited. Published changes are available through the shared API.');
+  }}>
+    {area==='pricing'&&!record&&<label>Gym<select name="gymId" aria-label="Gym" required><option value="">Choose a gym</option>{refs('gyms').map(g=><option key={String(g.id)} value={String(g.id)}>{String(g.name)}</option>)}</select></label>}
+    {area==='pricing'&&<p>Enter advertised charges in Canadian dollars. Monthly and first-year comparisons are calculated by the server. Leave costs unconfirmed if information is incomplete.</p>}
+    {fields.map(f=>{
+      const value=contentValue(f,r);
+      const props={name:f.key,'aria-label':f.label+(f.type==='list'?' (comma-separated)':''),required:f.required,defaultValue:String(value)};
+      if(f.type==='boolean') return <label key={f.key}><input type="checkbox" name={f.key} defaultChecked={Boolean(value)}/>{f.label}</label>;
+      if(f.type==='select') return <label key={f.key}>{f.label}<select {...props}><option value="">{f.required?'Choose an option':'Not specified'}</option>{f.reference?refs(f.reference).map(row=><option key={String(row.id)} value={String(row.id)}>{String(row.name)}</option>):f.options?.map(v=><option key={v} value={v}>{v.replaceAll('_',' ')}</option>)}</select></label>;
+      if(f.type==='textarea') return <label key={f.key}>{f.label}<textarea {...props} rows={3}/></label>;
+      const type=f.type==='datetime'?'datetime-local':['money','number'].includes(f.type??'')?'number':['date','url'].includes(f.type??'')?f.type:'text';
+      return <label key={f.key}>{f.label}{f.type==='list'?' (comma-separated)':''}<input {...props} type={type} step={f.type==='money'?'0.01':f.type==='number'||f.type==='datetime'?'1':undefined} min={f.type==='money'||f.type==='number'?0:undefined} pattern={f.key==='slug'?'[a-z0-9-]+':undefined}/></label>;
+    })}
+    {area!=='pricing'&&<p>Draft and archived records are hidden from public clients. Archiving preserves relationships and history.</p>}
+  </AdminCreate>;
 }
 
 function AdminCreate({ label, children, onSubmit }: { label: string; children: React.ReactNode; onSubmit: (form: FormData) => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const element = dialog.current;
+    if (open && element) {
+      element.showModal();
+      element.querySelector<HTMLElement>('input, select, textarea')?.focus();
+      return () => element.close();
+    }
+  }, [open]);
   const submit = async (event: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     event.preventDefault();
     setBusy(true);
@@ -214,7 +268,7 @@ function AdminCreate({ label, children, onSubmit }: { label: string; children: R
     catch (reason) { setError(reason instanceof Error ? reason.message : 'Save failed.'); }
     finally { setBusy(false); }
   };
-  return <>{<button className="primary-button" onClick={() => setOpen(true)}>{label}</button>}{open && <div className="admin-modal" role="dialog" aria-modal="true"><form onSubmit={submit}><header><h2>{label}</h2><button type="button" onClick={() => setOpen(false)}>Close</button></header>{children}{error && <p className="form-error">{error}</p>}<button className="primary-button" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button></form></div>}</>;
+  return <><button className="primary-button" onClick={() => { setError(undefined); setOpen(true); }}>{label}</button>{open && <dialog ref={dialog} className="admin-modal" aria-label={label} onCancel={event => { if (busy) event.preventDefault(); else setOpen(false); }}><form onSubmit={submit}><header><h2>{label}</h2><button type="button" disabled={busy} onClick={() => setOpen(false)}>Close</button></header>{children}{error && <p className="form-error" role="alert">{error}</p>}<button className="primary-button" disabled={busy}>{busy ? 'Saving…' : 'Save'}</button></form></dialog>}</>;
 }
 
 function CompetitionForm({area,reference,record,onChanged}: {area:string;reference:Json;record?:Json;onChanged:(message:string)=>Promise<void>}) {

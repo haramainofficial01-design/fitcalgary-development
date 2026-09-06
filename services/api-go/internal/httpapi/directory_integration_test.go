@@ -167,6 +167,17 @@ VALUES($1,$2,1185,'19:45','IN_PERSON',now(),$1,'{"label":"Open"}'::jsonb,'{"disp
 	if plan["membership_type"] != "Student" || plan["contract_months"] != float64(12) {
 		t.Fatal("membership terms did not persist")
 	}
+	updatePath := pricingPath + "/" + plan["id"].(string)
+	changedPricing := strings.Replace(pricingBody, `"recurringCents":1000`, `"recurringCents":1200`, 1)
+	request("PUT", updatePath, "first", changedPricing, 403)
+	changedPlan := request("PUT", updatePath, "admin", changedPricing, 200)
+	if changedPlan["recurring_cents"] != float64(1200) || changedPlan["ongoing_monthly_cents"] != float64(1200) || changedPlan["membership_type"] != "Student" {
+		t.Fatal("pricing edit did not recalculate and preserve plan metadata")
+	}
+	request("PUT", "/api/v1/admin/gyms/"+b["id"].(string)+"/pricing/"+plan["id"].(string), "admin", changedPricing, 404)
+	request("PUT", updatePath, "admin", strings.Replace(changedPricing, `"effectiveTo":"2099-12-31"`, `"effectiveTo":"2098-01-01"`, 1), 422)
+	unsafeSource := strings.Replace(changedPricing, `"notes":"Development only"`, `"notes":"Development only","sourceUrl":"javascript:alert(1)"`, 1)
+	request("POST", pricingPath, "admin", unsafeSource, 422)
 	current := request("GET", "/api/v1/gyms/development-monthly-gym", "", "", 200)
 	if len(current["pricing"].([]any)) != 1 {
 		t.Fatal("future plan leaked into current pricing")

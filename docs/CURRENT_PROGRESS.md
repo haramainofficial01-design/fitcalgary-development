@@ -4,6 +4,35 @@ Last updated: 2026-09-05 (America/Edmonton).
 
 ## Latest verified continuation
 
+Consumer web home placeholders have been replaced by the read-only Go-backed
+directory. Search, paging, retry/empty states and gym/event/board detail routes are
+implemented. Chrome acceptance verifies actual published gym search and normalized
+pricing, with mobile layout and missing-record behavior. Web type/lint/build and
+six unit tests pass. This is not yet full authenticated web workflow parity.
+
+Visual direction is being implemented without changing the brand: layered web
+listing cards, floating mobile dock, restrained hover feedback and contrast/motion
+fallbacks; Flutter floating navigation with selective Apple translucency and opaque
+Android elevation. Adaptive material tests and the updated iOS profile simulator
+scenario pass. Major-screen and watch polish are still in progress.
+
+Role restrictions now have PostgreSQL-backed lifecycle regression coverage:
+existing token, simulated refreshed/re-login tokens with the same subject and
+provider role claim, repeated revocation, legitimate restoration, self-escalation
+rejection, and matching effective roles from `/profile` and `/auth/context`.
+These checks verify application enforcement; they do not claim a live production
+Keycloak token exchange. Dashboard browser tests also exercised grant/revoke
+against the running Go service and PostgreSQL. Cross-platform lifecycle UI
+verification remains open before closing the entire role-restriction work item.
+
+Phase 2 presentation cleanup is underway: consumer sign-in wording and workflow
+errors no longer expose identity-provider details or raw backend diagnostics.
+The remaining major-screen refinement must preserve cream/black/red editorial
+identity while adding restrained adaptive layered surfaces and accessible motion.
+Reduced-motion/readability fallbacks are required. Phase 3 retains the comprehensive
+production, store, screenshot and release-configuration audit; this is not being
+represented as completed release verification.
+
 The daily development automation has been deleted at the Developer's request.
 Continue immediately and finish as early as verification permits. Phase 2 is NOT
 yet feature-complete and the final Client review package has not been generated.

@@ -79,6 +79,9 @@ func expectAuthentication(database pgxmock.PgxPoolIface) {
 	database.ExpectQuery(regexp.QuoteMeta(`SELECT role FROM user_roles WHERE profile_id=$1`)).
 		WithArgs(testProfileID).
 		WillReturnRows(pgxmock.NewRows([]string{"role"}))
+	database.ExpectQuery(regexp.QuoteMeta(`SELECT role FROM user_role_restrictions WHERE profile_id=$1`)).
+		WithArgs(testProfileID).
+		WillReturnRows(pgxmock.NewRows([]string{"role"}))
 }
 
 func TestProtectedRouteRejectsMissingBearerToken(t *testing.T) {

@@ -39,7 +39,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     } catch (e) {
       if (mounted) {
         setState(
-          () => error = 'Sign-in could not be completed. Check the identity service and try again.',
+          () => error = 'Sign-in could not be completed. Please try again.',
         );
       }
     } finally {
@@ -112,7 +112,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 ),
               const SizedBox(height: 24),
               const Text(
-                'These choices continue to the FitCalgary Keycloak identity service. Email verification, password reset, Google and Apple are enabled there when their production credentials are supplied. The app uses OIDC Authorization Code + PKCE.',
+                'Continue securely to your FitCalgary account. You can also reset your password from the sign-in page.',
                 style: TextStyle(
                   fontSize: 11,
                   color: FitColors.muted,

@@ -5,6 +5,33 @@ matrix below is historical evidence, not a pending acceptance list.
 
 ## Phase 2 increment — 2026-09-05
 
+### Subsequent role, administration and presentation verification
+
+- Expanded `TestCompetitionDatabaseWorkflow`: PASS against the loopback PostgreSQL
+  test database. Restrictions override existing and simulated refreshed/re-login
+  provider claims; `/profile` and `/auth/context` agree; restoration and repeat
+  revocation work; ordinary accounts cannot grant/revoke roles or patch their roles.
+- `test/admin-browser.mjs`: PASS in Chrome against actual Go/PostgreSQL. Tests
+  administrator/ordinary/signed-out gates, live grant/revoke, cross-origin rejection,
+  full gym/pricing edits, event publication/edit/unpublication, club archive,
+  narrow-screen form layout and Escape dismissal.
+- The same browser scenario now verifies signed-out home search, API-backed results,
+  clearing an empty search, retry after a simulated network outage, public-proxy
+  allowlisting, a real gym detail with server-normalized monthly price and a missing
+  listing. Screenshots/video remain internal `.artifacts/phase2/admin-browser` evidence.
+- Web type checking, lint, production build and six auth/content unit tests: PASS.
+- Flutter analysis and complete 19-test suite: PASS, including Apple/Android
+  differentiation and high-contrast and reduced-motion opaque fallbacks.
+- Updated iOS profile presentation: fresh Xcode build and simulator test PASS.
+  Isolated presentation records are used; this is not new production identity or
+  database evidence. Android also rebuilt/installed and passed the same presentation
+  test on emulator-5554. An Android SDK XML version warning is present but did not
+  fail the build; release-toolchain alignment remains a later validation item.
+
+The implemented Flutter treatment is a platform-adaptive Flutter material surface,
+not a claim that a native Liquid Glass API has been integrated. Remaining major-screen
+polish, watchOS treatment, complete workflows and final review artifacts remain open.
+
 | Check | Result | Boundary |
 |---|---|---|
 | Flutter analysis and complete widget/unit suite | PASS | 16 tests; real board projections, verification labels, configured metrics/checklists, normal-user review controls, notification preference save |

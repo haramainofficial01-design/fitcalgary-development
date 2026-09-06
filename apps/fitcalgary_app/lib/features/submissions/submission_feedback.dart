@@ -5,10 +5,21 @@ String workflowError(Object error) {
     if (CancelToken.isCancel(error)) {
       return 'Upload paused. Retry with the same file to continue this submission.';
     }
-    final body = error.response?.data;
-    if (body is Map && body['error'] is Map) {
-      final message = (body['error'] as Map)['message'];
-      if (message is String) return message;
+    switch (error.response?.statusCode) {
+      case 401:
+        return 'Please sign in again to continue.';
+      case 403:
+        return 'Your account does not have access to this action.';
+      case 404:
+        return 'This item is no longer available.';
+      case 409:
+        return 'This item has changed. Refresh and try again.';
+      case 413:
+        return 'This file is too large. Please choose a smaller video.';
+      case 422:
+        return 'Check the details and required fields, then try again.';
+      case 429:
+        return 'Please wait a moment before trying again.';
     }
     return 'The service could not be reached. Check your connection and retry.';
   }

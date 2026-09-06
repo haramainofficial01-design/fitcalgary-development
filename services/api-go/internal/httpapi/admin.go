@@ -25,6 +25,7 @@ func (s *Server) registerAdminRoutes(router chi.Router) {
 	router.Post("/admin/gyms", s.handle(s.adminCreateGym))
 	router.Put("/admin/gyms/{id}", s.handle(s.adminUpdateGym))
 	router.Post("/admin/gyms/{id}/pricing", s.handle(s.adminCreatePricing))
+	router.Put("/admin/gyms/{id}/pricing/{pricingId}", s.handle(s.adminUpdatePricing))
 	router.Get("/admin/events", s.handle(s.adminEvents))
 	router.Post("/admin/events", s.handle(s.adminCreateEvent))
 	router.Put("/admin/events/{id}", s.handle(s.adminUpdateEvent))
@@ -90,7 +91,7 @@ func (s *Server) adminUsers(_ http.ResponseWriter, r *http.Request) (any, error)
 		return nil, err
 	}
 	query := optionalString(r.URL.Query().Get("q"), 100)
-	rows, err := queryMaps(r.Context(), s.db, `SELECT p.id,p.email,p.username,p.display_name,p.account_status,p.created_at,p.updated_at,COALESCE(array_agg(ur.role ORDER BY ur.role) FILTER (WHERE ur.role IS NOT NULL),'{}') AS roles,COUNT(*) OVER() AS total FROM profiles p LEFT JOIN user_roles ur ON ur.profile_id=p.id WHERE ($1::text IS NULL OR p.email ILIKE $1 OR p.username ILIKE $1 OR p.display_name ILIKE $1) GROUP BY p.id ORDER BY p.created_at DESC LIMIT $2 OFFSET $3`, like(query), pageSize, (page-1)*pageSize)
+	rows, err := queryMaps(r.Context(), s.db, `SELECT p.id,p.email,p.username,p.display_name,p.account_status,p.created_at,p.updated_at,COALESCE(array_agg(ur.role ORDER BY ur.role) FILTER (WHERE ur.role IS NOT NULL),'{}') AS roles,ARRAY(SELECT rr.role FROM user_role_restrictions rr WHERE rr.profile_id=p.id ORDER BY rr.role) AS restricted_roles,COUNT(*) OVER() AS total FROM profiles p LEFT JOIN user_roles ur ON ur.profile_id=p.id WHERE ($1::text IS NULL OR p.email ILIKE $1 OR p.username ILIKE $1 OR p.display_name ILIKE $1) GROUP BY p.id ORDER BY p.created_at DESC LIMIT $2 OFFSET $3`, like(query), pageSize, (page-1)*pageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -238,6 +239,32 @@ type pricingInput struct {
 	Notes                      *string `json:"notes"`
 }
 
+func validatePricing(body pricingInput) error {
+	if !safeContentURL(body.SourceURL) {
+		return validation("Pricing source must be an HTTP(S) URL without embedded credentials")
+	}
+	if strings.TrimSpace(body.PlanName) == "" || len(body.PlanName) > 160 || body.RecurringCents < 0 || body.MandatoryRecurringFeeCents < 0 || body.MandatoryAnnualFeeCents < 0 || body.InitiationFeeCents < 0 || !oneOf(body.BillingFrequency, "WEEKLY", "BIWEEKLY", "MONTHLY", "QUARTERLY", "ANNUALLY") {
+		return validation("pricing fields are invalid")
+	}
+	if body.EffectiveFrom != nil {
+		if _, err := time.Parse("2006-01-02", *body.EffectiveFrom); err != nil {
+			return validation("effectiveFrom must use YYYY-MM-DD")
+		}
+	}
+	if body.EffectiveTo != nil {
+		if _, err := time.Parse("2006-01-02", *body.EffectiveTo); err != nil {
+			return validation("effectiveTo must use YYYY-MM-DD")
+		}
+		if body.EffectiveFrom != nil && *body.EffectiveTo < *body.EffectiveFrom {
+			return validation("effectiveTo precedes effectiveFrom")
+		}
+	}
+	if err := validateMembershipTerms(body); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) adminCreatePricing(w http.ResponseWriter, r *http.Request) (any, error) {
 	if err := adminOnly(r); err != nil {
 		return nil, err
@@ -250,23 +277,7 @@ func (s *Server) adminCreatePricing(w http.ResponseWriter, r *http.Request) (any
 	if err := decodeJSON(r, &body); err != nil {
 		return nil, err
 	}
-	if strings.TrimSpace(body.PlanName) == "" || len(body.PlanName) > 160 || body.RecurringCents < 0 || body.MandatoryRecurringFeeCents < 0 || body.MandatoryAnnualFeeCents < 0 || body.InitiationFeeCents < 0 || !oneOf(body.BillingFrequency, "WEEKLY", "BIWEEKLY", "MONTHLY", "QUARTERLY", "ANNUALLY") {
-		return nil, validation("pricing fields are invalid")
-	}
-	if body.EffectiveFrom != nil {
-		if _, err := time.Parse("2006-01-02", *body.EffectiveFrom); err != nil {
-			return nil, validation("effectiveFrom must use YYYY-MM-DD")
-		}
-	}
-	if body.EffectiveTo != nil {
-		if _, err := time.Parse("2006-01-02", *body.EffectiveTo); err != nil {
-			return nil, validation("effectiveTo must use YYYY-MM-DD")
-		}
-		if body.EffectiveFrom != nil && *body.EffectiveTo < *body.EffectiveFrom {
-			return nil, validation("effectiveTo precedes effectiveFrom")
-		}
-	}
-	if err := validateMembershipTerms(body); err != nil {
+	if err := validatePricing(body); err != nil {
 		return nil, err
 	}
 	normalized := domain.NormalizePrice(domain.PriceInput{RecurringCents: body.RecurringCents, Frequency: body.BillingFrequency, MandatoryRecurringFeeCents: body.MandatoryRecurringFeeCents, MandatoryAnnualFeeCents: body.MandatoryAnnualFeeCents, InitiationFeeCents: body.InitiationFeeCents, Complete: body.PricingComplete})
@@ -329,7 +340,7 @@ func (s *Server) adminUpdateSetting(_ http.ResponseWriter, r *http.Request) (any
 		return nil, err
 	}
 	key := chi.URLParam(r, "key")
-	if !regexp.MustCompile(`^[a-z0-9_]+$`).MatchString(key) {
+	if key == "development_fixture_batch" || !regexp.MustCompile(`^[a-z0-9_]+$`).MatchString(key) {
 		return nil, validation("setting key is invalid")
 	}
 	var body struct {
@@ -379,7 +390,14 @@ func (s *Server) adminGrantRole(w http.ResponseWriter, r *http.Request) (any, er
 		return nil, err
 	}
 	defer tx.Rollback(r.Context())
+	var targetID string
+	if err := tx.QueryRow(r.Context(), `SELECT id FROM profiles WHERE id=$1 FOR UPDATE`, profileID).Scan(&targetID); err != nil {
+		return nil, err
+	}
 	if _, err := tx.Exec(r.Context(), `INSERT INTO user_roles(profile_id,role,granted_by) VALUES($1,$2,$3) ON CONFLICT DO NOTHING`, profileID, role, identity(r).ProfileID); err != nil {
+		return nil, err
+	}
+	if _, err := tx.Exec(r.Context(), `DELETE FROM user_role_restrictions WHERE profile_id=$1 AND role=$2`, profileID, role); err != nil {
 		return nil, err
 	}
 	if err := auditTransaction(r, tx, "ROLE_GRANTED", "PROFILE", profileID, nil, map[string]string{"role": role}); err != nil {
@@ -403,12 +421,22 @@ func (s *Server) adminRevokeRole(w http.ResponseWriter, r *http.Request) (any, e
 	if profileID == identity(r).ProfileID && role == "ADMIN" {
 		return nil, &APIError{Status: http.StatusConflict, Code: "SELF_ADMIN_REMOVAL", Message: "An administrator cannot remove their own admin role"}
 	}
+	if role == "USER" {
+		return nil, validation("USER is the base account role; restrict an account through moderation instead")
+	}
 	tx, err := s.db.Begin(r.Context())
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback(r.Context())
+	var targetID string
+	if err := tx.QueryRow(r.Context(), `SELECT id FROM profiles WHERE id=$1 FOR UPDATE`, profileID).Scan(&targetID); err != nil {
+		return nil, err
+	}
 	if _, err := tx.Exec(r.Context(), `DELETE FROM user_roles WHERE profile_id=$1 AND role=$2`, profileID, role); err != nil {
+		return nil, err
+	}
+	if _, err := tx.Exec(r.Context(), `INSERT INTO user_role_restrictions(profile_id,role,restricted_by) VALUES($1,$2,$3) ON CONFLICT(profile_id,role) DO UPDATE SET restricted_by=EXCLUDED.restricted_by,created_at=now()`, profileID, role, identity(r).ProfileID); err != nil {
 		return nil, err
 	}
 	if err := auditTransaction(r, tx, "ROLE_REVOKED", "PROFILE", profileID, map[string]string{"role": role}, nil); err != nil {

@@ -181,7 +181,7 @@ class _DirectoryResults extends StatelessWidget {
         title: page > 1
             ? 'No more published results'
             : 'No matching published content',
-        body: 'Try another search or section. Client-approved content will replace labelled development records.',
+        body: 'Try another search or section to find your next event.',
       );
     }
     return Column(
