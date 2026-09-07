@@ -100,7 +100,7 @@ def tech_slide(i, title, subtitle, lines=None, path=None, dark=False):
 def make_technical():
     clean=ART/"phase2/quality/clean"; p1=ART/"phase1-fresh"; p2=ART/"phase2"; admin=p2/"admin-browser"; out=[]
     specs=[
-        ("Phase 2 technical proof", "Concise evidence for the service path and acceptance boundary.", [("Acceptance candidate", "READY"),("Client package", "REGENERATED")], None, True),
+        ("Phase 2 technical proof", "Concise evidence for the service path and acceptance boundary.", [("Phase 2 core product", "VERIFIED"),("Client review package", "READY")], None, True),
         ("Flutter and web checks", "Client analysis, widget tests and responsive production build.", [("Flutter analysis", "PASS"),("Flutter tests", "20 PASS"),("Web type / lint / build", "PASS")], p1/"web-home.png", False),
         ("Go service checks", "The protected API, workers and domain services are exercised with PostgreSQL-backed tests.", [("Go tests", "PASS"),("go vet", "PASS"),("Production build", "PASS")], None, False),
         ("Database and Client catalog", "Fresh migrations, 1,547 Client records and private evidence storage preserve the central data path.", [("Client records", "1,547"),("Import rerun", "PASS"),("Private storage", "PASS")], ART/"phase2/client-data/gyms.png", False),
@@ -108,7 +108,7 @@ def make_technical():
         ("Role and moderation controls", "Role changes and account restrictions are enforced on the next protected request.", [("Grant / revoke / restore", "PASS"),("Self-escalation", "DENIED"),("Audit trail", "PASS")], admin/"overview.png", False),
         ("Platform builds", "Applicable local simulator and emulator evidence is separated from physical-device claims.", [("iOS simulator", "PASS"),("Android emulator", "PASS"),("Android AAB", "PASS"),("watchOS simulator", "PASS")], p1/"ios-home.png", False),
         ("Security boundary", "Client data is versioned and imported; secrets and provider credentials remain outside committed evidence.", [("No secrets committed", "PASS"),("Safe errors", "PASS"),("Object access", "PASS")], None, True),
-        ("Phase 2 candidate", "The package is ready for Client review. Production configuration and store work are Phase 3.", [("Matrix", "COMPLETE"),("PDF", "5 PAGES"),("Videos", "1080P")], None, True),
+        ("Phase 2 review readiness", "The product is ready for Client review. Production configuration and store work are Phase 3.", [("Acceptance matrix", "COMPLETE"),("Client review", "READY"),("Video proof", "1080P")], None, True),
     ]
     for i,(t,s,lines,path,dark) in enumerate(specs):
         outp=SLIDES/f"tech_{i:02d}.png"; tech_slide(i,t,s,lines,path,dark).save(outp); out.append(outp)
