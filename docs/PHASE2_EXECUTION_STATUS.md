@@ -6,7 +6,7 @@ release work is separate and not being represented as complete.
 
 ## Resume contract
 
-Latest checkpoint (September 6): private remote `main` verified at `a8fd0da`.
+Latest checkpoint (September 6): private remote `main` verified at `a35e28e`.
 Request budgets and anonymous hourly product counters are implemented. Migrations
 0006–0007 applied to the development test database. Go tests (`./...` with real
 database URLs), vet and production build PASS after correcting the push-test UUID
@@ -145,10 +145,12 @@ its obsolete daily schedule. Technical test details remain in TEST_MATRIX.md.
 
 ## Candidate evidence
 
-- Tested commit: `a8fd0da` (notification registration lifecycle, final platform
-  build inputs and acceptance evidence).
-- Client package commit: recorded in the following acceptance commit.
-- Candidate tag: `phase-2-acceptance-candidate-2026-09-06`.
+- Tested implementation commit: `a8fd0da` (notification registration lifecycle,
+  final platform build inputs and acceptance evidence).
+- Client package commit: `3f858ba`.
+- Final status commit: `a35e28e`.
+- Candidate tags: `phase-2-acceptance-candidate-2026-09-06` and
+  `phase-2-final-2026-09-06`.
 - Private remote: `https://github.com/haramainofficial01-design/fitcalgary-development`
   (private; source ownership/handoff remains governed by the agreement).
 
