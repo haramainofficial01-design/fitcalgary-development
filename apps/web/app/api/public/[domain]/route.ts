@@ -10,7 +10,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ dom
   if (!base) return NextResponse.json({ error: 'Temporarily unavailable' }, { status: 503 });
   try {
     const url = new URL(`${base.replace(/\/$/, '')}/${domain}`);
-    for (const key of ['q', 'page', 'pageSize', 'sort', 'area', 'category']) {
+    for (const key of ['q', 'page', 'pageSize', 'sort', 'area', 'category', 'city', 'amenity', 'pricing', 'maxMonthlyCents', 'sport', 'phase', 'month', 'open', 'discipline', 'division', 'boardType', 'region']) {
       const value = request.nextUrl.searchParams.get(key);
       if (value !== null) url.searchParams.set(key, value);
     }

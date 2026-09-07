@@ -21,6 +21,7 @@ func (s *Server) registerAdminRoutes(router chi.Router) {
 	router.Get("/admin/overview", s.handle(s.adminOverview))
 	router.Get("/admin/reference-data", s.handle(s.adminReferenceData))
 	router.Get("/admin/users", s.handle(s.adminUsers))
+	router.Post("/admin/users/{profileId}/moderation", s.handle(s.moderateAccount))
 	router.Get("/admin/gyms", s.handle(s.adminGyms))
 	router.Post("/admin/gyms", s.handle(s.adminCreateGym))
 	router.Put("/admin/gyms/{id}", s.handle(s.adminUpdateGym))
@@ -36,6 +37,7 @@ func (s *Server) registerAdminRoutes(router chi.Router) {
 	router.Put("/admin/users/{profileId}/roles/{role}", s.handle(s.adminGrantRole))
 	router.Delete("/admin/users/{profileId}/roles/{role}", s.handle(s.adminRevokeRole))
 	router.Get("/admin/audit-log", s.handle(s.adminAuditLog))
+	router.Post("/admin/announcements", s.handle(s.adminAnnouncement))
 }
 
 func adminOnly(r *http.Request) error { return requireRole(r, auth.RoleAdmin) }

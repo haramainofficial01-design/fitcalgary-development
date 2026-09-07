@@ -1,5 +1,23 @@
 # Test matrix
 
+## September 6 Phase 2 integrated verification
+
+- Real private storage: signed multipart upload (7 MiB), exact bytes, range retrieval,
+  unsigned/tampered denial, completion retry and deletion PASS.
+- Chrome → Go → PostgreSQL/private storage: playable test clip, correction/resubmission,
+  judge approval, official rank and inbox PASS. Synthetic clip tests transport only.
+- iOS 26.5 Simulator / Android API 36 emulator: real Flutter submission and correction
+  form/file upload, API judge decision, published board and inbox PASS. Test identity
+  and picker boundary; not hardware or live-provider identity verification.
+- Moderation: full role boundaries, immediate existing-token suspension/ban rejection,
+  restoration, atomic notes/audit PASS in SQL and browser.
+- Notifications: per-recipient admin announcement→inbox PASS, opt-in/out and essential
+  events, idempotency, inactive-account suppression and five-attempt limit PASS in SQL.
+- Web gym comparison/club browse/detail/mobile width PASS; type/lint/build PASS.
+- Go complete tests/vet/build PASS; Flutter analysis/19 unit-widget tests PASS.
+
+No Phase 2 final acceptance, production push or physical-device claim is implied.
+
 Phase 1 is accepted, paid and closed per the Developer's confirmation. The platform
 matrix below is historical evidence, not a pending acceptance list.
 

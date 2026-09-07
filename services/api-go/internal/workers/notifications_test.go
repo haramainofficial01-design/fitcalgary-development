@@ -17,3 +17,23 @@ func TestRenderRejectsUnknownEvent(t *testing.T) {
 		t.Fatal("unknown notification events must not be silently delivered")
 	}
 }
+
+func TestNotificationPreferences(t *testing.T) {
+	preferences := []byte(`{"announcements":false,"eventUpdates":false}`)
+	for _, kind := range []string{"SUBMISSION_RECEIVED", "SUBMISSION_APPROVED", "SUBMISSION_CHANGES_REQUESTED", "SUBMISSION_REJECTED"} {
+		if !notificationAllowed(kind, preferences) {
+			t.Fatal("essential result communication suppressed")
+		}
+	}
+	for _, kind := range []string{"ADMIN_ANNOUNCEMENT", "EVENT_UPDATED"} {
+		if notificationAllowed(kind, preferences) {
+			t.Fatal("opt-out ignored")
+		}
+		if !notificationAllowed(kind, []byte(`{}`)) {
+			t.Fatal("default preference lost")
+		}
+	}
+	if _, err := renderNotification(notificationPayload{Type: "EVENT_UPDATED", Title: "Event changed", Body: "Check the details", EventID: "//unsafe"}); err == nil {
+		t.Fatal("unsafe destination accepted")
+	}
+}

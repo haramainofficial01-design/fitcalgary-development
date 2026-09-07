@@ -52,6 +52,10 @@ func (v workflowVerifier) Verify(_ context.Context, token string) (auth.Principa
 	case "athlete", "other":
 	case "judge":
 		roles = append(roles, auth.RoleJudge)
+	case "moderator":
+		roles = append(roles, auth.RoleModerator)
+	case "trainer":
+		roles = append(roles, auth.RolePersonalTrainer)
 	case "admin":
 		roles = append(roles, auth.RoleAdmin)
 	default:
@@ -338,5 +342,45 @@ func TestCompetitionDatabaseWorkflow(t *testing.T) {
 	if err = pool.QueryRow(ctx, `SELECT count(*) FROM outbox_jobs WHERE payload->>'leaderboardId'=$1 AND payload->>'type'='LEADERBOARD_PASSED'`, board).Scan(&notifications); err != nil || notifications != 1 {
 		t.Fatal("rank movement notification missing or duplicated")
 	}
-	t.Logf("Verified creation, private evidence permissions, review validation, repeat approval protection, official/community separation, best-result ranking, privacy and resubmission against PostgreSQL; real storage: %t", realStorage)
+	moderationPath := "/admin/users/" + judgeID + "/moderation"
+	announcement := map[string]any{"requestId": uuid.NewString(), "profileIds": []string{judgeID}, "title": "Review update", "body": "Check the review queue."}
+	for _, token := range []string{"athlete", "judge", "moderator", "trainer"} {
+		request("POST", "/admin/announcements", token, announcement, 403)
+	}
+	request("POST", "/admin/announcements", "", announcement, 401)
+	if request("POST", "/admin/announcements", "admin", announcement, 200)["queued"] != float64(1) {
+		t.Fatal("announcement not queued")
+	}
+	if request("POST", "/admin/announcements", "admin", announcement, 200)["queued"] != float64(0) {
+		t.Fatal("announcement retry duplicated delivery")
+	}
+	announcement["eventId"] = uuid.NewString()
+	request("POST", "/admin/announcements", "admin", announcement, 422)
+	note := map[string]any{"action": "NOTE", "reason": "Check account behavior."}
+	for _, token := range []string{"athlete", "judge", "trainer"} {
+		request("POST", moderationPath, token, note, 403)
+	}
+	request("POST", moderationPath, "", note, 401)
+	request("POST", moderationPath, "moderator", note, 200)
+	request("POST", moderationPath, "moderator", map[string]any{"action": "SUSPEND", "reason": "Check account behavior."}, 403)
+	adminID := request("GET", "/profile", "admin", nil, 200)["id"].(string)
+	request("POST", "/admin/users/"+adminID+"/moderation", "admin", map[string]any{"action": "BAN", "reason": "Self-ban not permitted."}, 409)
+	request("POST", moderationPath, "admin", map[string]any{"action": "SUSPEND", "reason": ""}, 422)
+	for _, action := range []string{"SUSPEND", "BAN"} {
+		request("POST", moderationPath, "admin", map[string]any{"action": action, "reason": "Regression moderation check."}, 200)
+		for _, token := range []string{"judge", "judge-refreshed", "judge-relogin"} {
+			request("GET", "/profile", token, nil, 403)
+			request("GET", "/judge/queue", token, nil, 403)
+		}
+		request("POST", moderationPath, "admin", map[string]any{"action": "RESTORE", "reason": "Restriction review completed."}, 200)
+		assertJudge("judge", true)
+	}
+	var actions, audits int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM moderation_actions WHERE target_profile_id=$1`, judgeID).Scan(&actions); err != nil || actions != 5 {
+		t.Fatalf("moderation history missing: %d %v", actions, err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM audit_logs WHERE entity_id=$1 AND action LIKE 'ACCOUNT_%'`, judgeID).Scan(&audits); err != nil || audits != 5 {
+		t.Fatalf("moderation audit missing: %d %v", audits, err)
+	}
+	t.Logf("Verified creation, private evidence permissions, review validation, repeat approval protection, official/community separation, best-result ranking, privacy, resubmission, moderation and complete role boundaries against PostgreSQL; real storage: %t", realStorage)
 }

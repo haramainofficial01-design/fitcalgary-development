@@ -100,6 +100,19 @@ try{
   assert.equal((await fetch(api+'/judge/queue',{headers:{authorization:`Bearer ${user}`}})).status,200);
   await userRow.getByRole('button',{name:'Manage permissions'}).click();await choose('Role','JUDGE');await choose('Permission change','REVOKE');await save();
   assert.equal((await fetch(api+'/judge/queue',{headers:{authorization:`Bearer ${user}`}})).status,403);
+  for(const [action,status] of [['SUSPEND',403],['RESTORE',200]]){
+    await userRow.getByRole('button',{name:'Account moderation',exact:true}).click();
+    await choose('Account action',action);await fill('Reason','Browser account moderation verification.');
+    await page.getByRole('dialog').getByRole('checkbox').check();await save();
+    assert.equal((await fetch(api+'/profile',{headers:{authorization:`Bearer ${user}`}})).status,status);
+  }
+  await call('/profile','PATCH',{notificationPreferences:{announcements:true}},user);
+  await userRow.getByRole('button',{name:'Send announcement',exact:true}).click();
+  await fill('Title',`Review update ${suffix}`);await fill('Message','Your review update is available.');
+  await page.getByRole('dialog').getByRole('checkbox').check();await save();
+  let delivered=false;
+  for(let i=0;i<40;i++){const inbox=await call('/notifications','GET',undefined,user);delivered=inbox.data.some(n=>n.title===`Review update ${suffix}`);if(delivered)break;await pause(500);}
+  assert.equal(delivered,true,'Admin announcement persisted in recipient inbox');
   await page.setViewportSize({width:390,height:844});
   await select('Events');await page.getByRole('button',{name:'Add event',exact:true}).click();
   assert.equal(await page.getByRole('dialog').locator('form').evaluate(el=>el.scrollWidth<=el.clientWidth),true,'Responsive form overflow');
@@ -127,6 +140,23 @@ try{
   await page.getByRole('heading',{name:'Membership costs'}).waitFor();
   await page.getByText('Ongoing monthly: $49.83',{exact:true}).waitFor();
   await page.screenshot({path:path.join(output,'consumer-gym-details.png')});
+  const comparisonGym=await call('/admin/gyms','POST',{cityId:city,slug:`comparison-${suffix}`,name:`Development browser gym ${suffix} comparison`,publishStatus:'PUBLISHED'});
+  created.push(['gyms',comparisonGym]);
+  await call(`/admin/gyms/${comparisonGym.id}/pricing`,'POST',{planName:'Monthly comparison plan',recurringCents:3000,billingFrequency:'MONTHLY',pricingComplete:true,initiationFeeCents:1200});
+  await page.goto(origin+`/gyms?search=${encodeURIComponent('Development browser gym '+suffix)}`);
+  await page.getByLabel(`Compare ${gym.name}`,{exact:true}).check();
+  await page.getByLabel(`Compare ${comparisonGym.name}`,{exact:true}).check();
+  await page.getByRole('link',{name:'Compare selected gyms',exact:true}).click();
+  await page.getByRole('heading',{name:comparisonGym.name,exact:true}).waitFor();
+  await page.getByText('$49.83',{exact:true}).first().waitFor();
+  await page.getByText('$31.00',{exact:true}).waitFor();
+  assert.equal(await page.locator('body').evaluate(el=>el.scrollWidth<=window.innerWidth),true,'Comparison mobile overflow');
+  await page.screenshot({path:path.join(output,'gym-comparison.png')});
+  await call(`/admin/clubs/${club.id}`,'PUT',{cityId:city,name:club.name,slug:club.slug,sport:club.sport,eligibility:club.eligibility,publishStatus:'PUBLISHED'});
+  await page.goto(origin+'/clubs');await page.getByRole('textbox',{name:'Search clubs'}).fill(club.name);
+  await page.getByRole('link',{name:club.name,exact:true}).click();await page.getByRole('heading',{name:'Club details'}).waitFor();
+  await page.getByText('Development eligibility',{exact:true}).waitFor();
+  console.log('PASS: responsive gym plan comparison from normalized API prices and published club browse/detail.');
   await page.goto(origin+'/gyms/nonexistent-'+suffix);
   await page.getByRole('heading',{name:'This listing is no longer available'}).waitFor();
   console.log('PASS: signed-out home search, actual published Go/PostgreSQL directory, empty-search recovery, network retry, mobile layout and public proxy allowlist.');

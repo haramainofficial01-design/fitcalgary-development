@@ -75,7 +75,7 @@ func (s *Server) getContent(r *http.Request, events bool) (any, error) {
 	if events {
 		table, extra = "events", ", "+eventPhaseSQL+" AS phase"
 	}
-	rows, err := queryMaps(r.Context(), s.db, `SELECT item.*,c.name AS city,c.slug AS city_slug`+extra+` FROM `+table+` item JOIN cities c ON c.id=item.city_id WHERE item.slug=$1 AND c.slug=$2 AND item.publish_status='PUBLISHED'`, slug, p.City)
+	rows, err := queryMaps(r.Context(), s.db, `SELECT item.*,c.name AS city,c.slug AS city_slug`+extra+` FROM `+table+` item JOIN cities c ON c.id=item.city_id WHERE (item.slug=$1 OR item.id::text=$1) AND c.slug=$2 AND item.publish_status='PUBLISHED'`, slug, p.City)
 	if err != nil {
 		return nil, err
 	}

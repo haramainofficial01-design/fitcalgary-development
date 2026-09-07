@@ -167,9 +167,10 @@ function AdminContent({ active, data, reference, search, setSearch, onChanged }:
 }
 
 function AdminRowActions({area,row,reference,onChanged}: {area:string;row:Json;reference:Json;onChanged:(message:string)=>Promise<void>}) {
+  const announcementId=useRef('');
   if(contentFields[area]) return <ContentEditor area={area} reference={reference} record={row} onChanged={onChanged}/>;
   if(['disciplines','divisions','leaderboards'].includes(area)) return <CompetitionForm area={area} reference={reference} record={row} onChanged={onChanged}/>;
-  if(['users','roles'].includes(area)) return <AdminCreate label="Manage permissions" onSubmit={async form=>{
+  if(['users','roles'].includes(area)) return <><AdminCreate label="Manage permissions" onSubmit={async form=>{
     const role=String(form.get('role'));
     await backend(`admin/users/${String(row.id)}/roles/${role}`,{method:form.get('action')==='GRANT'?'PUT':'DELETE'});
     await onChanged('Permission change saved and audited. It applies to subsequent protected requests.');
@@ -179,13 +180,27 @@ function AdminRowActions({area,row,reference,onChanged}: {area:string;row:Json;r
     <label>Role<select name="role" aria-label="Role" required>{['MODERATOR','ADMIN','PERSONAL_TRAINER','JUDGE'].map(role=><option key={role}>{role}</option>)}</select></label>
     <label>Change<select name="action" aria-label="Permission change" required><option value="">Choose a change</option><option value="GRANT">Grant access</option><option value="REVOKE">Revoke access, including identity-provider claims</option></select></label>
     <p>USER is the base account role. An administrator cannot revoke their own ADMIN access.</p>
-  </AdminCreate>;
+  </AdminCreate><AdminCreate label="Account moderation" onSubmit={async form=>{
+    await backend(`admin/users/${String(row.id)}/moderation`,{method:'POST',body:JSON.stringify({action:form.get('action'),reason:form.get('reason')})});
+    await onChanged('Account action saved and audited. Access updates on the next protected request.');
+  }}>
+    <p>{String(row.display_name)} · Current status: {String(row.account_status)}</p>
+    <label>Account action<select name="action" aria-label="Account action" required><option value="NOTE">Add private note</option><option value="SUSPEND">Suspend access</option><option value="BAN">Ban account</option><option value="RESTORE">Restore access</option></select></label>
+    <label htmlFor="moderation-reason">Reason</label><textarea id="moderation-reason" name="reason" minLength={5} maxLength={2000} required/>
+    <label className="check-row"><input type="checkbox" required/>I have checked the account and confirm this action.</label>
+  </AdminCreate><AdminCreate label="Send announcement" onSubmit={async form=>{
+    if(!announcementId.current)announcementId.current=crypto.randomUUID();
+    await backend('admin/announcements',{method:'POST',body:JSON.stringify({requestId:announcementId.current,profileIds:[row.id],title:form.get('title'),body:form.get('body')})});
+    announcementId.current='';
+    await onChanged('Announcement queued. The recipient’s notification preferences will be respected.');
+  }}><p>Send to {String(row.display_name)}. This is not a broadcast.</p><label>Title<input name="title" required minLength={2} maxLength={100}/></label><label htmlFor="announcement-body">Message</label><textarea id="announcement-body" name="body" required minLength={2} maxLength={1000}/><label className="check-row"><input type="checkbox" required/>Confirm recipient and message.</label></AdminCreate></>;
   if(area==='settings') return <AdminCreate label="Edit setting" onSubmit={async form=>{
     let value:unknown;
     try { value=JSON.parse(String(form.get('value'))); } catch { throw new Error('Enter valid JSON for this setting.'); }
     await backend(`admin/settings/${encodeURIComponent(String(row.key))}`,{method:'PUT',body:JSON.stringify({value,public:form.has('public')})});
     await onChanged('Application setting saved and audited.');
   }}><p>{String(row.key)}. Never enter passwords, tokens or provider credentials here.</p><label>Value (JSON)<textarea name="value" aria-label="Value (JSON)" defaultValue={JSON.stringify(row.value,null,2)} rows={8} required/></label><label><input type="checkbox" name="public" defaultChecked={row.public===true}/>Public setting</label></AdminCreate>;
+  if(area==='submissions')return <a className="secondary-button" href={`/submissions/${String(row.id)}`}>Open review</a>;
   return <span>Read-only record</span>;
 }
 
@@ -212,7 +227,7 @@ function AdminTable({ rows, actions }: { rows: Json[]; actions?: (row: Json) => 
     const preferred=['name','plan_name','display_name','title','athlete','discipline','division','region','gym','email','publish_status','event_status','status','delivery_status','account_status','roles','recurring_cents','billing_frequency','ongoing_monthly_cents','start_at','sport','city','action','reason','created_at'];
     return Array.from(new Set([...preferred,...available])).filter(key=>available.includes(key)&&!['id','before_data','after_data','privacy','description','total'].includes(key)&&!key.endsWith('_id')).slice(0,7);
   },[rows]);
-  return <div className="admin-table-wrap"><table><thead><tr>{columns.map((column) => <th key={column}>{column.replaceAll('_', ' ')}</th>)}{actions && <th>Actions</th>}</tr></thead><tbody>{rows.map((row, index) => <tr key={String(row.id ?? index)}>{columns.map((column) => <td key={column}>{column.endsWith('_cents') && row[column] != null ? new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD'}).format(Number(row[column])/100) : display(row[column])}</td>)}{actions && <td>{actions(row)}</td>}</tr>)}</tbody></table></div>;
+  return <div className="admin-table-wrap"><table><thead><tr>{columns.map((column) => <th key={column}>{column.replaceAll('_', ' ')}</th>)}{actions && <th>Actions</th>}</tr></thead><tbody>{rows.map((row, index) => <tr key={String(row.id ?? index)}>{columns.map((column) => <td key={column}>{column.endsWith('_cents') && row[column] != null ? new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD'}).format(Number(row[column])/100) : display(row[column])}</td>)}{actions && <td className="admin-actions"><div>{actions(row)}</div></td>}</tr>)}</tbody></table></div>;
 }
 
 function display(value: unknown) {

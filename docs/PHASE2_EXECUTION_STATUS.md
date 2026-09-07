@@ -5,6 +5,10 @@ IN PROGRESS. No daily pacing; automation cancelled. No Phase 3 authorization.
 
 ## Resume contract
 
+Usage constraint: prioritize contractual workflows and one batched final verification;
+avoid rerunning unchanged suites and defer optional extras/release-only polish. Do not
+substitute an unverified completion claim for missing work. Preserve Phase 3 capacity.
+
 Read the Phase 2 master brief, this ledger, Git status/history and current source
 before resuming. Continue independent work after each tested increment. Do not
 declare acceptance from partial tests. Preserve the five pre-existing modified
@@ -16,7 +20,7 @@ its obsolete daily schedule. Technical test details remain in TEST_MATRIX.md.
 
 ## COMPLETE + VERIFIED — bounded evidence, not whole-phase acceptance
 
-- Repository continuity, private history: current private main `5ffb124`; prior `30066fe`,
+- Repository continuity, private history: current private main `4a73552`; prior `5ffb124`, `30066fe`,
   `54fc23b`, `ee59ff9`. No Client-repository push or history rewrite.
 - Flutter directory/detail/comparison/favourites/profile persistence: earlier real
   iOS/Android → Go → PostgreSQL tests. Structured normalized ongoing/year-one prices.
@@ -161,6 +165,29 @@ Comprehensive release/environment/store/public-cleanliness audit remains Phase 3
   Notification opt-out/opt-in, essential inbox, inactive-account suppression and
   five-attempt poison-job limit PASS against isolated actual PostgreSQL tables.
   Administrative send UI and provider delivery remain open, not production verified.
+
+### Latest batched verification (September 6)
+
+- Admin notes/suspend/ban/restore with atomic audit: Go/SQL PASS for all roles,
+  old/refreshed/re-login tokens rejected while restricted; self-status change denied.
+  Browser suspension/restoration PASS. Normal moderator may add notes, not alter access.
+- Admin per-recipient announcement UI → outbox → inbox PASS; bounded 1–100 recipients,
+  idempotent request IDs, inactive-recipient checks and published-event validation.
+  Preferences/essential notices/retry deduplication/poison-job cap actual SQL tests PASS.
+  Provider push delivery is still open; do not call inbox delivery push verification.
+- Web comparison (2–4 gyms, selectable actual plans, server-normalized monthly and
+  first-year costs), clubs browse/detail and responsive layout PASS in real Chrome.
+  Price/source fields and event dates/registration mapped to actual API fields.
+  Search/filter UI now forwards supported gym/event/discipline/division/board queries.
+- Web type/lint/production build PASS; Go all tests with actual directory/content/
+  competition/notification SQL tests + vet + production build PASS.
+- Browser full private-video correction→approval→board→notification regression PASS
+  after these changes. Earlier failing clipped action buttons and implicit select label
+  fixed; final rerun passed without forced clicks.
+- Next highest priorities: remaining security abuse limits, useful analytics,
+  notification provider adapters/client registration, local identity lifecycle,
+  final platform/Watch/UI acceptance and three-file Client package. Optional extras
+  must not displace contractual work under the user's usage constraint.
 - **Next action:** inspect S3 evidence adapter and local storage availability; bring
   up isolated compatible storage, test real multipart upload/private playback, then
   integrate web judge/submission and Flutter acceptance against it. Update this ledger
