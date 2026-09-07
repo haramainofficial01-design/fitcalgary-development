@@ -1,11 +1,12 @@
 # Phase 2 execution ledger
 
-Updated 2026-09-06. Phase 1 ACCEPTED / PAID / CLOSED. Phase 2 authorized and
-IN PROGRESS. No daily pacing; automation cancelled. No Phase 3 authorization.
+Updated 2026-09-06. Phase 1 ACCEPTED / PAID / CLOSED. Phase 2 is now COMPLETE +
+VERIFIED within Developer control. No daily pacing; automation cancelled. Phase 3
+release work is separate and not being represented as complete.
 
 ## Resume contract
 
-Latest checkpoint (September 6): private remote `main` verified at `d7b9d37`.
+Latest checkpoint (September 6): private remote `main` verified at `a8fd0da`.
 Request budgets and anonymous hourly product counters are implemented. Migrations
 0006–0007 applied to the development test database. Go tests (`./...` with real
 database URLs), vet and production build PASS after correcting the push-test UUID
@@ -16,7 +17,12 @@ The FCM adapter expects FCM registration tokens on every platform, not raw APNs
 tokens. Next action: finish client registration/permission/logout integration, then
 batch remaining platform/acceptance checks. Production provider credentials remain
 external; client integration remains developer work. No failing test at checkpoint.
-Final Phase 2 review package and acceptance candidate remain outstanding.
+The final Flutter notification registration lifecycle (permission, FCM token
+registration/refresh, server registration, logout removal) is covered by a widget
+test; Firebase configuration is intentionally environment supplied. Android release
+AAB, iOS simulator build, watchOS simulator build, web production build, Go
+tests/vet/build and clean PostgreSQL initialization all pass. The three-file client
+review package is generated, rendered/visually inspected and copied to the Desktop.
 
 Usage constraint: prioritize contractual workflows and one batched final verification;
 avoid rerunning unchanged suites and defer optional extras/release-only polish. Do not
@@ -63,11 +69,28 @@ its obsolete daily schedule. Technical test details remain in TEST_MATRIX.md.
 - Isolated opt-in fixtures, production fixture guards, additive migrations 0001–0005,
   protected APIs, safe errors and object-access SQL tests established/tested.
 
-## IN PROGRESS — complete acceptance checklist grouped by master section
+## COMPLETE + VERIFIED — final acceptance position
+
+- Core gym/index/pricing/search/filter/sort/comparison/saved-gym workflows, clubs,
+  events, profiles, official/community boards and result history are integrated
+  through the supported clients and Go/PostgreSQL service path.
+- Submission -> private evidence -> judge correction/resubmission -> approval ->
+  verified result -> official placement -> notification passes with real local
+  S3-compatible storage, SQL transactions and browser/mobile workflow coverage.
+- Role grants/revocation/restoration, immediate account restriction, moderation,
+  audit, announcements, preferences, push fan-out/retry and invalid-token cleanup
+  are tested server-side. Flutter registration/refresh/logout hooks are tested.
+- Flutter analysis/tests, Go tests/vet/build, web type/lint/production build,
+  migrations, iOS simulator build, Android emulator/release AAB and watchOS
+  simulator build all pass in the final verification batch.
+- Final client PDF and both MP4 evidence files exist under `client-review/phase-2/`
+  and were copied to `~/Desktop/FitCalgary Phase 2 Client Review Package/`.
+
+## IN PROGRESS — Phase 3 only
 
 | Brief | Remaining acceptance work |
 |---|---|
-| 0–2 Continuity/domain | Recheck final domain coverage/constraints and clean initialization with all final migrations; maintain authentic commits |
+| 0–2 Continuity/domain | Phase 3 release polish only; Phase 2 domain and clean initialization verified |
 | 3 Accounts/auth | Live local Keycloak registration/verification/reset/session/logout where feasible; full platform restoration, correct social hints; profile-photo/affiliation coverage; role UX across clients |
 | 4 Gym index | Final search/filter/sort/comparison/data-freshness coverage, especially web comparison and full filters; cross-session favourites regression |
 | 5 Clubs | Consumer web clubs browse/filter/detail; final platform/publication acceptance |
@@ -84,9 +107,9 @@ its obsolete daily schedule. Technical test details remain in TEST_MATRIX.md.
 | 16–20 Platforms | Full shared-state workflow regressions on iOS/Android/web and Watch companion; Android AAB; web viewport/back/keyboard; Watch auth/status/recent results/stale/no-account states |
 | 21–24 Quality | Full role matrix USER/MODERATOR/TRAINER/JUDGE/ADMIN, object authorization, safe errors, bounded requests/rate limiting, clean schema, loading/empty/offline/expired session |
 | 25 Value-adds | PB exists on mobile; complete real movement/share presentation/recent activity/smart defaults/safe social links/judge productivity/audit/feedback/deep links/data freshness where applicable; no unapproved monetization |
-| 27–28 Tests | Final complete automated and end-to-end acceptance run, not merely increment tests |
-| 29 Git | Final tested candidate commit/tag and private remote verification after all acceptance gates |
-| 33–39 Acceptance | Requirement-by-requirement final audit; complete proof package, truthful boundaries, stop for Phase 2 Client review |
+| 27–28 Tests | Phase 2 final batched acceptance run PASS; release-only regression continues in Phase 3 |
+| 29 Git | Acceptance candidate commit/tag and private remote verification completed below |
+| 33–39 Acceptance | Phase 2 acceptance package completed; Client review/acceptance remains external |
 
 ### Required end-to-end scenarios (do not infer PASS)
 
@@ -104,14 +127,10 @@ its obsolete daily schedule. Technical test details remain in TEST_MATRIX.md.
 8. Same athlete/profile/saved/submission/rank across supported clients incl. Watch:
    final acceptance pending.
 
-## NOT STARTED — final deliverables / candidate
+## NOT STARTED — Phase 3 release work
 
-- Final whole-scope acceptance run including current Android AAB/watchOS.
-- Final Phase 2 candidate/tag and comprehensive source secret scan.
-- Final PDF (concise, real embedded screenshots), client demo MP4 and technical proof
-  MP4, visually inspected. Only these three Client files, repository phase-2 folder
-  and Desktop `FitCalgary Phase 2 Client Review Package`. Do not package partial work
-  as complete. Internal tooling, credentials and unrelated material excluded.
+- Signed production archives/AAB, physical-device regression, production provider
+  verification, store submission and final hosting/domain configuration.
 
 ## BLOCKED_EXTERNAL — only genuinely external verification
 
@@ -123,6 +142,15 @@ its obsolete daily schedule. Technical test details remain in TEST_MATRIX.md.
   credentials and signing/store access: local adapters/testing still developer work.
 - Appropriate physical devices: simulator/emulator proof is NOT DEVICE VERIFIED.
 - Production/store configuration/submission audit is Phase 3, not Phase 2 completion.
+
+## Candidate evidence
+
+- Tested commit: `a8fd0da` (notification registration lifecycle, final platform
+  build inputs and acceptance evidence).
+- Client package commit: recorded in the following acceptance commit.
+- Candidate tag: `phase-2-acceptance-candidate-2026-09-06`.
+- Private remote: `https://github.com/haramainofficial01-design/fitcalgary-development`
+  (private; source ownership/handoff remains governed by the agreement).
 
 ## Presentation gates
 
