@@ -57,7 +57,10 @@ void main() {
               },
             ),
           ],
-          child: MaterialApp(theme:fitTheme(),home:const LeaderboardsScreen()),
+          child: MaterialApp(
+            theme: fitTheme(),
+            home: const LeaderboardsScreen(),
+          ),
         ),
       );
       await tester.pumpAndSettle();

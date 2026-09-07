@@ -28,6 +28,7 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   String? error;
+  bool enabling = false;
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
@@ -65,6 +66,49 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               padding: const EdgeInsets.all(20),
               children: [
                 if (error != null) Text(error!),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.notifications_active_outlined),
+                    title: const Text('Device notifications'),
+                    subtitle: const Text(
+                      'Get review decisions, ranking changes and event updates.',
+                    ),
+                    trailing: enabling
+                        ? const SizedBox.square(
+                            dimension: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.arrow_forward),
+                    onTap: enabling
+                        ? null
+                        : () async {
+                            setState(() {
+                              enabling = true;
+                              error = null;
+                            });
+                            try {
+                              final enabled = await ref
+                                  .read(notificationRegistrationProvider)
+                                  .enable();
+                              if (mounted) {
+                                setState(() {
+                                  enabling = false;
+                                  error = enabled
+                                      ? 'Device notifications are on.'
+                                      : 'Device notifications are not available yet.';
+                                });
+                              }
+                            } catch (_) {
+                              if (mounted) {
+                                setState(() {
+                                  enabling = false;
+                                  error = 'Device notifications could not be enabled. Please try again.';
+                                });
+                              }
+                            }
+                          },
+                  ),
+                ),
                 if (rows.isEmpty)
                   const EmptyPanel(
                     title: 'You’re all caught up',

@@ -2,11 +2,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api_client.dart';
 import '../core/auth_service.dart';
+import '../core/notification_registration.dart';
 import '../domain/models.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 final apiProvider = Provider<ApiClient>(
   (ref) => ApiClient(ref.read(authServiceProvider)),
+);
+final notificationRegistrationProvider = Provider<NotificationRegistration>(
+  (ref) => NotificationRegistration(ref.read(apiProvider)),
 );
 final gymsProvider = FutureProvider.autoDispose<List<Gym>>(
   (ref) async =>

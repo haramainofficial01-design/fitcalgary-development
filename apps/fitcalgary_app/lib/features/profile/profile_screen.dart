@@ -206,6 +206,7 @@ class _SignedInProfile extends ConsumerWidget {
           const SizedBox(height: 28),
           OutlinedButton(
             onPressed: () async {
+              await ref.read(notificationRegistrationProvider).unregister();
               await ref.read(authServiceProvider).signOut();
               ref.invalidate(profileProvider);
               ref.invalidate(performanceProvider);
@@ -247,6 +248,7 @@ class _SignedInProfile extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
     try {
+      await ref.read(notificationRegistrationProvider).unregister();
       await ref.read(apiProvider).dio.delete<void>('/profile');
       await ref.read(authServiceProvider).signOut();
       ref.invalidate(savedGymsProvider);

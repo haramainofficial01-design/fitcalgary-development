@@ -22,8 +22,9 @@ Authorization Code with PKCE; the API validates access tokens through OIDC
 discovery and JWKS and enforces FitCalgary roles server-side.
 
 `DEVICE_TOKEN_ENCRYPTION_KEY` must be base64-encoded 32-byte AES key material.
-Only a SHA-256 lookup hash and AES-GCM ciphertext are stored for APNs/FCM/web
-push tokens.
+Only a SHA-256 lookup hash and AES-GCM ciphertext are stored for FCM registration
+tokens. The HTTP v1 adapter uses FCM for Android and web and FCM's APNs bridge for
+iOS; raw APNs device tokens must not be registered with this adapter.
 
 `DELETE /api/v1/profile` anonymizes profile PII, removes saved/private data,
 expires evidence, preserves verified result history, blocks future API access,

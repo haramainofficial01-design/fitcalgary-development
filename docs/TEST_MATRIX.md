@@ -13,6 +13,10 @@
   restoration, atomic notes/audit PASS in SQL and browser.
 - Notifications: per-recipient admin announcement→inbox PASS, opt-in/out and essential
   events, idempotency, inactive-account suppression and five-attempt limit PASS in SQL.
+  FCM HTTP v1 payload/status handling and PostgreSQL push fan-out, encrypted token
+  recovery, retry/backoff, delivery deduplication and invalid-token disabling PASS
+  with test providers. Flutter device register/refresh/logout lifecycle test PASS.
+  No live-provider or physical-device delivery is claimed.
 - Web gym comparison/club browse/detail/mobile width PASS; type/lint/build PASS.
 - Go complete tests/vet/build PASS; Flutter analysis/19 unit-widget tests PASS.
 
