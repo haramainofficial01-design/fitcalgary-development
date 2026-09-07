@@ -20,7 +20,7 @@ var administrativeQueries = map[string]string{
 	"settings":      `SELECT key,value,public,updated_at FROM app_settings WHERE key<>'development_fixture_batch' ORDER BY key`,
 	"pricing":       `SELECT p.*,g.name AS gym FROM gym_pricing p JOIN gyms g ON g.id=p.gym_id ORDER BY p.updated_at DESC LIMIT 500`,
 	"moderation":    `SELECT m.id,m.target_profile_id,p.display_name,m.action,m.reason,m.created_at FROM moderation_actions m LEFT JOIN profiles p ON p.id=m.target_profile_id ORDER BY m.created_at DESC LIMIT 250`,
-	"analytics":     `SELECT event_name,count(*) AS occurrences,max(occurred_at) AS latest FROM analytics_events GROUP BY event_name ORDER BY occurrences DESC LIMIT 100`,
+	"analytics":     `SELECT event_name,sum(occurrences)::bigint AS occurrences,max(hour) AS latest FROM product_metrics WHERE hour>=now()-interval '90 days' GROUP BY event_name ORDER BY occurrences DESC LIMIT 100`,
 }
 
 func (s *Server) registerCompetitionAdmin(router chi.Router) {

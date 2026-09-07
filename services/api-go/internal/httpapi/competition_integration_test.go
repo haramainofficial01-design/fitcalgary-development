@@ -382,5 +382,18 @@ func TestCompetitionDatabaseWorkflow(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM audit_logs WHERE entity_id=$1 AND action LIKE 'ACCOUNT_%'`, judgeID).Scan(&audits); err != nil || audits != 5 {
 		t.Fatalf("moderation audit missing: %d %v", audits, err)
 	}
+	if _, err := pool.Exec(ctx, `INSERT INTO api_request_limits(profile_id,bucket,window_start,requests) VALUES($1,'submissions',date_trunc('minute',now()),40) ON CONFLICT(profile_id,bucket,window_start) DO UPDATE SET requests=40`, athleteID); err != nil {
+		t.Fatal(err)
+	}
+	request("POST", "/submissions", "athlete", map[string]any{}, 429)
+	request("GET", "/profile", "athlete", nil, 200)
+	if _, err := pool.Exec(ctx, `DELETE FROM api_request_limits WHERE profile_id=$1 AND bucket='submissions'`, athleteID); err != nil {
+		t.Fatal(err)
+	}
+	request("POST", "/submissions", "athlete", map[string]any{}, 422)
+	var metrics int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM product_metrics WHERE event_name='BOARD_VIEW' AND occurrences>0`).Scan(&metrics); err != nil || metrics == 0 {
+		t.Fatal("successful product activity was not counted")
+	}
 	t.Logf("Verified creation, private evidence permissions, review validation, repeat approval protection, official/community separation, best-result ranking, privacy, resubmission, moderation and complete role boundaries against PostgreSQL; real storage: %t", realStorage)
 }

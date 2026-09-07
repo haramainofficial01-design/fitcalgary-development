@@ -5,6 +5,19 @@ IN PROGRESS. No daily pacing; automation cancelled. No Phase 3 authorization.
 
 ## Resume contract
 
+Latest checkpoint (September 6): private remote `main` verified at `d7b9d37`.
+Request budgets and anonymous hourly product counters are implemented. Migrations
+0006–0007 applied to the development test database. Go tests (`./...` with real
+database URLs), vet and production build PASS after correcting the push-test UUID
+parameter cast. Push delivery tests verify encrypted device lookup, retry/backoff,
+successful-device deduplication and invalid-token disabling against PostgreSQL with
+a test provider; HTTP v1 provider contract tests pass. This is NOT live push proof.
+The FCM adapter expects FCM registration tokens on every platform, not raw APNs
+tokens. Next action: finish client registration/permission/logout integration, then
+batch remaining platform/acceptance checks. Production provider credentials remain
+external; client integration remains developer work. No failing test at checkpoint.
+Final Phase 2 review package and acceptance candidate remain outstanding.
+
 Usage constraint: prioritize contractual workflows and one batched final verification;
 avoid rerunning unchanged suites and defer optional extras/release-only polish. Do not
 substitute an unverified completion claim for missing work. Preserve Phase 3 capacity.

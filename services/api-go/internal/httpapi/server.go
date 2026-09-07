@@ -65,6 +65,7 @@ func (s *Server) Router() http.Handler {
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID, middleware.RealIP, middleware.Recoverer)
 	router.Use(s.securityHeaders, s.cors, s.accessLog)
+	router.Use(s.productMetrics)
 	router.Get("/health", s.handle(func(w http.ResponseWriter, _ *http.Request) (any, error) {
 		return map[string]any{"status": "ok", "service": "fitcalgary-api-go"}, nil
 	}))
@@ -73,7 +74,7 @@ func (s *Server) Router() http.Handler {
 	router.Route("/api/v1", func(v1 chi.Router) {
 		s.registerPublicRoutes(v1)
 		v1.Group(func(protected chi.Router) {
-			protected.Use(s.authenticate)
+			protected.Use(s.authenticate, s.accountBudget)
 			s.registerAccountRoutes(protected)
 			s.registerSubmissionRoutes(protected)
 			s.registerJudgeRoutes(protected)

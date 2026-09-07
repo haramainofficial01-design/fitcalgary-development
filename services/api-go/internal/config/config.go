@@ -27,6 +27,9 @@ type Config struct {
 	EvidenceRetentionDays int
 	MigrationsDir         string
 	DeviceTokenKey        []byte
+	FCMProjectID          string
+	FCMClientEmail        string
+	FCMPrivateKey         string
 }
 
 func Load() (Config, error) {
@@ -47,6 +50,9 @@ func Load() (Config, error) {
 		S3AccessKeyID:     os.Getenv("S3_ACCESS_KEY_ID"),
 		S3SecretAccessKey: os.Getenv("S3_SECRET_ACCESS_KEY"),
 		MigrationsDir:     value("MIGRATIONS_DIR", "../api/migrations"),
+		FCMProjectID:      os.Getenv("FCM_PROJECT_ID"),
+		FCMClientEmail:    os.Getenv("FCM_CLIENT_EMAIL"),
+		FCMPrivateKey:     strings.ReplaceAll(os.Getenv("FCM_PRIVATE_KEY"), `\n`, "\n"),
 	}
 	deviceKey := strings.TrimSpace(os.Getenv("DEVICE_TOKEN_ENCRYPTION_KEY"))
 	decodedKey, decodeErr := base64.StdEncoding.DecodeString(deviceKey)

@@ -17,6 +17,7 @@ import (
 	"fitcalgary.ca/index/api/internal/config"
 	database "fitcalgary.ca/index/api/internal/db"
 	"fitcalgary.ca/index/api/internal/httpapi"
+	"fitcalgary.ca/index/api/internal/notifications"
 	"fitcalgary.ca/index/api/internal/security"
 	"fitcalgary.ca/index/api/internal/storage"
 	"fitcalgary.ca/index/api/internal/workers"
@@ -75,6 +76,13 @@ func run(logger *slog.Logger) error {
 		return fmt.Errorf("device token encryption: %w", err)
 	}
 	go workers.RunNotificationOutbox(rootContext, pool, logger)
+	if cfg.FCMProjectID != "" || cfg.FCMClientEmail != "" || cfg.FCMPrivateKey != "" {
+		sender, err := notifications.NewFCM(rootContext, cfg.FCMProjectID, cfg.FCMClientEmail, cfg.FCMPrivateKey)
+		if err != nil {
+			return err
+		}
+		go workers.RunPushDelivery(rootContext, pool, sender, cipher, logger)
+	}
 	go workers.RunEvidenceRetention(rootContext, pool, evidence, logger)
 
 	api := httpapi.NewServer(pool, verifier, evidence, cipher, cfg, logger)
