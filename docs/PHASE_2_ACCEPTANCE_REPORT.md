@@ -13,7 +13,7 @@ the Client-facing review is consolidated into the three files in
 
 | Area | Status | Evidence | Boundary |
 |---|---|---|---|
-| Gym index, pricing and comparison | VERIFIED | Chrome, Flutter and PostgreSQL workflows; normalized monthly/first-year costs and saved gyms | Client-approved production content remains external |
+| Gym index, pricing and comparison | VERIFIED | 273 Client-approved gyms; Chrome, Flutter and PostgreSQL workflows; normalized monthly/first-year costs and saved gyms | Production catalog supplied and imported |
 | Clubs and events | VERIFIED | Admin publication/edit/archive plus public browse/detail and registration links | Final content remains external |
 | Profiles and history | VERIFIED | Owner-protected profile, official/community separation, PB/history and privacy | Final profile policy/content remains external |
 | Disciplines, divisions and boards | VERIFIED | Configurable services, eligibility, ties, direction and official/community placement tests | Final ranking decisions require Client confirmation |

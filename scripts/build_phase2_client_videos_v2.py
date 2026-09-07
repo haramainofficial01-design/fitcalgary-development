@@ -63,10 +63,11 @@ def make_demo():
     entries = [
         ("A working FitCalgary product", "Phase 2 brings the product shell and the core V1 journeys together.", None, None, True, "READY FOR REVIEW"),
         ("Home", "The recognizable FitCalgary editorial home experience.", p1 / "web-home.png", "Responsive web / home", False, "01"),
-        ("Gym directory", "Search, area filters, categories and clear cost-first presentation.", clean / "directory.png", "Gym index / Android emulator", False, "02"),
+        ("Gym directory", "Search, area filters, categories and clear cost-first presentation across 273 Client-approved gyms.", ART / "phase2/client-data/gyms.png", "Client-approved gym index", False, "02"),
         ("Structured pricing", "Normalized monthly and first-year values make membership choices comparable.", clean / "comparison.png", "Comparison / responsive web", False, "03"),
-        ("Saved gyms", "A signed-in athlete can keep a private shortlist and return to it.", clean / "gym-detail.png", "Gym detail / saved state", False, "04"),
-        ("Clubs and events", "Published event content, eligibility and registration destinations.", clean / "event-editor-mobile.png", "Event content / mobile layout", False, "05"),
+        ("Saved gyms", "A signed-in athlete can keep a private shortlist and return to it.", ART / "phase2/client-data/gym-detail.png", "Client-approved gym detail", False, "04"),
+        ("Sport clubs", "Browse 743 Client-approved sport clubs through the production data model.", ART / "phase2/client-data/clubs.png", "Client-approved clubs", False, "05"),
+        ("Competitions and events", "Browse 531 supplied competitions with source schedule details preserved.", ART / "phase2/client-data/events.png", "Client-approved competitions", False, "06"),
         ("Athlete profile", "Profile, verified history and performance context stay in one place.", day4 / "day4-athlete-performance.png", "Athlete profile / iOS simulator", False, "06"),
         ("Official and community boards", "Verified placements and community results remain clearly distinct.", clean / "official-result.png", "Official board / verified placement", False, "07"),
         ("Submit a result", "A result follows the published discipline, division and eligibility rules.", clean / "private-evidence.png", "Submission flow / Android emulator", False, "08"),
@@ -80,7 +81,7 @@ def make_demo():
         ("iOS", "Native simulator verification of the FitCalgary client shell and workflows.", p1 / "ios-home.png", "iOS simulator verified", False, "16"),
         ("Android", "Android emulator verification plus a successful release AAB build.", p1 / "android-home.png", "Android emulator verified", False, "17"),
         ("Apple Watch", "A compact companion for athlete status and recent results.", p1 / "watch-fresh-20260901.png", "watchOS simulator verified", False, "18"),
-        ("Phase 2 ready for review", "The core product is verified locally. Production credentials, approved content, physical devices and store release remain explicit external or Phase 3 boundaries.", None, None, True, "COMPLETE + VERIFIED"),
+        ("Phase 2 ready for review", "The core product and Client-approved catalog are verified locally. Production credentials, physical devices and store release remain explicit external or Phase 3 boundaries.", None, None, True, "COMPLETE + VERIFIED"),
     ]
     paths=[]
     for i, e in enumerate(entries):
@@ -102,11 +103,11 @@ def make_technical():
         ("Phase 2 technical proof", "Concise evidence for the service path and acceptance boundary.", [("Acceptance candidate", "READY"),("Client package", "REGENERATED")], None, True),
         ("Flutter and web checks", "Client analysis, widget tests and responsive production build.", [("Flutter analysis", "PASS"),("Flutter tests", "20 PASS"),("Web type / lint / build", "PASS")], p1/"web-home.png", False),
         ("Go service checks", "The protected API, workers and domain services are exercised with PostgreSQL-backed tests.", [("Go tests", "PASS"),("go vet", "PASS"),("Production build", "PASS")], None, False),
-        ("Database and storage", "Fresh migrations and private evidence storage preserve the central data path.", [("Migrations", "7 PASS"),("Public tables", "35"),("Private storage", "PASS")], clean/"private-evidence.png", False),
+        ("Database and Client catalog", "Fresh migrations, 1,547 Client records and private evidence storage preserve the central data path.", [("Client records", "1,547"),("Import rerun", "PASS"),("Private storage", "PASS")], ART/"phase2/client-data/gyms.png", False),
         ("Central end-to-end workflow", "Submission -> private evidence -> correction -> approval -> verified result -> rank -> inbox.", [("Server authorization", "PASS"),("SQL transaction path", "PASS"),("Inbox notice", "PASS")], clean/"official-result.png", False),
         ("Role and moderation controls", "Role changes and account restrictions are enforced on the next protected request.", [("Grant / revoke / restore", "PASS"),("Self-escalation", "DENIED"),("Audit trail", "PASS")], admin/"overview.png", False),
         ("Platform builds", "Applicable local simulator and emulator evidence is separated from physical-device claims.", [("iOS simulator", "PASS"),("Android emulator", "PASS"),("Android AAB", "PASS"),("watchOS simulator", "PASS")], p1/"ios-home.png", False),
-        ("Security boundary", "Secrets, provider credentials and Client-approved production content remain outside the committed evidence.", [("No secrets committed", "PASS"),("Safe errors", "PASS"),("Object access", "PASS")], None, True),
+        ("Security boundary", "Client data is versioned and imported; secrets and provider credentials remain outside committed evidence.", [("No secrets committed", "PASS"),("Safe errors", "PASS"),("Object access", "PASS")], None, True),
         ("Phase 2 candidate", "The package is ready for Client review. Production configuration and store work are Phase 3.", [("Matrix", "COMPLETE"),("PDF", "5 PAGES"),("Videos", "1080P")], None, True),
     ]
     for i,(t,s,lines,path,dark) in enumerate(specs):

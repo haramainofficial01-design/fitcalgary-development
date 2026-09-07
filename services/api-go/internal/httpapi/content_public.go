@@ -11,7 +11,7 @@ import (
 // State is derived from persisted timestamps, not a client-side clock. Explicit
 // cancellation/postponement wins over the temporal state. An event without an
 // end time is treated as completed after its start, without inventing a duration.
-const eventPhaseSQL = `CASE WHEN item.event_status='CANCELLED' THEN 'CANCELLED' WHEN item.event_status='POSTPONED' THEN 'POSTPONED' WHEN now()<item.start_at THEN 'UPCOMING' WHEN now()<=COALESCE(item.end_at,item.start_at) THEN 'CURRENT' ELSE 'COMPLETED' END`
+const eventPhaseSQL = `CASE WHEN item.event_status='CANCELLED' THEN 'CANCELLED' WHEN item.event_status='POSTPONED' THEN 'POSTPONED' WHEN item.start_at IS NULL THEN 'UNSCHEDULED' WHEN now()<item.start_at THEN 'UPCOMING' WHEN now()<=COALESCE(item.end_at,item.start_at) THEN 'CURRENT' ELSE 'COMPLETED' END`
 
 func (s *Server) listContent(r *http.Request, events bool) (any, error) {
 	p, err := parseList(r)
@@ -23,12 +23,12 @@ func (s *Server) listContent(r *http.Request, events bool) (any, error) {
 		return nil, validation("sport is too long")
 	}
 	table, extra, order := "clubs", "", "lower(name),id"
-	conditions := ` AND ($3::text IS NULL OR item.category=$3) AND ($4::text='' OR item.sport ILIKE $4)`
+	conditions := ` AND ($3::text IS NULL OR item.category=$3) AND ($4::text='' OR item.sport ILIKE '%' || $4 || '%')`
 	args := []any{p.City, like(p.Query), p.Category, sport, p.PageSize, (p.Page - 1) * p.PageSize}
 	if events {
-		table, extra, order = "events", ", "+eventPhaseSQL+" AS phase", "start_at,id"
+		table, extra, order = "events", ", "+eventPhaseSQL+" AS phase", "start_at NULLS LAST,id"
 		phase := strings.ToUpper(strings.TrimSpace(r.URL.Query().Get("phase")))
-		if phase != "" && !oneOf(phase, "UPCOMING", "CURRENT", "COMPLETED", "CANCELLED", "POSTPONED") {
+		if phase != "" && !oneOf(phase, "UPCOMING", "CURRENT", "COMPLETED", "CANCELLED", "POSTPONED", "UNSCHEDULED") {
 			return nil, validation("invalid event phase")
 		}
 		month := r.URL.Query().Get("month")

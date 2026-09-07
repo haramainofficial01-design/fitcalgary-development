@@ -135,16 +135,20 @@ func (s *Server) saveEvent(w http.ResponseWriter, r *http.Request, update bool) 
 	if b.RegistrationStatus == "" {
 		b.RegistrationStatus = "OPEN"
 	}
-	if !validContentIdentity(b.CityID, b.Slug, b.Name, b.PublishStatus) || !oneOf(b.EventStatus, "ACTIVE", "CANCELLED", "POSTPONED") || !oneOf(b.RegistrationStatus, "OPEN", "CLOSED", "NOT_APPLICABLE") {
+	if !validContentIdentity(b.CityID, b.Slug, b.Name, b.PublishStatus) || !oneOf(b.EventStatus, "ACTIVE", "CANCELLED", "POSTPONED") || !oneOf(b.RegistrationStatus, "OPEN", "CLOSED", "UNKNOWN", "NOT_APPLICABLE") {
 		return nil, validation("event fields are invalid")
 	}
-	start, err := time.Parse(time.RFC3339, b.StartAt)
-	if err != nil {
-		return nil, validation("startAt must be an RFC3339 timestamp")
+	var start *time.Time
+	if strings.TrimSpace(b.StartAt) != "" {
+		parsed, err := time.Parse(time.RFC3339, b.StartAt)
+		if err != nil {
+			return nil, validation("startAt must be an RFC3339 timestamp")
+		}
+		start = &parsed
 	}
 	if b.EndAt != nil {
 		end, err := time.Parse(time.RFC3339, *b.EndAt)
-		if err != nil || end.Before(start) {
+		if err != nil || (start != nil && end.Before(*start)) {
 			return nil, validation("endAt must be a timestamp at or after startAt")
 		}
 	}
@@ -167,7 +171,11 @@ func (s *Server) saveEvent(w http.ResponseWriter, r *http.Request, update bool) 
 	if b.Tags == nil {
 		b.Tags = []string{}
 	}
-	fields := map[string]any{"city_id": b.CityID, "slug": b.Slug, "name": strings.TrimSpace(b.Name), "organizer": b.Organizer, "category": b.Category, "description": b.Description, "start_at": b.StartAt, "end_at": b.EndAt, "registration_deadline": b.RegistrationDeadline, "registration_status": b.RegistrationStatus, "location": b.Location, "external_registration_url": b.ExternalRegistrationURL, "sport": b.Sport, "official_fitcalgary": b.OfficialFitCalgary, "tags": b.Tags, "source_url": b.SourceURL, "event_status": b.EventStatus, "publish_status": b.PublishStatus, "entry_requirements": b.EntryRequirements, "image_url": b.ImageURL}
+	var startValue any
+	if start != nil {
+		startValue = b.StartAt
+	}
+	fields := map[string]any{"city_id": b.CityID, "slug": b.Slug, "name": strings.TrimSpace(b.Name), "organizer": b.Organizer, "category": b.Category, "description": b.Description, "start_at": startValue, "end_at": b.EndAt, "registration_deadline": b.RegistrationDeadline, "registration_status": b.RegistrationStatus, "location": b.Location, "external_registration_url": b.ExternalRegistrationURL, "sport": b.Sport, "official_fitcalgary": b.OfficialFitCalgary, "tags": b.Tags, "source_url": b.SourceURL, "event_status": b.EventStatus, "publish_status": b.PublishStatus, "entry_requirements": b.EntryRequirements, "image_url": b.ImageURL}
 	return s.saveContent(w, r, "events", "EVENT", fields, update)
 }
 

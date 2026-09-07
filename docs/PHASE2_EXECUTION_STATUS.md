@@ -1,6 +1,6 @@
 # Phase 2 execution ledger
 
-Updated 2026-09-06 after the final Client-package quality pass.
+Updated 2026-09-07 after importing and verifying the Client-approved catalog.
 
 ## Current position
 
@@ -28,11 +28,11 @@ The authoritative requirement-by-requirement matrix is
   Android emulator/release AAB and watchOS simulator build/run evidence exist.
 - Client Review PDF, polished Client Demo and Technical Proof are regenerated
   at the paths listed below and visually inspected.
+- Client-approved data is imported through a reproducible, idempotent path:
+  273 gyms, 743 clubs and 531 competitions (1,547 source records total).
 
 ## BLOCKED_EXTERNAL
 
-- Client-approved production gyms, pricing, clubs, events, ranking and legal
-  content.
 - Production Keycloak host/SMTP and Google/Apple identity credentials.
 - FCM/APNs provider credentials and production notification delivery.
 - Hosting, database, private-storage, domain/DNS/TLS and store accounts.
@@ -53,8 +53,8 @@ store submission, final public-release cleanliness audit and handoff transfer.
 - Technical Proof: `client-review/phase-2/FitCalgary_Phase_2_Technical_Proof.mp4`
 - Previous tested implementation: `a8fd0da`
 - Previous package/status refs: `3f858ba`, `a35e28e`, `5998632`
-- This quality pass records a new acceptance-candidate commit and tag after
-  artifact validation.
+- Previous quality-pass commit: `38983c1353cd39fb4676ddab90d6dd915486b43b`
+- Final Client-data checkpoint: recorded by the final task commit and tag.
 
 ## Resume rule
 

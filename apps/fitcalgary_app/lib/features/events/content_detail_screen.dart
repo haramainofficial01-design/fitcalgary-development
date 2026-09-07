@@ -124,7 +124,7 @@ class _EventDetail extends StatelessWidget {
           Text(event.entryRequirements!, style: const TextStyle(height: 1.55)),
         ],
         const SizedBox(height: 28),
-        _ExternalButton(url: event.registrationUrl, label: 'OPEN REGISTRATION'),
+        _ExternalButton(url: event.registrationUrl, label: 'EVENT WEBSITE'),
       ],
     );
   }
@@ -231,26 +231,31 @@ class _ExternalButton extends StatelessWidget {
   final String? url;
   final String label;
   @override
-  Widget build(BuildContext context) => FilledButton.icon(
-    onPressed: url == null
-        ? null
-        : () async {
-            final target = Uri.tryParse(url!);
-            if (target == null ||
-                !await launchUrl(
-                  target,
-                  mode: LaunchMode.externalApplication,
-                )) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('The external link could not be opened.'),
-                  ),
-                );
+  Widget build(BuildContext context) {
+    if (url == null || url!.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return FilledButton.icon(
+      onPressed: url == null
+          ? null
+          : () async {
+              final target = Uri.tryParse(url!);
+              if (target == null ||
+                  !await launchUrl(
+                    target,
+                    mode: LaunchMode.externalApplication,
+                  )) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('The external link could not be opened.'),
+                    ),
+                  );
+                }
               }
-            }
-          },
-    icon: const Icon(Icons.open_in_new),
-    label: Text(url == null ? 'LINK NOT YET SUPPLIED' : label),
-  );
+            },
+      icon: const Icon(Icons.open_in_new),
+      label: Text(label),
+    );
+  }
 }

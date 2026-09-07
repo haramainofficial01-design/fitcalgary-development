@@ -27,7 +27,7 @@ Status vocabulary: `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED`, `CONFIGURED`, `T
 | Gym/account workflows | VERIFIED | Server search/filters/paging, current membership prices/terms, Flutter detail/comparison, private saved gyms and profile persistence run against Go/PostgreSQL; mobile and web integration tests exercise actual read/write. |
 | Club/event workflows | VERIFIED / BLOCKED_EXTERNAL | Admin create/update/publish/unpublish/archive, public detail/search/filter/paging and event temporal states use existing schema. Flutter Compete browse/detail and web-admin operations are integrated and tested. Final Client content remains external. |
 | Athlete profile | VERIFIED / BLOCKED_EXTERNAL | Persisted birth date, board category, published gym affiliation and privacy controls; owner-only server-ranked official/community results and personal bests; distinct Flutter/web presentation. Final Client rules/content remain external. |
-| Gym/event/client data | IN_PROGRESS / BLOCKED_EXTERNAL | Real models plus isolated opt-in development fixtures; production guards reject fixture databases. Client-approved production content remains external. |
+| Gym/event/client data | IMPLEMENTED / TESTED | Client-approved JSON catalog imported through an idempotent Go path: 273 gyms, 743 clubs and 531 competitions; full source payload retained for provenance. |
 | Production deployment | NOT_STARTED / BLOCKED_EXTERNAL | Domain, hosting accounts, managed database/storage/Keycloak, secrets, DNS/TLS, and client ownership decisions required. |
 | Store submission | NOT_STARTED / BLOCKED_EXTERNAL | Client store accounts, signing identities, final content/legal approvals, device QA, assets, and production endpoints required. |
 

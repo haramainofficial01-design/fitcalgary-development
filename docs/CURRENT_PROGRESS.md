@@ -113,7 +113,7 @@ items. Its existing Git checkpoint remains an unchanged historical baseline.
 
 ## Blocked external
 
-Production identity/email/social credentials; managed hosting/database/storage; APNs/FCM; domains/DNS/TLS; signing/store accounts; physical devices; approved production content/rules/legal materials.
+Production identity/email/social credentials; managed hosting/database/storage; APNs/FCM; domains/DNS/TLS; signing/store accounts; physical devices; remaining policy/legal materials not included in the supplied catalog.
 
 ## Latest private Git commit
 

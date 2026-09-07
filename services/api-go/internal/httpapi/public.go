@@ -73,7 +73,7 @@ LEFT JOIN gym_pricing p ON p.gym_id=g.id AND (p.effective_from IS NULL OR p.effe
 WHERE g.publish_status='PUBLISHED' AND c.slug=$1
 AND ($2::text IS NULL OR g.name ILIKE $2 OR COALESCE(g.operator,'') ILIKE $2 OR COALESCE(g.neighbourhood,'') ILIKE $2)
 AND ($3::text IS NULL OR $3=ANY(g.categories))
-AND ($6::text IS NULL OR g.neighbourhood ILIKE $6)
+AND ($6::text IS NULL OR g.neighbourhood ILIKE '%' || $6 || '%')
 AND ($7::text IS NULL OR $7=ANY(g.amenities)) GROUP BY g.id,c.name)
 SELECT *,COUNT(*) OVER() AS total FROM directory
 WHERE ($8::text='' OR ($8='complete' AND pricing_complete) OR ($8='incomplete' AND NOT pricing_complete))
