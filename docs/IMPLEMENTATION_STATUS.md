@@ -24,16 +24,17 @@ Status vocabulary: `NOT_STARTED`, `IN_PROGRESS`, `IMPLEMENTED`, `CONFIGURED`, `T
 | watchOS foundation | TESTED (SIMULATOR) / NOT DEVICE_VERIFIED | Native SwiftUI target builds and launches on Apple Watch Series 11 simulator; companion session reports reachable in simulator. No real Apple Watch test. |
 | Private evidence storage | IMPLEMENTED / BLOCKED_EXTERNAL | S3 multipart/sign/playback adapter and retention worker exist. Production bucket and credentials are required for service verification. |
 | Notifications | IMPLEMENTED / TESTED / BLOCKED_EXTERNAL | Inbox/outbox, encrypted FCM registration-token lifecycle, preferences, retry/backoff, invalid-token disabling, Flutter permission/registration/logout hooks and an HTTP v1 provider adapter are tested. Firebase/APNs production credentials and real devices remain required for live delivery verification. |
-| Gym/account workflows | TESTED increment / IN_PROGRESS overall | Server search/filters/paging, current membership prices/terms, Flutter detail/comparison, private saved gyms and profile persistence run against Go/PostgreSQL; mobile integration tests exercise actual read/write. Broader Phase 2 acceptance remains pending. |
-| Club/event workflows | DEVELOPMENT + SIMULATOR TESTED / IN PROGRESS overall | Admin create/update/publish/unpublish/archive, public detail/search/filter/paging and event temporal states use existing schema. Flutter Compete browse/detail and external-link states plus web-admin club/event creation are integrated. Real PostgreSQL and iOS/Android tests verify publication visibility, roles, validation and atomic audit rollback. Full edit forms and Client content remain. |
-| Athlete profile | DEVELOPMENT + SIMULATOR/EMULATOR TESTED / IN PROGRESS overall | Persisted birth date, board category, published gym affiliation and privacy controls; owner-only server-ranked official/community results and personal bests; distinct Flutter presentation. PostgreSQL ownership/persistence tests and iOS/Android profile UI tests pass. Final Client rules/content and complete approved-result workflow remain. |
+| Gym/account workflows | VERIFIED | Server search/filters/paging, current membership prices/terms, Flutter detail/comparison, private saved gyms and profile persistence run against Go/PostgreSQL; mobile and web integration tests exercise actual read/write. |
+| Club/event workflows | VERIFIED / BLOCKED_EXTERNAL | Admin create/update/publish/unpublish/archive, public detail/search/filter/paging and event temporal states use existing schema. Flutter Compete browse/detail and web-admin operations are integrated and tested. Final Client content remains external. |
+| Athlete profile | VERIFIED / BLOCKED_EXTERNAL | Persisted birth date, board category, published gym affiliation and privacy controls; owner-only server-ranked official/community results and personal bests; distinct Flutter/web presentation. Final Client rules/content remain external. |
 | Gym/event/client data | IN_PROGRESS / BLOCKED_EXTERNAL | Real models plus isolated opt-in development fixtures; production guards reject fixture databases. Client-approved production content remains external. |
 | Production deployment | NOT_STARTED / BLOCKED_EXTERNAL | Domain, hosting accounts, managed database/storage/Keycloak, secrets, DNS/TLS, and client ownership decisions required. |
 | Store submission | NOT_STARTED / BLOCKED_EXTERNAL | Client store accounts, signing identities, final content/legal approvals, device QA, assets, and production endpoints required. |
 
 Phase 1 is COMPLETE / ACCEPTED / FULLY PAID / CLOSED, as explicitly confirmed by
-the Developer. Phase 2 is authorized and in progress; all new work belongs to
-Phase 2. Development fixture isolation and production data guards are tested;
+the Developer. Phase 2 is COMPLETE + VERIFIED within Developer control; all new
+implementation belongs to Phase 2 history. Development fixture isolation and
+production data guards are tested;
 see `PHASE_2_STATUS.md` and `PHASE_2_DELIVERY_PLAN.md`. Additive migration `0002`
 extends membership terms without changing historical `0001`. Later
 production/device dependencies do not reopen Phase 1.

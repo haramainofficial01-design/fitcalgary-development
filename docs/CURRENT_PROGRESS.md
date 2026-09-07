@@ -2,6 +2,13 @@
 
 Last updated: 2026-09-06 (America/Edmonton).
 
+## Current authoritative status
+
+Phase 2 is COMPLETE + VERIFIED within Developer control. The final candidate is
+commit `3f858ba`, tagged `phase-2-acceptance-candidate-2026-09-06`, and pushed to
+the private development remote. The three-file Client review package is complete
+under `client-review/phase-2/` and on the Desktop. Phase 3 release work is separate.
+
 ## Latest verified continuation
 
 September 6: the website now has a real signed-in profile/preferences page,
@@ -42,8 +49,8 @@ production, store, screenshot and release-configuration audit; this is not being
 represented as completed release verification.
 
 The daily development automation has been deleted at the Developer's request.
-Continue immediately and finish as early as verification permits. Phase 2 is NOT
-yet feature-complete and the final Client review package has not been generated.
+The prior progress notes below are historical increments. The final Phase 2
+verification and review package are now complete.
 
 Real configured boards, result entry, submission/judge/correction workflows,
 configuration administration and notification inbox/preferences are implemented.
@@ -58,7 +65,7 @@ Historical checkpoints below remain valid but do not describe all current change
 
 ## Current phase
 
-Phase 2 — Core Product, explicitly authorized and in progress.
+Phase 2 — Core Product, COMPLETE + VERIFIED within Developer control.
 
 Phase 1 is COMPLETE / ACCEPTED / FULLY PAID / CLOSED, as explicitly confirmed
 by the Developer. There are no pending Phase 1 development, acceptance or payment
@@ -74,7 +81,7 @@ items. Its existing Git checkpoint remains an unchanged historical baseline.
 - iOS Simulator, Android emulator, Flutter web and watchOS Simulator build/run foundations.
 - Authentic local Git history, foundation snapshot and acceptance-candidate tag preserved.
 
-## Currently working
+## Historical increments (completed in final candidate)
 
 - September 4: club/event publishing services now pass real-database CRUD,
   visibility, filtering, permission and audit-rollback tests. The Flutter Compete
@@ -89,10 +96,10 @@ items. Its existing Git checkpoint remains an unchanged historical baseline.
 - See `PHASE_2_STATUS.md` for scope, `DATA_POLICY.md` for data boundaries and
   `PHASE_2_DELIVERY_PLAN.md` for the September 4–8 work blocks and complete-package target.
 
-## In progress
+## Phase 3 / external next work
 
-- Remaining Phase 2 Core Product workflows; next focus is configurable boards and results.
-- Production credentials/data and physical-device verification remain explicitly external/later.
+- Production credentials/data, physical-device verification, signed release artifacts,
+  store submission and deployment remain explicitly external or Phase 3 work.
 
 ## Tested
 
@@ -111,14 +118,13 @@ Production identity/email/social credentials; managed hosting/database/storage; 
 ## Latest private Git commit
 
 Latest verified implementation push:
-`3833a3889e25d64e970760e7fd646cebb89b2293` — September 4 evening athlete profile
-performance, eligibility, gym and privacy increment. Private remote `main` matched
-the documentation checkpoint `862f45c4fb3f171a529a0cd6d8ec561473be1b50`.
+`3f858bad285662e0e517b1f2c36ac4f9a9a9a41d` — final Phase 2 Client review package
+and acceptance evidence. Private remote `main` matches this SHA.
 
 ## Latest tested commit
 
-`3833a38` — September 4 evening athlete profile performance, eligibility, gym and
-privacy controls; checks are recorded in `TEST_MATRIX.md`.
+`a8fd0da` — secure cross-platform notification registration lifecycle; final platform
+and package evidence is committed at `3f858ba`.
 
 `47ea8ffcdf88df2c3f0d3ae7e35fe3d2bfd9dcfa` — September 4 afternoon
 Client integration: Flutter analysis/nine tests/web build, iOS and Android

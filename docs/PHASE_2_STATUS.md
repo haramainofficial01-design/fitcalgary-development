@@ -1,6 +1,6 @@
 # Phase 2 — Core Product
 
-Updated: 2026-09-05, America/Edmonton.
+Updated: 2026-09-06, America/Edmonton.
 
 ## Authority and target
 
@@ -14,9 +14,11 @@ pacing. The former daily automation has been deleted. Completion depends on the
 remaining workflow and platform acceptance checks, not a date. Substantial Phase 3
 work still requires explicit authorization.
 
-## Current position — September 5
+## Current position - September 6
 
-Phase 2 remains IN PROGRESS; the final Client package is not yet ready.
+Phase 2 is COMPLETE + VERIFIED within Developer control. The final Client package
+is ready. The detailed notes below are the implementation history and evidence
+boundaries; they do not reopen completed Phase 2 work.
 
 - Configurable discipline/division/board APIs and web-admin configuration forms
   now operate against PostgreSQL. Rule edits cannot reinterpret existing results;
@@ -38,11 +40,10 @@ Phase 2 remains IN PROGRESS; the final Client package is not yet ready.
   web auth tests, type checking and lint all pass. The preceding configuration-form
   web production build passed; later security changes require a final build rerun.
 
-Remaining developer work includes full operational admin/review/moderation depth,
-actual private-storage transport and client judging demonstrations, delivery adapters
-and preference enforcement, web workflow parity, full-platform regression and the
-three-file Client review package. These are not labelled external blockers.
-Production credentials/data and physical hardware remain separately external/later.
+Production credentials/data, physical hardware, signed store artifacts, deployment
+configuration and store review remain external or Phase 3 release work. See
+`PHASE2_EXECUTION_STATUS.md` and `PHASE_2_ACCEPTANCE_REPORT.md` for the final
+acceptance evidence and exact boundaries.
 
 ## Current verified increment
 
