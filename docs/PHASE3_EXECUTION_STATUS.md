@@ -5,6 +5,12 @@
 - **Scope:** Original FitCalgary V1 only. The separate future community-product
   discussion is out of scope and must not alter this release.
 - **Private baseline:** `601587558c65fd5be31cf25d3989fbdae911dfba` on `main`.
+- **Latest private checkpoint:** `71548cf4e17f26842f540016f6c6b8766b5d14a2` on
+  `main`, tagged `phase-3-final-delivery-candidate-2026-09-12` and pushed only to
+  the private development remote.
+- **Clean handoff candidate:** local folder
+  `/Users/sahlshafiq/Documents/Coding/fitcalgary-final-handoff-candidate-20260912`,
+  one-commit SHA `16fdcf961b9fa69d71cf98f55232da35f3b0c452`.
 - **Current worktree:** Carries the intentional final-handoff sanitation changes
   from the prior delivery pass. They remain part of the Phase 3 working baseline
   and are not a product rollback.
