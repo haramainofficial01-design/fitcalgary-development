@@ -5,15 +5,14 @@
 - **Scope:** Original FitCalgary V1 only. The separate future community-product
   discussion is out of scope and must not alter this release.
 - **Private baseline:** `601587558c65fd5be31cf25d3989fbdae911dfba` on `main`.
-- **Latest private checkpoint:** `71548cf4e17f26842f540016f6c6b8766b5d14a2` on
-  `main`, tagged `phase-3-final-delivery-candidate-2026-09-12` and pushed only to
+- **Latest private checkpoint:** `dae24cedb09bd52db1ba4f91952c2bff648d92be` on
+  `main`, tagged `phase-3-complete-within-control-2026-09-12` and pushed only to
   the private development remote.
 - **Clean handoff candidate:** local folder
-  `/Users/sahlshafiq/Documents/Coding/fitcalgary-final-handoff-candidate-20260912`,
-  one-commit SHA `16fdcf961b9fa69d71cf98f55232da35f3b0c452`.
-- **Current worktree:** Carries the intentional final-handoff sanitation changes
-  from the prior delivery pass. They remain part of the Phase 3 working baseline
-  and are not a product rollback.
+  `/Users/sahlshafiq/Documents/Coding/fitcalgary-final-handoff-candidate-20260912-final`,
+  one-commit SHA `dbc3a027e9aaa2a2c38f61825cef195071d32863`.
+- **Current worktree:** Clean after recording the final durable handoff candidate
+  and release-readiness evidence.
 - **Approved source catalog:** 273 gyms, 743 clubs, 531 competitions (1,547 total
   source records). The club dataset is stored under the `clubs` property; the gym
   and competition datasets are arrays.
