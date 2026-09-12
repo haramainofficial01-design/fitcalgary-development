@@ -11,5 +11,10 @@ listed in `EXTERNAL_DEPENDENCIES.md`, and complete the release matrix. Secrets,
 signing material, private evidence and production credentials must remain in the
 appropriate platform secret manager rather than this repository.
 
-The final source snapshot can be exported as a clean one-commit handoff when the
-remaining external release inputs and final verification are complete.
+The final source snapshot has been prepared as a clean one-commit candidate in
+the local release workspace for inspection. It is intentionally not pushed to the
+Client repository while hosting, provider credentials, signing accounts, physical
+devices and store inputs remain external. The candidate contains no review media,
+simulator artifacts, internal phase-history files, private development references
+or secrets. A final transfer can be produced from the same source once those
+external release inputs and the corresponding verification are complete.

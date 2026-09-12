@@ -54,7 +54,7 @@
 | 34 | Store readiness | BLOCKED_EXTERNAL | Technical project metadata is present; Apple/Google accounts, signing, store assets and review submission remain external. |
 | 35 | Deployment readiness | BLOCKED_EXTERNAL | Environment-driven deployment is documented; hosting, DNS/TLS, managed DB/storage and production credentials remain external. |
 | 36 | Documentation | PASS | Production configuration, database operations, operations runbook, release matrix, dependencies, handoff and final summary are present. |
-| 37 | Final handoff candidate | NOT_STARTED | Build clean one-commit candidate only after final verification; do not push Client `main` without authorization. |
+| 37 | Final handoff candidate | PASS | Clean one-commit candidate prepared locally after final verification; its SHA is reported with the release record. Client `main` was not modified. |
 
 ## Verified pre-flight
 
@@ -85,3 +85,6 @@ configuration and deployment inputs.
 - watchOS: simulator build/install/launch pass.
 - Source hygiene: `git diff --check` and tracked secret/internal-tool scans pass;
   `.env` files remain ignored and no production values are committed.
+- Handoff hygiene: clean candidate tree contains 387 tracked files, exactly one
+  reachable commit, no review media/simulator artifacts, no internal-tool terms,
+  no private development references, and no secret material.
