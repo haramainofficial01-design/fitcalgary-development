@@ -1,6 +1,6 @@
 # Current progress
 
-Last updated: 2026-09-06 (America/Edmonton).
+Last updated: 2026-09-12 (America/Edmonton).
 
 ## Current authoritative status
 
@@ -9,15 +9,24 @@ commit `3f858ba`, tagged `phase-2-acceptance-candidate-2026-09-06`, and pushed t
 the private development remote. The three-file Client review package is complete
 under `client-review/phase-2/` and on the Desktop. Phase 3 release work is separate.
 
-## Latest verified continuation
+## Phase 3 release-readiness checkpoint
+
+The Phase 3 local verification batch is complete within Developer control:
+production configuration is fail-closed, approved Client data imports cleanly and
+idempotently, and the Go, Flutter, web, storage, security, iOS, Android, watchOS
+and database checks pass. Production hosting, provider credentials, signing
+accounts, physical devices and store submission remain explicitly external; see
+`PHASE3_EXECUTION_STATUS.md`.
+
+## Historical Phase 2 notes (retained)
 
 September 6: the website now has a real signed-in profile/preferences page,
 saved-gym add/remove flow, notification list/read controls, logout and ordinary-user
 administration isolation. Sign-in routes to the profile rather than administration.
 The browser regression proves profile/preference persistence after reload, saved-gym
 roundtrip, logout-cookie removal and community result entry → Go/PostgreSQL → board
-and athlete history. Web type checking/lint/build pass. Official private-video web
-submission and the remaining Phase 2 scope are still open; no final package exists.
+and athlete history. Web type checking/lint/build pass. These notes predate the
+closed Phase 2 acceptance checkpoint and are retained as implementation history.
 
 Consumer web home placeholders have been replaced by the read-only Go-backed
 directory. Search, paging, retry/empty states and gym/event/board detail routes are
@@ -25,11 +34,11 @@ implemented. Chrome acceptance verifies actual published gym search and normaliz
 pricing, with mobile layout and missing-record behavior. Web type/lint/build and
 six unit tests pass. This is not yet full authenticated web workflow parity.
 
-Visual direction is being implemented without changing the brand: layered web
+Visual direction was implemented without changing the brand: layered web
 listing cards, floating mobile dock, restrained hover feedback and contrast/motion
 fallbacks; Flutter floating navigation with selective Apple translucency and opaque
 Android elevation. Adaptive material tests and the updated iOS profile simulator
-scenario pass. Major-screen and watch polish are still in progress.
+scenario passed; later cross-platform release polish is tracked in Phase 3.
 
 Role restrictions now have PostgreSQL-backed lifecycle regression coverage:
 existing token, simulated refreshed/re-login tokens with the same subject and
@@ -40,13 +49,12 @@ Keycloak token exchange. Dashboard browser tests also exercised grant/revoke
 against the running Go service and PostgreSQL. Cross-platform lifecycle UI
 verification remains open before closing the entire role-restriction work item.
 
-Phase 2 presentation cleanup is underway: consumer sign-in wording and workflow
+Phase 2 presentation cleanup was completed: consumer sign-in wording and workflow
 errors no longer expose identity-provider details or raw backend diagnostics.
 The remaining major-screen refinement must preserve cream/black/red editorial
 identity while adding restrained adaptive layered surfaces and accessible motion.
-Reduced-motion/readability fallbacks are required. Phase 3 retains the comprehensive
-production, store, screenshot and release-configuration audit; this is not being
-represented as completed release verification.
+Reduced-motion/readability fallbacks are included. Phase 3 retains the comprehensive
+production, store, screenshot and release-configuration audit.
 
 The daily development automation has been deleted at the Developer's request.
 The prior progress notes below are historical increments. The final Phase 2
@@ -59,9 +67,8 @@ and Android emulator. Latest checks: Flutter analysis/16 tests, Go tests/vet/bui
 web auth/type/lint. Judge/upload transaction tests use mocked storage explicitly.
 See the September 5 entry in `TEST_MATRIX.md` for precise evidence boundaries.
 
-Next: operational admin and web parity, real evidence transport/judging,
-notification delivery, complete platform regression and final review artifacts.
-Historical checkpoints below remain valid but do not describe all current changes.
+Phase 2 functional and review-package work is closed. Historical checkpoints below
+remain valid but do not describe the current Phase 3 release-readiness checkpoint.
 
 ## Current phase
 

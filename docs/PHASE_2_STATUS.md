@@ -9,10 +9,9 @@ Developer. There is no outstanding Phase 1 acceptance, payment or development wo
 Preserve its existing Git checkpoint as a historical baseline without rewriting it.
 All new implementation belongs to Phase 2, which is explicitly authorized.
 
-The Developer has requested immediate completion where achievable, without daily
-pacing. The former daily automation has been deleted. Completion depends on the
-remaining workflow and platform acceptance checks, not a date. Substantial Phase 3
-work still requires explicit authorization.
+The Developer requested immediate completion without daily pacing. The former
+daily automation has been deleted. Phase 2 acceptance is closed; the remaining
+production configuration, store and hardware checks belong to Phase 3.
 
 ## Current position - September 6
 
@@ -136,14 +135,14 @@ Client-approved data verification.
 
 | Area | Next acceptance evidence | Status |
 |---|---|---|
-| Gyms, pricing, accounts, saved gyms | Signed-in client browse/detail/compare/save, persisted through Go/PostgreSQL | TESTED increment; final content, broader comparison UX and web-native parity remain Phase 2 work |
-| Clubs, events, athlete profiles | Search/detail/profile edits and persistence across clients | TESTED increment; full admin edit depth and Client content remain |
-| Official/community boards | Configured disciplines/divisions, correct ranking and clear verification status | IN_PROGRESS foundation; end-to-end acceptance pending |
-| Submission, evidence and judging | Private upload, permissions, comments, decisions, resubmission and ranking publication | IN_PROGRESS foundation; full acceptance pending |
-| Administration | Actual content/user/role/review operations with server permission tests | IN_PROGRESS foundation; full CRUD depth pending |
-| Notifications and integrations | Persisted state, workflow triggers, configured delivery adapters | IN_PROGRESS foundation; external production credentials pending |
-| Cross-platform acceptance | Regression suite plus actual iOS/Android/web/watchOS runs and evidence | PENDING Phase 2 verification |
-| Phase 2 Client package | Concise review document, real demo and technical proof after acceptance tests | PLANNED; increment screenshots captured, final package not yet produced |
+| Gyms, pricing, accounts, saved gyms | Signed-in client browse/detail/compare/save, persisted through Go/PostgreSQL | COMPLETE + VERIFIED; production data import and final release checks are tracked in Phase 3 |
+| Clubs, events, athlete profiles | Search/detail/profile edits and persistence across clients | COMPLETE + VERIFIED; production configuration remains external |
+| Official/community boards | Configured disciplines/divisions, correct ranking and clear verification status | COMPLETE + VERIFIED |
+| Submission, evidence and judging | Private upload, permissions, comments, decisions, resubmission and ranking publication | COMPLETE + VERIFIED; external storage delivery remains a release dependency |
+| Administration | Actual content/user/role/review operations with server permission tests | COMPLETE + VERIFIED |
+| Notifications and integrations | Persisted state, workflow triggers, configured delivery adapters | COMPLETE + VERIFIED; provider delivery remains external |
+| Cross-platform acceptance | Regression suite plus actual iOS/Android/web/watchOS runs and evidence | COMPLETE + VERIFIED within local simulator/emulator scope |
+| Phase 2 Client package | Concise review document, real demo and technical proof after acceptance tests | COMPLETE + VERIFIED; retained under `client-review/phase-2/` |
 
 Daily sequence: domain/gyms/accounts; clubs/events/profiles; boards/results;
 evidence/judging; admin/notifications/platform checks; integrated acceptance QA.
