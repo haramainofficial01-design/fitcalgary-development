@@ -5,9 +5,9 @@
 - **Scope:** Original FitCalgary V1 only. The separate future community-product
   discussion is out of scope and must not alter this release.
 - **Private baseline:** `601587558c65fd5be31cf25d3989fbdae911dfba` on `main`.
-- **Latest private checkpoint:** `dae24cedb09bd52db1ba4f91952c2bff648d92be` on
-  `main`, tagged `phase-3-complete-within-control-2026-09-12` and pushed only to
-  the private development remote.
+- **Latest verified release record:** `57c8be28ba20f16f141dad7879189e993beba11a`
+  on `main`, with the final release-record tag pushed only to the private
+  development remote.
 - **Clean handoff candidate:** local folder
   `/Users/sahlshafiq/Documents/Coding/fitcalgary-final-handoff-candidate-20260912-final`,
   one-commit SHA `dbc3a027e9aaa2a2c38f61825cef195071d32863`.
@@ -75,8 +75,10 @@
 Fresh database/import verification, complete Go/Flutter/web regression, platform
 build and simulator/emulator checks, CocoaPods/toolchain validation, release
 configuration hardening and tracked-source sanitation are complete. The clean
-one-commit handoff candidate is prepared locally; remaining release work is
-limited to external production configuration and deployment inputs.
+one-commit handoff candidate is prepared locally. The five-page final Client
+review, 1080p product demonstration and 1080p technical proof have been rendered,
+visually inspected and playback-checked. Remaining release work is limited to
+external production configuration and deployment inputs.
 
 ## Latest verification evidence
 
@@ -93,3 +95,6 @@ limited to external production configuration and deployment inputs.
 - Handoff hygiene: clean candidate tree contains 387 tracked files, exactly one
   reachable commit, no review media/simulator artifacts, no internal-tool terms,
   no private development references, and no secret material.
+- Client package: `client-review/phase-3/` contains the final review PDF, product
+  demonstration and technical proof. The PDF is five pages; both H.264 videos are
+  1920x1080, with clean product evidence and explicit external boundaries.
