@@ -55,7 +55,7 @@
 | 29 | Security | PASS | Authorization, validation, private storage, safe errors, release gates and tracked-source scans pass. |
 | 30 | Performance and reliability | PASS | Request timeouts, pagination/limits, idempotent queues, migration checks and graceful failure paths are covered. |
 | 31 | Backups and operations | PASS | Backup/restore, migration, deployment and rollback runbooks are documented. |
-| 32 | Logging and health checks | PASS | `/health`, `/ready`, structured safe logging and operational failure signals are documented and covered. |
+| 32 | Logging and health checks | PASS | `/health`, `/ready` (database ping), structured safe logging and operational failure signals are implemented and documented. |
 | 33 | Release builds | PASS | Web, Go, Android AAB, iOS simulator/archive, and watchOS simulator builds pass locally. |
 | 34 | Store readiness | BLOCKED_EXTERNAL | Technical project metadata is present; Apple/Google accounts, signing, store assets and review submission remain external. |
 | 35 | Deployment readiness | BLOCKED_EXTERNAL | Environment-driven deployment is documented; hosting, DNS/TLS, managed DB/storage and production credentials remain external. |
