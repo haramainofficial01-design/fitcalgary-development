@@ -15,8 +15,8 @@
 
 - Production environment templates, fail-closed configuration validation,
   deployment sequence, backup/restore procedure, and release matrix.
-- iOS and Android release projects, watchOS release project, store identity and
-  privacy material within Developer control.
+- iOS and Android release projects, watchOS release project, and the technical
+  store/privacy configuration path within Developer control.
 
 ## Client action required
 
