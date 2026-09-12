@@ -69,9 +69,9 @@
 
 Fresh database/import verification, complete Go/Flutter/web regression, platform
 build and simulator/emulator checks, CocoaPods/toolchain validation, release
-configuration hardening and tracked-source sanitation are complete. Remaining
-work is limited to the clean one-commit candidate plus external production
-configuration and deployment inputs.
+configuration hardening and tracked-source sanitation are complete. The clean
+one-commit handoff candidate is prepared locally; remaining release work is
+limited to external production configuration and deployment inputs.
 
 ## Latest verification evidence
 
