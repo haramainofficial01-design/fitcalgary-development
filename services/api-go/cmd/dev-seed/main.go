@@ -22,7 +22,7 @@ import (
 //go:embed fixtures/directory.sql
 var fixtureSQL string
 
-const batch = "phase2-directory-v1"
+const batch = "directory-fixtures-v1"
 
 func validateTarget(environment, enabled, databaseURL string) error {
 	if (environment != "development" && environment != "test") || enabled != "true" {

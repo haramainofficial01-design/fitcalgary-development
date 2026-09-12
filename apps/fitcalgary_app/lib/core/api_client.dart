@@ -1,16 +1,14 @@
 import 'package:dio/dio.dart';
 
 import 'auth_service.dart';
+import 'build_config.dart';
 import 'cache_store.dart';
 
 class ApiClient {
   ApiClient(this.auth)
     : dio = Dio(
         BaseOptions(
-          baseUrl: const String.fromEnvironment(
-            'API_BASE_URL',
-            defaultValue: 'http://localhost:4000/api/v1',
-          ),
+          baseUrl: BuildConfig.apiBaseUrl,
           connectTimeout: const Duration(seconds: 12),
           receiveTimeout: const Duration(seconds: 15),
         ),

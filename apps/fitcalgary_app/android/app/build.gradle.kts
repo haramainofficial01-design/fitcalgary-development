@@ -4,6 +4,17 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val releaseKeystore = System.getenv("FITCALGARY_RELEASE_KEYSTORE")
+val releaseStorePassword = System.getenv("FITCALGARY_RELEASE_STORE_PASSWORD")
+val releaseKeyAlias = System.getenv("FITCALGARY_RELEASE_KEY_ALIAS")
+val releaseKeyPassword = System.getenv("FITCALGARY_RELEASE_KEY_PASSWORD")
+val hasReleaseSigning = listOf(
+    releaseKeystore,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+).all { !it.isNullOrBlank() }
+
 android {
     namespace = "ca.fitcalgary.index"
     // flutter_secure_storage 11 uses Android 17 APIs and requires API 37 at compile time.
@@ -17,12 +28,9 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "ca.fitcalgary.index"
         manifestPlaceholders["appLinkHost"] = providers.gradleProperty("FITCALGARY_APP_LINK_HOST").orElse("fitcalgary.invalid").get()
         manifestPlaceholders["appAuthRedirectScheme"] = "ca.fitcalgary.index"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
@@ -33,11 +41,22 @@ android {
         versionName = flutter.versionName
     }
 
+    if (hasReleaseSigning) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(releaseKeystore!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Local release artifacts remain debug-signed until production
+            // keystore variables are supplied by the release environment.
+            signingConfig = signingConfigs.getByName(if (hasReleaseSigning) "release" else "debug")
         }
     }
 }

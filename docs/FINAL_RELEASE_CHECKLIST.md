@@ -1,7 +1,4 @@
-# Final V1 release gate — Phase 3
-
-Requirement recorded September 5, 2026. Phase 2 remains the active implementation
-phase. This gate does not authorize starting substantial Phase 3 work early.
+# Final V1 release gate
 
 V1 must not end as a development-only project. Contractual completion requires the
 agreed iOS, Android, responsive website, admin dashboard, Go API, PostgreSQL,

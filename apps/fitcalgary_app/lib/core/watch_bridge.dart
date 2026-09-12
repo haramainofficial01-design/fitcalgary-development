@@ -2,12 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 
+import 'build_config.dart';
+
 abstract final class WatchBridge {
   static const _channel = MethodChannel('fitcalgary/watch');
-  static const _apiURL = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://localhost:4000/api/v1',
-  );
+  static String get _apiURL => BuildConfig.apiBaseUrl;
   static Future<void> sync(String accessToken) async {
     if (!Platform.isIOS) return;
     try {

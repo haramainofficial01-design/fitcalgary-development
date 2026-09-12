@@ -519,7 +519,7 @@ func run() error {
 	if err = importEvents(ctx, tx, cityID, events, &result); err != nil {
 		return err
 	}
-	meta, _ := json.Marshal(map[string]any{"batch": "ramy-client-approved-2026-09-07", "gyms": result.Gyms, "clubs": result.Clubs, "competitions": result.Events, "source": "Client-approved JSON", "imported_at": time.Now().UTC()})
+	meta, _ := json.Marshal(map[string]any{"batch": "client-approved-catalog-v1", "gyms": result.Gyms, "clubs": result.Clubs, "competitions": result.Events, "source": "Client-approved JSON", "imported_at": time.Now().UTC()})
 	if _, err = tx.Exec(ctx, `INSERT INTO app_settings(key,value,public) VALUES('client_data_batch',$1,false) ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,public=false,updated_at=now()`, meta); err != nil {
 		return err
 	}

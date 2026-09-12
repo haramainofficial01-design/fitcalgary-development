@@ -1,6 +1,7 @@
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'build_config.dart';
 import 'watch_bridge.dart';
 
 class AuthTokens {
@@ -24,14 +25,8 @@ class AuthService {
     : _appAuth = appAuth ?? const FlutterAppAuth(),
       _storage =
           storage ?? const FlutterSecureStorage(aOptions: AndroidOptions());
-  static const issuer = String.fromEnvironment(
-    'OIDC_ISSUER',
-    defaultValue: 'http://localhost:8080/realms/fitcalgary',
-  );
-  static const clientId = String.fromEnvironment(
-    'OIDC_CLIENT_ID',
-    defaultValue: 'fitcalgary-mobile',
-  );
+  static String get issuer => BuildConfig.oidcIssuer;
+  static String get clientId => BuildConfig.oidcClientId;
   static const redirectUrl = 'ca.fitcalgary.index:/oauthredirect';
   final FlutterAppAuth _appAuth;
   final FlutterSecureStorage _storage;
@@ -50,7 +45,7 @@ class AuthService {
         issuer: issuer,
         scopes: ['openid', 'profile', 'email', 'offline_access'],
         promptValues: ['login'],
-        allowInsecureConnections: bool.fromEnvironment('ALLOW_INSECURE_OIDC'),
+        allowInsecureConnections: BuildConfig.allowInsecureOidc,
       ),
     );
     if (result.accessToken == null) {
@@ -77,7 +72,7 @@ class AuthService {
         issuer: issuer,
         refreshToken: refreshToken,
         scopes: ['openid', 'profile', 'email', 'offline_access'],
-        allowInsecureConnections: bool.fromEnvironment('ALLOW_INSECURE_OIDC'),
+        allowInsecureConnections: BuildConfig.allowInsecureOidc,
       ),
     );
     if (result.accessToken == null) {
@@ -103,9 +98,7 @@ class AuthService {
             idTokenHint: id,
             postLogoutRedirectUrl: redirectUrl,
             issuer: issuer,
-            allowInsecureConnections: bool.fromEnvironment(
-              'ALLOW_INSECURE_OIDC',
-            ),
+            allowInsecureConnections: BuildConfig.allowInsecureOidc,
           ),
         );
       }

@@ -1,17 +1,20 @@
-# fitcalgary_app
+# FitCalgary mobile application
 
-A new Flutter project.
+This package contains the Flutter application shared by the FitCalgary iOS and Android products. It provides onboarding, authentication, gym discovery and comparison, clubs and events, athlete profiles, leaderboards, result submission, review feedback, saved gyms, and notifications through the versioned Go API.
 
-## Getting Started
+## Configuration
 
-This project is a starting point for a Flutter application.
+Runtime endpoints and identity settings are supplied through Dart defines rather than committed credentials. Use the repository `.env.example` and `docs/DEVELOPMENT.md` as configuration references. Local integration runs can use `--dart-define-from-file` with an untracked configuration file.
 
-A few resources to get you started if this is your first Flutter project:
+## Developer commands
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+From this directory:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```sh
+flutter pub get
+flutter analyze
+flutter test
+flutter run
+```
+
+The checked-in `ios` and `android` projects contain the platform build configuration. Production signing, provider credentials, and service endpoints must be supplied through the appropriate platform and deployment environments.

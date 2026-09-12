@@ -26,11 +26,10 @@ contract.
 - Use migrations for every database schema change and preserve audit history.
 - Keep secrets outside source control and maintain reproducible placeholders in
   `.env.example`.
-- Update `IMPLEMENTATION_STATUS.md`, `BLOCKERS.md`, and `TEST_MATRIX.md` whenever
-  implementation or verification status changes.
-- Before recording a milestone, run the proportionate build, test, security, and
-  platform checks and record exact evidence without treating simulator results as
-  physical-device verification.
+- Update `IMPLEMENTATION_STATUS.md` whenever implementation or verification status
+  changes.
+- Run proportionate build, test, security, and platform checks for each change;
+  never treat simulator results as physical-device verification.
 
 See [Architecture](ARCHITECTURE.md), [API contract](API_CONTRACT.md),
 [Security baseline](SECURITY_BASELINE.md), and the root [README](../README.md) for

@@ -6,6 +6,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('..', import.meta.url));
+const androidSdk = process.env.ANDROID_SDK_ROOT ?? process.env.ANDROID_HOME ?? path.join(root,'.tooling/android-sdk');
+const adb = path.join(androidSdk,'platform-tools/adb');
 const data = await mkdtemp(path.join(tmpdir(), 'fitcalgary-private-storage-'));
 const access = randomBytes(16).toString('hex'), secret = randomBytes(32).toString('hex');
 const env = { ...process.env, AWS_ACCESS_KEY_ID: access, AWS_SECRET_ACCESS_KEY: secret };
@@ -44,8 +46,8 @@ try {
         await writeFile(config,JSON.stringify({API_BASE_URL:'http://127.0.0.1:4404/api/v1',TEST_USER_TOKEN:user,TEST_ADMIN_TOKEN:admin,TEST_EVIDENCE_BASE64:(await readFile(video)).toString('base64')}),{mode:0o600});
         for(const device of process.env.VERIFY_STORAGE_FLUTTER.split(',')){
           if(device.startsWith('emulator-')){
-            await run('/Users/sahlshafiq/.fitcalgary-tooling/android-sdk/platform-tools/adb',['-s',device,'wait-for-device'],root);
-            for(const port of ['4404','18333'])await run('/Users/sahlshafiq/.fitcalgary-tooling/android-sdk/platform-tools/adb',['-s',device,'reverse',`tcp:${port}`,`tcp:${port}`],root);
+            await run(adb,['-s',device,'wait-for-device'],root);
+            for(const port of ['4404','18333'])await run(adb,['-s',device,'reverse',`tcp:${port}`,`tcp:${port}`],root);
           }
           await run(path.join(root,'.tooling/flutter/bin/flutter'),['test','integration_test/private_evidence_flow_test.dart','-d',device,'--dart-define-from-file='+config],path.join(root,'apps/fitcalgary_app'));
         }

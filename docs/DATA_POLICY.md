@@ -1,8 +1,9 @@
 # Development fixtures and Client data
 
-Final Client-approved gym, pricing, club, event, leaderboard and related content
-is not yet supplied. Its arrival must not block unrelated Phase 2 implementation.
-Development records are not approved content or production verification.
+Client-approved gym, club and competition source datasets are maintained under
+`data/client-approved` and imported through the validated catalogue importer.
+Development records remain isolated from approved content and never constitute
+production verification.
 
 ## Enforced boundary
 
@@ -49,18 +50,18 @@ APP_ENV=development DEMO_DATA=true go run ./cmd/dev-seed
 applies the authoritative migrations before loading. `MIGRATIONS_DIR` may override
 the default `../api/migrations`. Do not put credentials in source or shell history.
 
-## Approved-data transition
+## Approved-data operation
 
 Use a separate clean database for approved content, with normal schema migrations
 and `DEMO_DATA=false`. Preserve source attribution, verification dates and approval
 records. Import through validated administrative/service paths and publish only
-approved records. Data templates in `data/templates` are starting formats, not proof
-that a complete importer or all admin CRUD workflows are finished. Complete those
-Phase 2 paths and round-trip tests before representing bulk import as verified.
+approved records. The importer reads the approved JSON datasets without embedding
+their records in application logic.
 
 Do not migrate fixtures into the Client dataset or simply relabel them as approved.
 Replacing development data must require no changes to product rendering or business
-logic. Credentials and final ranking/verification decisions remain external inputs.
+logic. Credentials and any outstanding ranking or verification decisions remain
+external inputs until supplied and approved.
 
 ## Verification
 

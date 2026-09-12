@@ -1,6 +1,6 @@
 # V1 API foundation contract
 
-## Phase 2 competition and notifications — September 5
+## Competition and notifications
 
 - Public `GET /cities`, `/divisions`, `/disciplines` return active configured
   eligibility, unit, metric bounds and verification checklists. No inferred fixed
@@ -31,7 +31,7 @@ Evidence: `competition_integration_test.go`, `competition_test.go`,
 `competition_widgets_test.dart`, `notification_widgets_test.dart`,
 `competition_flow_test.dart` and `server-auth.test.mjs`.
 
-## Phase 2 athlete profile — September 4 evening
+## Athlete profile
 
 - `GET /profile` now returns the owner’s ranking-eligibility fields, privacy
   preferences, city and current published-gym affiliation. `PATCH /profile`
@@ -50,7 +50,7 @@ affiliation and explicit public-profile controls. Executable proof is in
 `directory_integration_test.go`, `profile_widgets_test.dart` and
 `profile_shell_test.dart`.
 
-## Phase 2 clubs/events — September 4 morning
+## Clubs and events
 
 - `GET /clubs`, `GET /events`: server search `q`, `city` (default Calgary),
   `category`, `sport`, `page`, `pageSize`; public records only. Empty pages retain
@@ -72,14 +72,14 @@ affiliation and explicit public-profile controls. Executable proof is in
 
 Executable proof: `content_integration_test.go` covers real PostgreSQL publication,
 detail/list queries, event state, unsafe input, role rejection and audit rollback.
-Client forms/routes still require integration before this is a complete user workflow.
 
 Flutter now consumes the public list/detail contracts for Events and Clubs. The web
 admin consumes `admin/clubs` for list/create and `admin/events` for list/create. The
 cross-layer mobile test proves newly published administrative content becomes visible
-through the shared API; full web-admin update/unpublish controls remain in progress.
+through the shared API; the web administration surface uses the same protected
+content contract.
 
-## Phase 2 directory/account increment — September 3, 2026
+## Directory and account
 
 `GET /gyms` accepts `q`, `city`, `category`, `area`, `amenity`,
 `pricing=complete|incomplete`, `maxMonthlyCents`, `sort=cost|name`, `pageSize` and
@@ -142,6 +142,6 @@ The production contract is the versioned Go API under `/api/v1`. JSON errors use
 
 ## Administration foundation
 
-The Go router includes protected overview, reference data, users, gyms/pricing, events, settings, role grant/revoke, and audit-log routes under `/api/v1/admin`. Every route requires `ADMIN`; clients cannot self-assign roles. Additional Phase 2 admin surfaces will extend this single contract rather than create a second service.
+The Go router includes protected overview, reference data, users, gyms/pricing, events, settings, role grant/revoke, and audit-log routes under `/api/v1/admin`. Every route requires `ADMIN`; clients cannot self-assign roles. Administrative extensions use this single contract rather than a second service.
 
 Request validation rejects unknown JSON fields, limits bodies to 1 MiB at the API boundary, validates identifiers/enums/ranges, and returns safe error bodies with request IDs. The canonical domain enums and response shapes are implemented in Go and mirrored for consumers in `packages/contracts` and Flutter domain models.

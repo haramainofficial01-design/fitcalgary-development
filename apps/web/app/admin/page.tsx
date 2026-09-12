@@ -206,7 +206,7 @@ function AdminRowActions({area,row,reference,onChanged}: {area:string;row:Json;r
 
 function PlannedAdminArea({ active }: { active: string }) {
   const label = sectionFor(active)?.[1] ?? 'This area';
-  return <div className="admin-planned"><div className="admin-planned-mark"><ShieldCheck size={28} /></div><p className="overline">Protected structure established</p><h2>{label}</h2><p>The authenticated route, permission boundary, navigation, loading and error patterns are in place. Deeper content operations are part of the agreed Phase 2 product work.</p><div className="admin-planned-state"><span>ADMIN ROUTE</span><strong>READY</strong><span>SERVER AUTHORIZATION</span><strong>ENFORCED</strong><span>PRODUCTION CONTENT</span><strong>CLIENT / PHASE 2</strong></div></div>;
+  return <div className="admin-planned"><div className="admin-planned-mark"><ShieldCheck size={28} /></div><p className="overline">Protected administration area</p><h2>{label}</h2><p>This section uses the authenticated administration route, server-enforced permissions, navigation, loading and error patterns shared across the dashboard.</p><div className="admin-planned-state"><span>ADMIN ROUTE</span><strong>READY</strong><span>SERVER AUTHORIZATION</span><strong>ENFORCED</strong><span>CONTENT SOURCE</span><strong>FITCALGARY SERVICE</strong></div></div>;
 }
 
 function Overview({ data }: { data: Json }) {
