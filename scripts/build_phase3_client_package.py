@@ -1,5 +1,6 @@
 from pathlib import Path
 from textwrap import wrap
+import os
 import subprocess
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
@@ -18,6 +19,9 @@ FFMPEG = ROOT / ".tooling" / "ffmpeg-arm64" / "bin" / "ffmpeg"
 PDF = OUT / "FitCalgary_Phase_3_Final_Client_Review.pdf"
 DEMO = OUT / "FitCalgary_Final_Client_Demo.mp4"
 PROOF = OUT / "FitCalgary_Final_Technical_Proof.mp4"
+APP_ICON = ROOT / "brand" / "release" / "fitcalgary-app-icon-v1.png"
+PUBLIC_SITE_URL = os.getenv("FITCALGARY_REVIEW_SITE_URL", "").strip()
+VISUAL_REFRESH = ART / "phase3" / "visual-refresh"
 
 CREAM_HEX = "#F4F1EA"
 INK_HEX = "#202428"
@@ -151,29 +155,30 @@ def build_pdf():
     c.rect(0, PH - 326, PW, 326, fill=1, stroke=0)
     pdf_label(c, 42, PH - 48, "FitCalgary Index")
     pdf_text(c, 42, PH - 92, "FINAL V1", 29, WHITE, True)
-    pdf_text(c, 42, PH - 126, "DELIVERY REVIEW", 22, WHITE, True)
-    pdf_wrap(c, 42, PH - 166, "Release-ready source, verified product workflows and a documented path to production deployment.", 250, 10.5, 15, colors.HexColor("#D8D9D6"))
-    pdf_pill(c, 42, PH - 230, "READY FOR FINAL CLIENT REVIEW", CORAL, 178)
-    pdf_text(c, 42, PH - 258, "September 12, 2026  |  Final V1 review", 7.5, colors.HexColor("#BFC1BD"))
-    pdf_image(c, ART / "phase1-fresh" / "web-home.png", 330, PH - 290, 240, 226, "Responsive FitCalgary website")
+    pdf_text(c, 42, PH - 126, "RELEASE REVIEW", 22, WHITE, True)
+    pdf_wrap(c, 42, PH - 166, "Complete source, submission builds, verified workflows and the final publishing path.", 250, 10.5, 15, colors.HexColor("#D8D9D6"))
+    pdf_pill(c, 42, PH - 230, "READY FOR PUBLISHING SETUP", CORAL, 178)
+    pdf_text(c, 42, PH - 258, "September 13, 2026  |  Final V1 review", 7.5, colors.HexColor("#BFC1BD"))
+    pdf_image(c, APP_ICON, 350, PH - 286, 200, 216, "FitCalgary mobile release identity")
     pdf_text(c, 42, 414, "FINAL POSITION", 8, CORAL, True)
-    pdf_wrap(c, 42, 392, "The complete agreed FitCalgary V1 is implemented and verified within the available development environment. Deployment, production provider connection, signed store distribution and physical-device certification require Client accounts, credentials or hardware listed on page 5.", 525, 10.3, 14, INK)
+    pdf_wrap(c, 42, 392, "The agreed FitCalgary V1 is implemented and verified within the available development environment. Release names, icons, Android bundle and iOS archive are prepared. The remaining work is public publishing through Client or hosting-platform accounts, detailed on page 5.", 525, 10.3, 14, INK)
     cards = [
         ("Core product", "VERIFIED", "end-to-end workflow"),
         ("Go + database", "VERIFIED", "tests / migrations"),
         ("Web + admin", "BUILD PASS", "responsive routes"),
         ("Security", "VERIFIED", "roles / private data"),
-        ("iOS", "SIMULATOR", "archive ready"),
-        ("Android", "EMULATOR", "release AAB built"),
+        ("iOS", "ARCHIVE READY", "signing at upload"),
+        ("Android", "AAB READY", "signing at upload"),
         ("Apple Watch", "SIMULATOR", "build + launch"),
-        ("Production", "EXTERNAL", "accounts / signing", True),
+        ("Publishing", "FINAL STEP", "accounts / hosting", True),
     ]
     for i, item in enumerate(cards):
         title, value, detail, *external = item
         pdf_status(c, 42 + (i % 4) * 132, 276 - (i // 4) * 70, 122, title, value, detail, bool(external))
     pdf_text(c, 42, 116, "APPROVED CATALOG", 8, CORAL, True)
     pdf_text(c, 42, 93, "273 gyms   /   743 sport clubs   /   531 competitions   /   1,547 supplied records", 9, INK, True)
-    pdf_text(c, 42, 69, "No simulator result is presented as physical-device verification, and no external production service is presented as deployed.", 7.4, MUTED)
+    site_line = f"Temporary website: {PUBLIC_SITE_URL}" if PUBLIC_SITE_URL else "Temporary public website: deployment authorization is the remaining web-publishing action."
+    pdf_text(c, 42, 69, site_line, 7.4, MUTED)
     pdf_footer(c, 1)
     c.showPage()
 
@@ -182,7 +187,7 @@ def build_pdf():
     c.rect(0, 0, PW, PH, fill=1, stroke=0)
     pdf_label(c, 42, PH - 48, "Complete product")
     pdf_text(c, 42, PH - 84, "The FitCalgary experience is connected.", 23, INK, True)
-    pdf_wrap(c, 42, PH - 110, "Discovery, comparison, community participation, athlete verification and administration share one production-shaped service and data model.", 505, 9.5, 13, MUTED)
+    pdf_wrap(c, 42, PH - 110, "Discovery, comparison, community participation, athlete verification and administration share one service and data model, now presented through the refined FitCalgary layered visual system.", 505, 9.5, 13, MUTED)
     approved = ART / "phase2" / "client-data"
     clean = ART / "phase2" / "quality" / "clean"
     pdf_image(c, approved / "gyms.png", 42, 392, 254, 260, "Gym directory + approved catalog")
@@ -227,8 +232,8 @@ def build_pdf():
     pdf_text(c, 42, PH - 84, "Built and tested across the supported system.", 23, INK, True)
     pdf_wrap(c, 42, PH - 110, "The final local verification separates source, test and build evidence from external deployment, signing and physical-device claims.", 510, 9.5, 13, MUTED)
     platform_images = [
-        (ART / "phase1-fresh" / "ios-home.png", "iOS simulator"),
-        (ART / "phase1-fresh" / "android-home.png", "Android emulator"),
+        (VISUAL_REFRESH / "ios-home-layered.png", "iOS simulator"),
+        (VISUAL_REFRESH / "android-home-layered.png", "Android emulator"),
         (ART / "phase1-fresh" / "web-home.png", "Responsive web"),
         (ROOT / "artifacts" / "simulator" / "watch-home.png", "watchOS simulator"),
     ]
@@ -241,8 +246,8 @@ def build_pdf():
         ("Web / admin", "Lint + type + production build", "PASS"),
         ("Authorization", "Revoke / restore / denial", "PASS"),
         ("Private storage", "Ownership + access + retention", "PASS"),
-        ("Android", "Release AAB produced", "PASS"),
-        ("iOS", "Unsigned release archive", "PASS"),
+        ("Android", "Release AAB prepared", "PASS"),
+        ("iOS", "Release archive prepared", "PASS"),
         ("Operations", "Deploy / backup / rollback docs", "PASS"),
     ]
     y = 352
@@ -264,14 +269,14 @@ def build_pdf():
     # Page 5 - production boundary and acceptance
     c.setFillColor(CREAM)
     c.rect(0, 0, PW, PH, fill=1, stroke=0)
-    pdf_label(c, 42, PH - 48, "Final delivery boundary")
-    pdf_text(c, 42, PH - 84, "Ready to connect to Client production accounts.", 22, INK, True)
-    pdf_wrap(c, 42, PH - 112, "Source, builds, data, tests and operating documentation are ready. The remaining items require Client-controlled services, credentials, legal decisions or physical hardware.", 520, 9.5, 13, MUTED)
+    pdf_label(c, 42, PH - 48, "Final publishing boundary")
+    pdf_text(c, 42, PH - 84, "The product is prepared; publishing is next.", 22, INK, True)
+    pdf_wrap(c, 42, PH - 112, "Source, builds, data, tests and operating documentation are ready. The remaining actions publish the website and distribute the signed mobile applications through production accounts.", 520, 9.5, 13, MUTED)
     sections = [
-        ("PRODUCTION INFRASTRUCTURE", "Hosting, DNS/TLS, managed PostgreSQL, private object storage and backup destination."),
-        ("IDENTITY AND DELIVERY PROVIDERS", "Production Keycloak realm, SMTP, Google Sign-In, Sign in with Apple, FCM and APNs credentials."),
-        ("STORE AND SIGNING ACCESS", "Apple Developer/App Store Connect, Google Play Console, signing certificates and upload keys."),
-        ("FINAL EXTERNAL VALIDATION", "Representative iPhone, Android phone and Apple Watch; approved privacy, legal, business and store information."),
+        ("PUBLIC WEBSITE", f"Publish the prepared web build at {PUBLIC_SITE_URL}." if PUBLIC_SITE_URL else "Authorize the temporary hosting account, then publish the prepared web build to its HTTPS address."),
+        ("CLIENT DOMAIN", "Connect the Client-selected FitCalgary or FitAlberta domain after DNS access and the final primary-domain decision are supplied."),
+        ("LIVE SERVICES", "Connect hosting, PostgreSQL, private storage, Keycloak, email and notifications using the prepared production configuration."),
+        ("APP DISTRIBUTION", "Sign and upload the prepared iOS archive and Android AAB through App Store Connect and Google Play; complete physical-device and store review checks."),
     ]
     y = 594
     for title, detail in sections:
@@ -283,9 +288,9 @@ def build_pdf():
         y -= 82
     c.setFillColor(INK)
     c.roundRect(42, 172, 528, 122, 10, fill=1, stroke=0)
-    pdf_text(c, 60, 265, "FINAL V1 - READY FOR CLIENT REVIEW", 12, WHITE, True)
-    pdf_wrap(c, 60, 242, "The complete FitCalgary V1 source and verified local release candidate are ready for final Client review and contractual handoff. Production deployment, signing, physical-device QA and store submission can proceed when the listed Client-controlled access is supplied.", 472, 9, 13, colors.HexColor("#E4E4E0"))
-    pdf_text(c, 60, 190, "No external approval, production deployment or physical-device result is being overstated.", 7.3, colors.HexColor("#F4C9C2"), True)
+    pdf_text(c, 60, 265, "FINAL V1 - READY FOR PUBLISHING", 12, WHITE, True)
+    pdf_wrap(c, 60, 242, "The complete FitCalgary V1 source, verified workflows and platform build artifacts are prepared. Public hosting, production-service activation, mobile signing and store upload are the remaining distribution actions.", 472, 9, 13, colors.HexColor("#E4E4E0"))
+    pdf_text(c, 60, 190, "Simulator and emulator evidence remains separate from later physical-device and store approval.", 7.3, colors.HexColor("#F4C9C2"), True)
     pdf_footer(c, 5)
     c.showPage()
     c.save()
@@ -401,20 +406,20 @@ def build_videos():
     watch = ROOT / "artifacts" / "simulator" / "watch-home.png"
 
     demo_specs = [
-        ("Final delivery", "FitCalgary V1", "The connected Calgary fitness index, competition and verified-performance product.", None, [("FINAL SOURCE", "READY"), ("CORE PRODUCT", "VERIFIED")], True, "FINAL CLIENT REVIEW"),
-        ("Product", "The city, ranked.", "A recognizable FitCalgary experience across responsive web, iOS and Android.", [(p1 / "web-home.png", 0)], None, False, "ORIGINAL FITCALGARY V1"),
+        ("Final delivery", "FitCalgary V1", "The connected Calgary fitness index, competition and verified-performance product.", [(APP_ICON, 0)], [("FINAL SOURCE", "READY"), ("CORE PRODUCT", "VERIFIED")], True, "RELEASE REVIEW"),
+        ("Product", "The city, ranked.", "A recognizable FitCalgary experience with restrained layered depth across responsive web, iOS and Android.", [(p1 / "web-home.png", 0)], None, False, "REFINED FITCALGARY V1"),
         ("Discover", "Every major gym in Calgary.", "Search 273 supplied gyms, inspect details and compare normalized membership pricing.", [(client / "gyms.png", 0), (clean / "comparison.png", 0)], None, False, "273 GYMS"),
         ("Community", "Clubs and competitions.", "Browse 743 sport clubs and 531 competitions through the same structured catalog.", [(client / "clubs.png", 0), (client / "events.png", 0)], None, False, "1,274 OPPORTUNITIES"),
         ("Athlete", "Profile and performance.", "Keep affiliations, saved gyms, community results and verified achievements together.", [(ART / "phase2-day4" / "day4-athlete-performance.png", 0), (clean / "official-result.png", 0)], None, False, "VERIFIED HISTORY"),
         ("Submission", "Private evidence review.", "Athletes submit against published rules while evidence remains limited to authorized reviewers.", [(clean / "private-evidence.png", 0)], None, False, "PRIVATE BY DESIGN"),
         ("Verification", "From review to official rank.", "A judge can request corrections or approve a result; approval creates the verified placement and notification.", [(clean / "private-evidence.png", 0), (clean / "official-result.png", 0)], None, False, "END-TO-END VERIFIED"),
         ("Operations", "Protected administration.", "Authorized operators manage content, users, roles, reviews, moderation, notifications and audit history.", [(admin / "overview.png", 0.13)], None, False, "SERVER-ENFORCED ACCESS"),
-        ("Platforms", "iOS and Android.", "The same Flutter product has been built and launched in the available simulator and emulator environments.", [(p1 / "ios-home.png", 0), (p1 / "android-home.png", 0)], None, False, "PLATFORM BUILDS PASS"),
+        ("Platforms", "iOS and Android.", "The same Flutter product has the FitCalgary release identity, prepared archive and AAB, and verified simulator and emulator builds.", [(VISUAL_REFRESH / "ios-home-layered.png", 0), (VISUAL_REFRESH / "android-home-layered.png", 0)], None, False, "SUBMISSION BUILDS PREPARED"),
         ("Platforms", "Web and Apple Watch.", "Responsive browser routes and a compact watch companion complete the supported product surfaces.", [(p1 / "web-home.png", 0), (watch, 0)], None, False, "SUPPORTED SURFACES"),
         ("Catalog", "Client data is in place.", "The approved import remains reproducible, repeatable and connected to the production-shaped data model.", None, [("GYMS", "273"), ("SPORT CLUBS", "743"), ("COMPETITIONS", "531"), ("TOTAL RECORDS", "1,547")], False, "COUNTS VERIFIED"),
-        ("Release readiness", "Built, tested and documented.", "Final regression covers application analysis, services, database, web, authorization, storage and platform builds.", None, [("FLUTTER / WEB", "PASS"), ("GO / POSTGRESQL", "PASS"), ("SECURITY / ROLES", "PASS"), ("RELEASE BUILDS", "PASS")], False, "READY WITHIN AVAILABLE ACCESS"),
-        ("Production boundary", "What requires Client access.", "Hosting, provider credentials, signing accounts, physical devices and final store/legal information remain external inputs.", None, [("SOURCE + CONFIG", "READY"), ("DEPLOYMENT ACCOUNTS", "REQUIRED"), ("STORE SIGNING", "REQUIRED"), ("PHYSICAL DEVICES", "REQUIRED")], True, "TRANSPARENT FINAL BOUNDARY"),
-        ("Final delivery", "Ready for final Client review.", "The complete V1 source, verified workflows, approved data and operating documentation are prepared for handoff and production connection.", None, [("FINAL V1", "READY"), ("CLIENT REVIEW", "READY")], True, "FITCALGARY INDEX"),
+        ("Release readiness", "Built, tested and documented.", "Final regression covers application analysis, services, database, web, authorization, storage, visual refinement and platform builds.", None, [("FLUTTER / WEB", "PASS"), ("GO / POSTGRESQL", "PASS"), ("SECURITY / ROLES", "PASS"), ("RELEASE BUILDS", "PASS")], False, "READY WITHIN AVAILABLE ACCESS"),
+        ("Publishing boundary", "The final distribution step.", "Public hosting, production-service credentials, store signing and physical-device checks complete the release through external accounts.", None, [("SOURCE + CONFIG", "READY"), ("WEB BUILD", "READY"), ("ANDROID AAB", "READY"), ("IOS ARCHIVE", "READY")], True, "PUBLISHING REMAINS"),
+        ("Final delivery", "Ready for publishing setup.", "The complete V1 source, verified workflows, approved data, release artifacts and operating documentation are prepared.", None, [("FINAL V1", "READY"), ("PUBLISHING", "NEXT")], True, "FITCALGARY INDEX"),
     ]
 
     demo_paths = []
@@ -427,15 +432,15 @@ def build_videos():
 
     proof_specs = [
         ("Technical proof", "Final V1 verification", "Concise evidence for the tested release candidate and its honest production boundary.", None, [("FINAL REGRESSION", "PASS"), ("HANDOFF SOURCE", "READY")], True, "TECHNICAL PROOF"),
-        ("Application", "Flutter and responsive web", "The supported clients share validated routes, release-gated configuration and production service contracts.", [(p1 / "ios-home.png", 0), (p1 / "web-home.png", 0)], [("FLUTTER ANALYSIS", "PASS"), ("FLUTTER TESTS", "20 PASS"), ("WEB TYPE / LINT / BUILD", "PASS")], False, None),
+        ("Application", "Flutter and responsive web", "The supported clients share validated routes, release-gated configuration and production service contracts.", [(VISUAL_REFRESH / "ios-home-layered.png", 0), (p1 / "web-home.png", 0)], [("FLUTTER ANALYSIS", "PASS"), ("FLUTTER TESTS", "20 PASS"), ("WEB TYPE / LINT / BUILD", "PASS")], False, None),
         ("Services", "Go API and authorization", "Protected handlers use server-side roles, ownership checks, request validation and safe structured errors.", None, [("GO TESTS", "PASS"), ("GO VET", "PASS"), ("PRODUCTION BUILD", "PASS"), ("ROLE REVOCATION", "PASS")], False, None),
         ("Database", "PostgreSQL and approved data", "A clean migration and repeat import produced the expected schema and supplied catalog counts.", [(client / "gyms.png", 0)], [("PUBLIC TABLES", "35"), ("GYMS", "273"), ("CLUBS", "743"), ("COMPETITIONS", "531")], False, None),
         ("Critical workflow", "Submission to verified ranking", "The PostgreSQL-backed integration test covers private evidence, correction, resubmission, approval, ranking and inbox notification.", [(clean / "private-evidence.png", 0), (clean / "official-result.png", 0)], [("WORKFLOW", "PASS"), ("UNAUTHORIZED ACCESS", "DENIED"), ("DUPLICATE APPROVAL", "PREVENTED")], False, None),
         ("Security", "Identity, privacy and safe release gates", "OIDC/PKCE, token/session handling, role enforcement, private object access and fail-closed production settings are implemented.", None, [("SECRETS IN SOURCE", "NONE FOUND"), ("PRIVATE EVIDENCE", "PROTECTED"), ("UNSAFE ENDPOINTS", "REJECTED"), ("AUDIT HISTORY", "PRESENT")], True, None),
-        ("Build matrix", "Platform release evidence", "Local release builds and supported simulator environments pass; signing and physical-device certification remain separate external checks.", [(p1 / "android-home.png", 0), (watch, 0)], [("IOS ARCHIVE", "PASS / UNSIGNED"), ("ANDROID AAB", "PASS"), ("WATCH SIMULATOR", "PASS"), ("PHYSICAL DEVICES", "EXTERNAL")], False, None),
+        ("Build matrix", "Platform release evidence", "Prepared release builds and supported simulator environments pass; signing and physical-device certification remain publishing checks.", [(VISUAL_REFRESH / "android-home-layered.png", 0), (watch, 0)], [("IOS ARCHIVE", "PREPARED"), ("ANDROID AAB", "PREPARED"), ("WATCH SIMULATOR", "PASS"), ("PHYSICAL DEVICES", "PUBLISHING")], False, None),
         ("Operations", "Deployment and recovery readiness", "Configuration, migrations, data import, health checks, backup/restore, rollback and incident steps are documented.", None, [("PRODUCTION CONFIG", "READY"), ("DATABASE OPERATIONS", "READY"), ("RUNBOOK", "READY"), ("DEPENDENCY REGISTER", "READY")], False, None),
-        ("External connection", "Production accounts remain required", "Deployment and store completion depend on Client-controlled hosting, credentials, signing, hardware and approvals.", None, [("HOSTING / DNS / TLS", "EXTERNAL"), ("IDENTITY / EMAIL", "EXTERNAL"), ("PUSH PROVIDERS", "EXTERNAL"), ("STORE ACCOUNTS", "EXTERNAL")], True, "NO CLAIMS OVERSTATED"),
-        ("Final handoff", "Complete source snapshot ready", "One clean maintainable source snapshot has been prepared with tests, migrations, configuration templates and operating documentation.", None, [("SOURCE STRUCTURE", "VERIFIED"), ("COMMIT COUNT", "1"), ("SECRETS / REVIEW MEDIA", "EXCLUDED"), ("FINAL REVIEW", "READY")], True, "FITCALGARY V1"),
+        ("Publishing", "Production accounts remain required", "Public hosting, live service credentials, store signing, hardware checks and platform approvals complete distribution.", None, [("TEMPORARY WEB URL", "NEXT"), ("CLIENT DOMAIN", "LATER"), ("STORE SIGNING", "EXTERNAL"), ("STORE REVIEW", "EXTERNAL")], True, "FINAL DISTRIBUTION BOUNDARY"),
+        ("Final handoff", "Complete source and builds ready", "The maintainable source, tests, migrations, release configuration, Android bundle, iOS archive and operating documentation are prepared.", None, [("SOURCE STRUCTURE", "VERIFIED"), ("RELEASE IDENTITY", "READY"), ("BUILD ARTIFACTS", "READY"), ("PUBLISHING", "NEXT")], True, "FITCALGARY V1"),
     ]
     proof_paths = []
     for index, spec in enumerate(proof_specs, 1):

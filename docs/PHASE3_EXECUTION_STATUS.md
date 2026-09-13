@@ -11,9 +11,10 @@
 - **Clean handoff candidate:** local folder
   `/Users/sahlshafiq/Documents/Coding/fitcalgary-final-handoff-candidate-20260912-final`,
   one-commit SHA `dbc3a027e9aaa2a2c38f61825cef195071d32863`.
-- **Current worktree:** Contains the verified cross-platform visual refinement
-  that followed the recorded handoff candidate; a refreshed candidate/package
-  has not yet been cut from this design pass.
+- **Current worktree:** Contains the verified cross-platform visual refinement,
+  release identity, submission-build preparation and refreshed Client package
+  that followed the recorded handoff candidate. No replacement Client handoff
+  commit or tag has been created from this worktree.
 - **Approved source catalog:** 273 gyms, 743 clubs, 531 competitions (1,547 total
   source records). The club dataset is stored under the `clubs` property; the gym
   and competition datasets are arrays.
@@ -47,8 +48,8 @@
 | 21 | Admin dashboard | PASS | Protected admin web route and representative content/reference/moderation operations passed. |
 | 22 | Moderation and audit visibility | PASS | Moderation boundaries, account restrictions, audit history and rollback behavior passed. |
 | 23 | Web responsiveness and accessibility | PASS | Lint, type check, production build, route inventory and client accessibility-focused tests pass. Desktop and 390px responsive visual inspection passed with no browser console errors after the layered-surface refinement. |
-| 24 | iOS | PASS | Simulator build/launch and unsigned release archive pass; signing, physical device and store verification are BLOCKED_EXTERNAL. |
-| 25 | Android | PASS | Emulator debug build/launch and release AAB build pass; production signing, physical device and Play verification are BLOCKED_EXTERNAL. |
+| 24 | iOS | PASS | FitCalgary release identity, simulator build/launch and unsigned release archive pass; signing, physical device and store verification are BLOCKED_EXTERNAL. |
+| 25 | Android | PASS | FitCalgary release identity, emulator debug build/launch and release AAB build pass; production signing, physical device and Play verification are BLOCKED_EXTERNAL. |
 | 26 | Apple Watch | PASS | watchOS simulator build/install/launch pass; signing, hardware and store verification are BLOCKED_EXTERNAL. |
 | 27 | Deep links | PASS | Supported web/app route inventory and notification-link allow-list tests pass. |
 | 28 | Error/loading/empty states | PASS | Flutter widget coverage and web/API structured-error paths pass. |
@@ -56,9 +57,9 @@
 | 30 | Performance and reliability | PASS | Request timeouts, pagination/limits, idempotent queues, migration checks and graceful failure paths are covered. |
 | 31 | Backups and operations | PASS | Backup/restore, migration, deployment and rollback runbooks are documented. |
 | 32 | Logging and health checks | PASS | `/health`, `/ready` (database ping), structured safe logging and operational failure signals are implemented and documented. |
-| 33 | Release builds | PASS | Web, Go, Android AAB, iOS simulator/archive, and watchOS simulator builds pass locally. |
-| 34 | Store readiness | BLOCKED_EXTERNAL | Technical project metadata is present; Apple/Google accounts, signing, store assets and review submission remain external. |
-| 35 | Deployment readiness | BLOCKED_EXTERNAL | Environment-driven deployment is documented; hosting, DNS/TLS, managed DB/storage and production credentials remain external. |
+| 33 | Release builds | PASS | Web, Go, branded Android AAB, branded iOS simulator/archive, and watchOS simulator builds pass locally. Prepared Android and iOS artifacts have recorded SHA-256 checksums. |
+| 34 | Store readiness | BLOCKED_EXTERNAL | App identity, icon, launch treatment, Android AAB and unsigned iOS archive are prepared; Apple/Google signing accounts, final listing inputs, physical-device checks and review submission remain external. |
+| 35 | Deployment readiness | BLOCKED_EXTERNAL | The production web build and environment-driven deployment path are ready. Public hosting authorization, DNS/TLS, managed PostgreSQL/storage, Keycloak and provider credentials are still required for a live URL. |
 | 36 | Documentation | PASS | Production configuration, database operations, operations runbook, release matrix, dependencies, handoff and final summary are present. |
 | 37 | Final handoff candidate | PASS | Clean one-commit candidate prepared locally after final verification; its SHA is reported with the release record. Client `main` was not modified. |
 
@@ -75,14 +76,17 @@
 
 Fresh database/import verification, complete Go/Flutter/web regression, platform
 build and simulator/emulator checks, CocoaPods/toolchain validation, release
-configuration hardening and tracked-source sanitation are complete. A restrained
-layered-surface refinement has since been applied to Flutter and web: floating
-controls use platform-aware translucency and depth, reading surfaces remain
-opaque, decorative hero gradients were removed, and reduced-motion,
-reduced-transparency and high-contrast fallbacks remain explicit. The previously
-recorded clean handoff candidate and Client package remain the baseline until this
-refinement is intentionally included in a new candidate. Remaining live release
-work is limited to external production configuration and deployment inputs.
+configuration hardening and tracked-source sanitation are complete. The refined
+layered-surface system is applied to Flutter and web: iOS floating controls use
+appropriate translucency and depth, Android/web use platform-suitable layered
+surfaces, reading surfaces remain opaque, decorative hero gradients were removed,
+and reduced-motion, reduced-transparency and high-contrast fallbacks remain
+explicit. FitCalgary app identity, icons and launch treatments are integrated;
+fresh Android AAB and unsigned iOS archive artifacts are prepared. The five-page
+Client review and both 1920x1080 videos were refreshed and visually inspected.
+The recorded clean handoff candidate remains unchanged until a later authorized
+Client handoff. Remaining live release work is limited to external production
+configuration, signing, deployment and store-review inputs.
 
 ## Latest verification evidence
 
@@ -94,14 +98,15 @@ work is limited to external production configuration and deployment inputs.
 - Visual refinement regression: Flutter analysis and 20 tests pass; web lint,
   TypeScript and production build pass; responsive desktop/phone visual review
   passes with no browser console errors.
-- iOS: simulator build/install/launch and unsigned release archive pass.
-- Android: debug APK emulator install/launch and release AAB build pass.
+- iOS: branded simulator build/install/launch and unsigned release archive pass.
+- Android: branded debug APK emulator install/launch and release AAB build pass.
 - watchOS: simulator build/install/launch pass.
 - Source hygiene: `git diff --check` and tracked secret/internal-tool scans pass;
   `.env` files remain ignored and no production values are committed.
 - Handoff hygiene: clean candidate tree contains 387 tracked files, exactly one
   reachable commit, no review media/simulator artifacts, no internal-tool terms,
   no private development references, and no secret material.
-- Client package: `client-review/phase-3/` contains the final review PDF, product
-  demonstration and technical proof. The PDF is five pages; both H.264 videos are
-  1920x1080, with clean product evidence and explicit external boundaries.
+- Client package: `client-review/phase-3/` contains the refreshed final review
+  PDF, product demonstration and technical proof. The PDF is five pages; both
+  H.264 videos are 1920x1080, visually inspected, with clean product evidence and
+  explicit external publishing boundaries.
