@@ -11,8 +11,9 @@
 - **Clean handoff candidate:** local folder
   `/Users/sahlshafiq/Documents/Coding/fitcalgary-final-handoff-candidate-20260912-final`,
   one-commit SHA `dbc3a027e9aaa2a2c38f61825cef195071d32863`.
-- **Current worktree:** Clean after recording the final durable handoff candidate
-  and release-readiness evidence.
+- **Current worktree:** Contains the verified cross-platform visual refinement
+  that followed the recorded handoff candidate; a refreshed candidate/package
+  has not yet been cut from this design pass.
 - **Approved source catalog:** 273 gyms, 743 clubs, 531 competitions (1,547 total
   source records). The club dataset is stored under the `clubs` property; the gym
   and competition datasets are arrays.
@@ -45,7 +46,7 @@
 | 20 | Preferences | PASS | Preference merge, defaults and invalid-key rejection passed. |
 | 21 | Admin dashboard | PASS | Protected admin web route and representative content/reference/moderation operations passed. |
 | 22 | Moderation and audit visibility | PASS | Moderation boundaries, account restrictions, audit history and rollback behavior passed. |
-| 23 | Web responsiveness and accessibility | PASS | Lint, type check, production build, route inventory and client accessibility-focused tests pass. |
+| 23 | Web responsiveness and accessibility | PASS | Lint, type check, production build, route inventory and client accessibility-focused tests pass. Desktop and 390px responsive visual inspection passed with no browser console errors after the layered-surface refinement. |
 | 24 | iOS | PASS | Simulator build/launch and unsigned release archive pass; signing, physical device and store verification are BLOCKED_EXTERNAL. |
 | 25 | Android | PASS | Emulator debug build/launch and release AAB build pass; production signing, physical device and Play verification are BLOCKED_EXTERNAL. |
 | 26 | Apple Watch | PASS | watchOS simulator build/install/launch pass; signing, hardware and store verification are BLOCKED_EXTERNAL. |
@@ -74,11 +75,14 @@
 
 Fresh database/import verification, complete Go/Flutter/web regression, platform
 build and simulator/emulator checks, CocoaPods/toolchain validation, release
-configuration hardening and tracked-source sanitation are complete. The clean
-one-commit handoff candidate is prepared locally. The five-page final Client
-review, 1080p product demonstration and 1080p technical proof have been rendered,
-visually inspected and playback-checked. Remaining release work is limited to
-external production configuration and deployment inputs.
+configuration hardening and tracked-source sanitation are complete. A restrained
+layered-surface refinement has since been applied to Flutter and web: floating
+controls use platform-aware translucency and depth, reading surfaces remain
+opaque, decorative hero gradients were removed, and reduced-motion,
+reduced-transparency and high-contrast fallbacks remain explicit. The previously
+recorded clean handoff candidate and Client package remain the baseline until this
+refinement is intentionally included in a new candidate. Remaining live release
+work is limited to external production configuration and deployment inputs.
 
 ## Latest verification evidence
 
@@ -87,6 +91,9 @@ external production configuration and deployment inputs.
 - PostgreSQL 17.11: clean migration/import and repeat-import checks pass; 35 tables,
   273 gyms, 743 clubs, 531 events and 1,547 source records verified.
 - Web: lint, TypeScript, production build, auth tests and admin-content tests pass.
+- Visual refinement regression: Flutter analysis and 20 tests pass; web lint,
+  TypeScript and production build pass; responsive desktop/phone visual review
+  passes with no browser console errors.
 - iOS: simulator build/install/launch and unsigned release archive pass.
 - Android: debug APK emulator install/launch and release AAB build pass.
 - watchOS: simulator build/install/launch pass.

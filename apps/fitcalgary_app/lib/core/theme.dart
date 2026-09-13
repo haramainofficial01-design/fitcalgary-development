@@ -23,6 +23,24 @@ ThemeData fitTheme() {
     scaffoldBackgroundColor: FitColors.paper,
     fontFamily: 'Helvetica Neue',
     dividerColor: FitColors.line,
+    cardTheme: CardThemeData(
+      color: FitColors.white,
+      surfaceTintColor: Colors.transparent,
+      elevation: 3,
+      shadowColor: FitColors.black.withValues(alpha: .15),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: FitColors.line.withValues(alpha: .45)),
+      ),
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: FitColors.white,
+      surfaceTintColor: Colors.transparent,
+      showDragHandle: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: FitColors.paper,
       foregroundColor: FitColors.ink,
@@ -33,15 +51,15 @@ ThemeData fitTheme() {
       filled: true,
       fillColor: FitColors.white,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.all(Radius.circular(12)),
         borderSide: BorderSide(color: FitColors.ink),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.all(Radius.circular(12)),
         borderSide: BorderSide(color: FitColors.ink),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.all(Radius.circular(12)),
         borderSide: BorderSide(color: FitColors.coral, width: 2),
       ),
     ),
@@ -49,7 +67,7 @@ ThemeData fitTheme() {
       style: FilledButton.styleFrom(
         backgroundColor: FitColors.coral,
         foregroundColor: FitColors.white,
-        shape: const RoundedRectangleBorder(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         minimumSize: const Size(48, 52),
         textStyle: const TextStyle(
           fontSize: 11,
@@ -60,7 +78,7 @@ ThemeData fitTheme() {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        shape: const RoundedRectangleBorder(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         side: const BorderSide(color: FitColors.ink),
         minimumSize: const Size(48, 52),
         textStyle: const TextStyle(

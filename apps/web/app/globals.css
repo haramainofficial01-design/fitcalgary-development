@@ -98,4 +98,49 @@ dialog.admin-modal { width:100%;height:100%;max-width:none;max-height:none;margi
 @media(max-width:900px){main{padding-bottom:100px}.mobile-dock{left:12px;right:12px;bottom:max(10px,env(safe-area-inset-bottom));border:1px solid #c6c5bf;border-radius:20px;box-shadow:0 8px 30px #17181a26}.mobile-dock a{border-radius:16px;margin:4px}.mobile-dock a.active{background:#c75a4917}}
 @media(max-width:560px){.directory-list article{grid-template-columns:24px minmax(0,1fr);gap:12px;padding:18px}.directory-list article>strong{grid-column:2;text-align:left}.directory-list h3{font-size:19px}.search-strip label{min-width:0}.search-strip input{min-width:0}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
-@media(prefers-reduced-transparency:reduce),(prefers-contrast:more){.site-header,.mobile-dock{background:var(--paper);backdrop-filter:none}.directory-list article,.data-panel{border-color:var(--ink);box-shadow:none}}
+/* Light-catching edges belong to controls above content; reading surfaces stay solid. */
+:root {
+  --surface-edge:rgba(255,255,255,.86);
+  --surface-shadow:0 2px 3px #17181a08,0 12px 30px #17181a0c;
+  --floating-shadow:inset 0 1px 0 #ffffffeb,0 2px 4px #17181a0a,0 18px 42px #17181a1c;
+}
+.site-header {
+  background:var(--paper);
+  border-bottom:1px solid #25282c24;
+  box-shadow:inset 0 -1px 0 #ffffffa6,0 4px 20px #17181a08;
+}
+.header-actions { gap:8px; }
+.hero-grid { background:none;mask-image:none;border-inline:1px solid #ffffff0b;inset:0 25%; }
+.hero-grid::after { content:"";position:absolute;inset:0 50% 0 auto;border-left:1px solid #ffffff0b; }
+.hero-index { border:1px solid #ffffff24;border-radius:18px 18px 0 0;background:#222426;box-shadow:inset 0 1px 0 #ffffff12,0 18px 40px #00000024;overflow:hidden; }
+.hero-index div:first-child { border-left:0; }
+.hero-index div:last-child { border-right:0; }
+.primary-button,.secondary-button,.ghost-button { border-radius:12px; }
+.primary-button { box-shadow:inset 0 1px 0 #ffffff38,0 2px 3px #17181a12,0 7px 16px #17181a14; }
+.secondary-button { background:#faf9f5;border-color:#25282c50;box-shadow:inset 0 1px 0 white; }
+.ghost-button { background:#ffffff08;box-shadow:inset 0 1px 0 #ffffff14; }
+.directory-list article,.data-panel,.comparison-card { border-radius:18px;border-color:#25282c22;box-shadow:var(--surface-shadow),inset 0 1px 0 white; }
+.directory-list article { transition:box-shadow 180ms ease,border-color 180ms ease; }
+.directory-search { border-radius:16px;box-shadow:inset 0 2px 3px #17181a05,0 1px 0 white; }
+.comparison-tray { border-radius:20px;border-color:var(--surface-edge);box-shadow:var(--floating-shadow); }
+.mobile-dock { background:var(--paper);box-shadow:var(--floating-shadow);border-color:var(--surface-edge); }
+.mobile-dock a.active { box-shadow:inset 0 1px 0 #ffffffc0,0 2px 5px #17181a0a; }
+.admin-table-wrap,.admin-modal form,.admin-empty { border-radius:16px; }
+.admin-modal form { border-color:var(--surface-edge);box-shadow:inset 0 1px 0 white,0 28px 72px #00000038; }
+.admin-toolbar input { border-radius:12px; }
+.kpi-grid { border-radius:16px;overflow:hidden;box-shadow:var(--surface-shadow); }
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
+  .site-header,.mobile-dock,.comparison-tray {
+    background:rgba(243,242,237,.82);
+    -webkit-backdrop-filter:blur(20px) saturate(115%);
+    backdrop-filter:blur(20px) saturate(115%);
+  }
+}
+@media(hover:hover) and (prefers-reduced-motion:no-preference) {
+  .directory-list article:hover { border-color:#25282c45;box-shadow:0 2px 4px #17181a08,0 16px 34px #17181a12,inset 0 1px 0 white; }
+  .primary-button:active,.secondary-button:active,.ghost-button:active { transform:translateY(1px) scale(.985); }
+}
+@media(prefers-reduced-transparency:reduce),(prefers-contrast:more){
+  .site-header,.mobile-dock,.comparison-tray{background:var(--paper);backdrop-filter:none;-webkit-backdrop-filter:none;border-color:var(--ink)}
+  .directory-list article,.data-panel,.comparison-card{border-color:var(--ink);box-shadow:none}
+}

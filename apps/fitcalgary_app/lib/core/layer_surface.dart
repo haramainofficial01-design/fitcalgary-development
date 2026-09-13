@@ -27,15 +27,15 @@ class FitLayerSurface extends StatelessWidget {
         !media.highContrast &&
         !media.accessibleNavigation &&
         !media.disableAnimations;
-    final radius = BorderRadius.circular(floating ? (apple ? 24 : 18) : 12);
+    final radius = BorderRadius.circular(floating ? (apple ? 28 : 22) : 18);
     final content = DecoratedBox(
       decoration: BoxDecoration(
-        color: FitColors.white.withValues(alpha: translucent ? .92 : 1),
+        color: FitColors.white.withValues(alpha: translucent ? .78 : 1),
         borderRadius: radius,
         border: Border.all(
           color: media.highContrast
               ? FitColors.ink
-              : FitColors.line.withValues(alpha: .65),
+              : Colors.white.withValues(alpha: floating ? .85 : .65),
         ),
       ),
       child: child,
@@ -48,13 +48,13 @@ class FitLayerSurface extends StatelessWidget {
             : [
                 BoxShadow(
                   color: FitColors.black.withValues(
-                    alpha: floating ? .12 : .055,
+                    alpha: floating ? .14 : .06,
                   ),
-                  blurRadius: floating ? 24 : 16,
-                  offset: const Offset(0, 6),
+                  blurRadius: floating ? 32 : 18,
+                  offset: const Offset(0, 8),
                 ),
                 BoxShadow(
-                  color: FitColors.black.withValues(alpha: .025),
+                  color: FitColors.black.withValues(alpha: .09),
                   blurRadius: 2,
                   offset: const Offset(0, 1),
                 ),
@@ -64,7 +64,7 @@ class FitLayerSurface extends StatelessWidget {
         borderRadius: radius,
         child: translucent
             ? BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
                 child: content,
               )
             : content,
