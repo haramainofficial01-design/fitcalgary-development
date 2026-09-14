@@ -32,12 +32,15 @@ __pycache__/
 *.mobileprovision
 *.p12
 *.pfx
+*.p8
 *.pem
 *.key
 *.cer
 *.crt
 *.xcuserstate
 **/xcuserdata/
+**/key.properties
+**/Flutter/Production.xcconfig
 .secrets/
 DerivedData/
 

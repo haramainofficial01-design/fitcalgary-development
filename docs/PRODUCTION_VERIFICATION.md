@@ -7,6 +7,12 @@ platform build artifacts are prepared. Local verification covers the Flutter
 client, Go services, PostgreSQL migrations, responsive web/admin routes, iOS and
 watchOS simulators, and the Android emulator.
 
+The earlier Android AAB was confirmed to use the standard debug certificate and
+was quarantined. A dedicated Play upload key and fail-closed signed-build script
+are now prepared. The Watch companion is attached to the iOS Runner submission.
+Store-signed artifacts still require the real production endpoints/domain and
+the applicable Apple signing identity.
+
 ## Publishing boundary
 
 The public website and mobile stores are not represented as production-verified

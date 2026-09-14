@@ -48,17 +48,17 @@
 | 21 | Admin dashboard | PASS | Protected admin web route and representative content/reference/moderation operations passed. |
 | 22 | Moderation and audit visibility | PASS | Moderation boundaries, account restrictions, audit history and rollback behavior passed. |
 | 23 | Web responsiveness and accessibility | PASS | Lint, type check, production build, route inventory and client accessibility-focused tests pass. Desktop and 390px responsive visual inspection passed with no browser console errors after the layered-surface refinement. |
-| 24 | iOS | PASS | FitCalgary release identity, simulator build/launch and unsigned release archive pass; signing, physical device and store verification are BLOCKED_EXTERNAL. |
-| 25 | Android | PASS | FitCalgary release identity, emulator debug build/launch and release AAB build pass; production signing, physical device and Play verification are BLOCKED_EXTERNAL. |
-| 26 | Apple Watch | PASS | watchOS simulator build/install/launch pass; signing, hardware and store verification are BLOCKED_EXTERNAL. |
+| 24 | iOS | PASS | FitCalgary release identity and simulator build pass. The Watch companion is embedded in Runner with correct bundle IDs. A signed archive/IPA requires the Client Apple team, Distribution identity, provisioning and real production configuration. |
+| 25 | Android | PASS | FitCalgary release identity and emulator debug build/launch pass. A dedicated Play upload key and fail-closed signed-build path are ready; the former debug-signed AAB was quarantined. A new production AAB requires real production configuration. |
+| 26 | Apple Watch | PASS | The watchOS companion builds and is embedded in the iOS simulator application; signing, hardware and store verification are BLOCKED_EXTERNAL. |
 | 27 | Deep links | PASS | Supported web/app route inventory and notification-link allow-list tests pass. |
 | 28 | Error/loading/empty states | PASS | Flutter widget coverage and web/API structured-error paths pass. |
 | 29 | Security | PASS | Authorization, validation, private storage, safe errors, release gates and tracked-source scans pass. |
 | 30 | Performance and reliability | PASS | Request timeouts, pagination/limits, idempotent queues, migration checks and graceful failure paths are covered. |
 | 31 | Backups and operations | PASS | Backup/restore, migration, deployment and rollback runbooks are documented. |
 | 32 | Logging and health checks | PASS | `/health`, `/ready` (database ping), structured safe logging and operational failure signals are implemented and documented. |
-| 33 | Release builds | PASS | Web, Go, branded Android AAB, branded iOS simulator/archive, and watchOS simulator builds pass locally. Prepared Android and iOS artifacts have recorded SHA-256 checksums. |
-| 34 | Store readiness | BLOCKED_EXTERNAL | App identity, icon, launch treatment, Android AAB and unsigned iOS archive are prepared; Apple/Google signing accounts, final listing inputs, physical-device checks and review submission remain external. |
+| 33 | Release builds | PASS | Web, Go and the branded iOS/Android/watchOS development builds pass locally. Mobile release scripts now reject missing or unsafe production values; no store-signed AAB or IPA is represented as complete. |
+| 34 | Store readiness | BLOCKED_EXTERNAL | App identity, icon, launch treatment, dedicated Android upload key and fail-closed mobile release paths are prepared. Real production endpoints/domain and Apple signing access are required before store artifacts can be created and verified. |
 | 35 | Deployment readiness | BLOCKED_EXTERNAL | The production web build and environment-driven deployment path are ready. Public hosting authorization, DNS/TLS, managed PostgreSQL/storage, Keycloak and provider credentials are still required for a live URL. |
 | 36 | Documentation | PASS | Production configuration, database operations, operations runbook, release matrix, dependencies, handoff and final summary are present. |
 | 37 | Final handoff candidate | PASS | Clean one-commit candidate prepared locally after final verification; its SHA is reported with the release record. Client `main` was not modified. |
@@ -82,7 +82,10 @@ appropriate translucency and depth, Android/web use platform-suitable layered
 surfaces, reading surfaces remain opaque, decorative hero gradients were removed,
 and reduced-motion, reduced-transparency and high-contrast fallbacks remain
 explicit. FitCalgary app identity, icons and launch treatments are integrated;
-fresh Android AAB and unsigned iOS archive artifacts are prepared. The five-page
+the dedicated Android upload key, mobile signing scripts and embedded Watch
+companion are prepared. The former debug-signed Android bundle was quarantined,
+and no store-signed mobile artifact is claimed before real production inputs are
+available. The five-page
 Client review and both 1920x1080 videos were refreshed and visually inspected.
 The recorded clean handoff candidate remains unchanged until a later authorized
 Client handoff. Remaining live release work is limited to external production
@@ -98,9 +101,12 @@ configuration, signing, deployment and store-review inputs.
 - Visual refinement regression: Flutter analysis and 20 tests pass; web lint,
   TypeScript and production build pass; responsive desktop/phone visual review
   passes with no browser console errors.
-- iOS: branded simulator build/install/launch and unsigned release archive pass.
-- Android: branded debug APK emulator install/launch and release AAB build pass.
-- watchOS: simulator build/install/launch pass.
+- iOS: branded simulator build passes with the Watch companion embedded; signed
+  archive/IPA generation is blocked by Apple signing access and production values.
+- Android: branded debug APK emulator install/launch passes; the dedicated upload
+  key and signed-build verification path are ready, while production AAB generation
+  is blocked by real production values.
+- watchOS: companion bundle builds and is embedded in the iOS simulator app.
 - Source hygiene: `git diff --check` and tracked secret/internal-tool scans pass;
   `.env` files remain ignored and no production values are committed.
 - Handoff hygiene: clean candidate tree contains 387 tracked files, exactly one

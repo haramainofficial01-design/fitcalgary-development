@@ -63,8 +63,13 @@ abstract final class BuildConfig {
     if (uri == null || uri.scheme != 'https' || host == null || host.isEmpty) {
       throw StateError('$name must be an HTTPS URL for a production build');
     }
-    if (host == 'localhost' || host == '127.0.0.1' || host == '::1') {
-      throw StateError('$name must not target a loopback host in production');
+    if (host == 'localhost' ||
+        host == '127.0.0.1' ||
+        host == '::1' ||
+        host.endsWith('.invalid')) {
+      throw StateError(
+        '$name must not target a loopback or placeholder host in production',
+      );
     }
     if (uri.userInfo.isNotEmpty) {
       throw StateError('$name must not embed credentials');

@@ -7,18 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		068C92633B5C9AE44F76CA3F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 107C0208B97012C47746DA17 /* Foundation.framework */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		30C0A51222D8FF50DFE402CD /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10AAFFE2FC43B602A91A9CD3 /* DashboardView.swift */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
+		66DF9A652FE5E0B5B470AE45 /* WatchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4600D8E5A92220C48BC9DCB1 /* WatchStore.swift */; };
+		725099A22F33EA672AFB351E /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C095C0DF165C51BAC2171B /* KeychainStore.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */; };
 		78A318202AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage in Frameworks */ = {isa = PBXBuildFile; productRef = 78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		A7F31DC4D9BB0AB23C39F769 /* FitCalgaryWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D55D6BCB4E50172EA055BA7 /* FitCalgaryWatchApp.swift */; };
+		B214ABE4329D19010588B873 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4DA27677BD77D9EE1F8904B5 /* Assets.xcassets */; };
+		EFC808DDAB6F2D3C627D2C1B /* GlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95765C6A87A68AF8CB70FCBB /* GlassCard.swift */; };
+		F0F8D1FA68C7C6195075B39B /* FitCalgaryWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B7CB37AE96673E4CCBCA125B /* FitCalgaryWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F359F825E0D5497C6D3B1E31 /* WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = A812EB8C0908101A1A10811A /* WatchSnapshot.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		02BD9827CCFCEF97EDB38A9A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2AA2CC7FC79B6DE47E1BB5D6;
+			remoteInfo = FitCalgaryWatch;
+		};
 		331C8085294A63A400263BE5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
@@ -29,6 +45,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		578C7DDE3C3356CCFCE11C42 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Watch;
+			dstSubfolderSpec = 1;
+			files = (
+				F0F8D1FA68C7C6195075B39B /* FitCalgaryWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -42,16 +69,23 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		107C0208B97012C47746DA17 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		10AAFFE2FC43B602A91A9CD3 /* DashboardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DashboardView.swift; path = Views/DashboardView.swift; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
+		1D55D6BCB4E50172EA055BA7 /* FitCalgaryWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FitCalgaryWatchApp.swift; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
+		4600D8E5A92220C48BC9DCB1 /* WatchStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WatchStore.swift; path = Services/WatchStore.swift; sourceTree = "<group>"; };
+		4DA27677BD77D9EE1F8904B5 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Resources/Assets.xcassets; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		78E0A7A72DC9AD7400C4905E /* FlutterGeneratedPluginSwiftPackage */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = FlutterGeneratedPluginSwiftPackage; path = Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
+		86C095C0DF165C51BAC2171B /* KeychainStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KeychainStore.swift; path = Services/KeychainStore.swift; sourceTree = "<group>"; };
+		95765C6A87A68AF8CB70FCBB /* GlassCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GlassCard.swift; path = Views/GlassCard.swift; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -59,6 +93,8 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A812EB8C0908101A1A10811A /* WatchSnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WatchSnapshot.swift; path = Models/WatchSnapshot.swift; sourceTree = "<group>"; };
+		B7CB37AE96673E4CCBCA125B /* FitCalgaryWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitCalgaryWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,15 +106,54 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C97AA7475E8C9F12A2F02CD2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				068C92633B5C9AE44F76CA3F /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0DC651258298672593DC0DD7 /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				107C0208B97012C47746DA17 /* Foundation.framework */,
+			);
+			name = watchOS;
+			sourceTree = "<group>";
+		};
+		284EF0BB73B51DD7387F8A1E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0DC651258298672593DC0DD7 /* watchOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		331C8082294A63A400263BE5 /* RunnerTests */ = {
 			isa = PBXGroup;
 			children = (
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
 			);
 			path = RunnerTests;
+			sourceTree = "<group>";
+		};
+		6E257247E090F779AEF2D536 /* FitCalgaryWatch */ = {
+			isa = PBXGroup;
+			children = (
+				1D55D6BCB4E50172EA055BA7 /* FitCalgaryWatchApp.swift */,
+				A812EB8C0908101A1A10811A /* WatchSnapshot.swift */,
+				86C095C0DF165C51BAC2171B /* KeychainStore.swift */,
+				4600D8E5A92220C48BC9DCB1 /* WatchStore.swift */,
+				10AAFFE2FC43B602A91A9CD3 /* DashboardView.swift */,
+				95765C6A87A68AF8CB70FCBB /* GlassCard.swift */,
+				4DA27677BD77D9EE1F8904B5 /* Assets.xcassets */,
+			);
+			name = FitCalgaryWatch;
+			path = ../../watch/FitCalgaryWatch;
 			sourceTree = "<group>";
 		};
 		9740EEB11CF90186004384FC /* Flutter */ = {
@@ -100,6 +175,8 @@
 				97C146F01CF9000F007C117D /* Runner */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
+				284EF0BB73B51DD7387F8A1E /* Frameworks */,
+				6E257247E090F779AEF2D536 /* FitCalgaryWatch */,
 			);
 			sourceTree = "<group>";
 		};
@@ -108,6 +185,7 @@
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
 				331C8081294A63A400263BE5 /* RunnerTests.xctest */,
+				B7CB37AE96673E4CCBCA125B /* FitCalgaryWatch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -131,6 +209,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		2AA2CC7FC79B6DE47E1BB5D6 /* FitCalgaryWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 389CBCA452277943E19EE621 /* Build configuration list for PBXNativeTarget "FitCalgaryWatch" */;
+			buildPhases = (
+				9F1DA75E9DDD1669DB651DAD /* Sources */,
+				C97AA7475E8C9F12A2F02CD2 /* Frameworks */,
+				EC9088854A62B2FDCCBA3B8F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FitCalgaryWatch;
+			productName = FitCalgaryWatch;
+			productReference = B7CB37AE96673E4CCBCA125B /* FitCalgaryWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
 		331C8080294A63A400263BE5 /* RunnerTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 331C8087294A63A400263BE5 /* Build configuration list for PBXNativeTarget "RunnerTests" */;
@@ -152,16 +247,19 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
 			buildPhases = (
+				6AF1EDF19ACB08BF611B74D2 /* Validate Production Release Configuration */,
 				9740EEB61CF901F6004384FC /* Run Script */,
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
+				578C7DDE3C3356CCFCE11C42 /* Embed Watch Content */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				28F2CEEB2800C95C2568231A /* PBXTargetDependency */,
 			);
 			name = Runner;
 			packageProductDependencies = (
@@ -201,7 +299,7 @@
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
 			packageReferences = (
-				781AD8BC2B33823900A9FFBB /* XCLocalSwiftPackageReference "Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage" */,
+				781AD8BC2B33823900A9FFBB /* XCLocalSwiftPackageReference "FlutterGeneratedPluginSwiftPackage" */,
 			);
 			productRefGroup = 97C146EF1CF9000F007C117D /* Products */;
 			projectDirPath = "";
@@ -209,6 +307,7 @@
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
 				331C8080294A63A400263BE5 /* RunnerTests */,
+				2AA2CC7FC79B6DE47E1BB5D6 /* FitCalgaryWatch */,
 			);
 		};
 /* End PBXProject section */
@@ -232,6 +331,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EC9088854A62B2FDCCBA3B8F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B214ABE4329D19010588B873 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -250,6 +357,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
+		};
+		6AF1EDF19ACB08BF611B74D2 /* Validate Production Release Configuration */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Validate Production Release Configuration";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"$CONFIGURATION\" = \"Release\" ]; then\n  case \"${FITCALGARY_ASSOCIATED_DOMAIN:-}\" in\n    \"\"|*localhost*|*.invalid|*://*|*/*)\n      echo \"error: FITCALGARY_ASSOCIATED_DOMAIN must be an explicit production domain for Release builds.\"\n      exit 1\n      ;;\n  esac\nfi\n";
 		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -287,9 +412,28 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9F1DA75E9DDD1669DB651DAD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A7F31DC4D9BB0AB23C39F769 /* FitCalgaryWatchApp.swift in Sources */,
+				F359F825E0D5497C6D3B1E31 /* WatchSnapshot.swift in Sources */,
+				725099A22F33EA672AFB351E /* KeychainStore.swift in Sources */,
+				66DF9A652FE5E0B5B470AE45 /* WatchStore.swift in Sources */,
+				30C0A51222D8FF50DFE402CD /* DashboardView.swift in Sources */,
+				EFC808DDAB6F2D3C627D2C1B /* GlassCard.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		28F2CEEB2800C95C2568231A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = FitCalgaryWatch;
+			target = 2AA2CC7FC79B6DE47E1BB5D6 /* FitCalgaryWatch */;
+			targetProxy = 02BD9827CCFCEF97EDB38A9A /* PBXContainerItemProxy */;
+		};
 		331C8086294A63A400263BE5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 97C146ED1CF9000F007C117D /* Runner */;
@@ -317,6 +461,34 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		0BCBE15203A5D0C32052698E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APS_ENVIRONMENT = production;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ../../watch/FitCalgaryWatch/FitCalgaryWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ../../watch/FitCalgaryWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FitCalgary;
+				INFOPLIST_KEY_CFBundleShortVersionString = "$(MARKETING_VERSION)";
+				INFOPLIST_KEY_CFBundleVersion = "$(CURRENT_PROJECT_VERSION)";
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = NO;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ca.fitcalgary.index;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.fitcalgary.index.watchkitapp;
+				PRODUCT_NAME = FitCalgary;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
 		249021D3217E4FDB00AE95B9 /* Profile */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -437,6 +609,61 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner";
 			};
 			name = Profile;
+		};
+		3AE22BF5968C9A6F011BD986 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APS_ENVIRONMENT = development;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ../../watch/FitCalgaryWatch/FitCalgaryWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ../../watch/FitCalgaryWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FitCalgary;
+				INFOPLIST_KEY_CFBundleShortVersionString = "$(MARKETING_VERSION)";
+				INFOPLIST_KEY_CFBundleVersion = "$(CURRENT_PROJECT_VERSION)";
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = NO;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ca.fitcalgary.index;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.fitcalgary.index.watchkitapp;
+				PRODUCT_NAME = FitCalgary;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Profile;
+		};
+		659CB389C492981A4748B7AF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APS_ENVIRONMENT = development;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ../../watch/FitCalgaryWatch/FitCalgaryWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ../../watch/FitCalgaryWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = FitCalgary;
+				INFOPLIST_KEY_CFBundleShortVersionString = "$(MARKETING_VERSION)";
+				INFOPLIST_KEY_CFBundleVersion = "$(CURRENT_PROJECT_VERSION)";
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = NO;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ca.fitcalgary.index;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ca.fitcalgary.index.watchkitapp;
+				PRODUCT_NAME = FitCalgary;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
 		};
 		97C147031CF9000F007C117D /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -607,6 +834,16 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		389CBCA452277943E19EE621 /* Build configuration list for PBXNativeTarget "FitCalgaryWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0BCBE15203A5D0C32052698E /* Release */,
+				659CB389C492981A4748B7AF /* Debug */,
+				3AE22BF5968C9A6F011BD986 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		97C146E91CF9000F007C117D /* Build configuration list for PBXProject "Runner" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -630,7 +867,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		781AD8BC2B33823900A9FFBB /* XCLocalSwiftPackageReference "Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage" */ = {
+		781AD8BC2B33823900A9FFBB /* XCLocalSwiftPackageReference "FlutterGeneratedPluginSwiftPackage" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage;
 		};

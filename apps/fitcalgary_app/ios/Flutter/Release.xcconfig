@@ -1,4 +1,4 @@
 #include "Generated.xcconfig"
 CODE_SIGN_ENTITLEMENTS=Runner/Runner.entitlements
 APS_ENVIRONMENT=production
-FITCALGARY_ASSOCIATED_DOMAIN=fitcalgary.invalid
+FITCALGARY_ASSOCIATED_DOMAIN=

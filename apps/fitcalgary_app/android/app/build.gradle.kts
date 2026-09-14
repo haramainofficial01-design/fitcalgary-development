@@ -14,6 +14,33 @@ val hasReleaseSigning = listOf(
     releaseKeyAlias,
     releaseKeyPassword,
 ).all { !it.isNullOrBlank() }
+val releaseRequested = gradle.startParameter.taskNames.any {
+    it.contains("release", ignoreCase = true)
+}
+val appLinkHost = providers.gradleProperty("FITCALGARY_APP_LINK_HOST")
+    .orElse("fitcalgary.invalid")
+    .get()
+val invalidReleaseHost = appLinkHost.isBlank() ||
+    appLinkHost.contains("localhost", ignoreCase = true) ||
+    appLinkHost.endsWith(".invalid", ignoreCase = true) ||
+    appLinkHost.contains("://") ||
+    appLinkHost.contains('/')
+
+if (releaseRequested && !hasReleaseSigning) {
+    throw GradleException(
+        "FitCalgary release signing is missing. Supply the dedicated Play upload " +
+            "keystore through FITCALGARY_RELEASE_KEYSTORE, " +
+            "FITCALGARY_RELEASE_STORE_PASSWORD, FITCALGARY_RELEASE_KEY_ALIAS, " +
+            "and FITCALGARY_RELEASE_KEY_PASSWORD. Debug signing is never used " +
+            "for Release builds."
+    )
+}
+if (releaseRequested && invalidReleaseHost) {
+    throw GradleException(
+        "FITCALGARY_APP_LINK_HOST must be an explicit production domain for " +
+            "Release builds; localhost, URL schemes, paths, and .invalid are rejected."
+    )
+}
 
 android {
     namespace = "ca.fitcalgary.index"
@@ -29,7 +56,7 @@ android {
 
     defaultConfig {
         applicationId = "ca.fitcalgary.index"
-        manifestPlaceholders["appLinkHost"] = providers.gradleProperty("FITCALGARY_APP_LINK_HOST").orElse("fitcalgary.invalid").get()
+        manifestPlaceholders["appLinkHost"] = appLinkHost
         manifestPlaceholders["appAuthRedirectScheme"] = "ca.fitcalgary.index"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
@@ -54,9 +81,9 @@ android {
 
     buildTypes {
         release {
-            // Local release artifacts remain debug-signed until production
-            // keystore variables are supplied by the release environment.
-            signingConfig = signingConfigs.getByName(if (hasReleaseSigning) "release" else "debug")
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 }
