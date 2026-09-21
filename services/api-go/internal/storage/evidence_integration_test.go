@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -23,19 +24,33 @@ func TestPrivateMultipartStorage(t *testing.T) {
 		t.Skip("requires isolated loopback S3-compatible storage")
 	}
 	parsed, err := url.Parse(endpoint)
-	if err != nil || parsed.Hostname() != "127.0.0.1" {
-		t.Fatal("loopback storage required")
+	if err != nil || parsed.Scheme == "" || parsed.Hostname() == "" {
+		t.Fatal("valid storage endpoint required")
 	}
+	remote := parsed.Hostname() != "127.0.0.1"
+	if remote && os.Getenv("STORAGE_TEST_ALLOW_REMOTE") != "true" {
+		t.Skip("remote storage smoke test requires STORAGE_TEST_ALLOW_REMOTE=true")
+	}
+	usePathStyle, err := strconv.ParseBool(valueOrDefault(os.Getenv("STORAGE_TEST_USE_PATH_STYLE"), "true"))
+	if err != nil {
+		t.Fatal("STORAGE_TEST_USE_PATH_STYLE must be true or false")
+	}
+	bucket := valueOrDefault(os.Getenv("STORAGE_TEST_BUCKET"), "fitcalgary-evidence-test")
+	region := valueOrDefault(os.Getenv("STORAGE_TEST_REGION"), "us-east-1")
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	store, err := NewS3EvidenceStore(ctx, config.Config{S3Endpoint: endpoint, S3Region: "us-east-1", S3Bucket: "fitcalgary-evidence-test", S3AccessKeyID: os.Getenv("STORAGE_TEST_ACCESS_KEY"), S3SecretAccessKey: os.Getenv("STORAGE_TEST_SECRET_KEY"), SignedURLTTL: time.Minute, MaxEvidenceBytes: 10 << 20})
+	store, err := NewS3EvidenceStore(ctx, config.Config{S3Endpoint: endpoint, S3Region: region, S3Bucket: bucket, S3AccessKeyID: os.Getenv("STORAGE_TEST_ACCESS_KEY"), S3SecretAccessKey: os.Getenv("STORAGE_TEST_SECRET_KEY"), S3UsePathStyle: usePathStyle, SignedURLTTL: time.Minute, MaxEvidenceBytes: 10 << 20})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := store.client.CreateBucket(ctx, &s3.CreateBucketInput{Bucket: &store.bucket}); err != nil {
-		if _, headErr := store.client.HeadBucket(ctx, &s3.HeadBucketInput{Bucket: &store.bucket}); headErr != nil {
-			t.Fatal("test bucket unavailable")
+	if !remote {
+		if _, err := store.client.CreateBucket(ctx, &s3.CreateBucketInput{Bucket: &store.bucket}); err != nil {
+			if _, headErr := store.client.HeadBucket(ctx, &s3.HeadBucketInput{Bucket: &store.bucket}); headErr != nil {
+				t.Fatal("test bucket unavailable")
+			}
 		}
+	} else if _, err := store.client.HeadBucket(ctx, &s3.HeadBucketInput{Bucket: &store.bucket}); err != nil {
+		t.Fatal("configured remote test bucket unavailable")
 	}
 	content := make([]byte, 7<<20)
 	if _, err := rand.Read(content); err != nil {
@@ -89,7 +104,12 @@ func TestPrivateMultipartStorage(t *testing.T) {
 	if err != nil || !bytes.Equal(actual, content) {
 		t.Fatal("stored bytes differ")
 	}
-	public := endpoint + "/" + store.bucket + "/" + key
+	unsigned, err := url.Parse(signed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	unsigned.RawQuery = ""
+	public := unsigned.String()
 	response, err = client.Get(public)
 	if err != nil {
 		t.Fatal(err)
@@ -133,4 +153,11 @@ func TestPrivateMultipartStorage(t *testing.T) {
 		t.Fatalf("deleted evidence remains available: %d", response.StatusCode)
 	}
 	t.Log("7 MiB, two real signed parts, exact bytes, unsigned/tampered rejection, range playback and deletion verified")
+}
+
+func valueOrDefault(value, fallback string) string {
+	if strings.TrimSpace(value) == "" {
+		return fallback
+	}
+	return value
 }

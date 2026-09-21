@@ -13,9 +13,8 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final gyms = ref.watch(gymsProvider);
+    final snapshot = ref.watch(catalogSnapshotProvider);
     final events = ref.watch(eventsProvider);
-    final disciplines = ref.watch(disciplinesProvider);
     return CustomScrollView(
       slivers: [
         const SliverToBoxAdapter(child: BrandHeader()),
@@ -75,9 +74,9 @@ class HomeScreen extends ConsumerWidget {
         ),
         SliverToBoxAdapter(
           child: _SnapshotGrid(
-            gymCount: gyms.valueOrNull?.length,
-            eventCount: events.valueOrNull?.length,
-            boardCount: disciplines.valueOrNull?.length,
+            gymCount: snapshot.valueOrNull?.gyms,
+            eventCount: snapshot.valueOrNull?.events,
+            boardCount: snapshot.valueOrNull?.boards,
           ),
         ),
         SliverToBoxAdapter(
@@ -133,7 +132,7 @@ class HomeScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Overline('Next up'),
+                    const Overline('Explore events'),
                     TextButton(
                       onPressed: () => context.go('/events'),
                       child: const Text('ALL EVENTS →'),
@@ -220,7 +219,7 @@ class _SnapshotGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final values = [
       ('${gymCount ?? '—'}', 'GYMS INDEXED'),
-      ('${eventCount ?? '—'}', 'UPCOMING EVENTS'),
+      ('${eventCount ?? '—'}', 'EVENTS LISTED'),
       ('${boardCount ?? '—'}', 'ACTIVE BOARDS'),
       ('YOU', 'YOUR NEXT BEST'),
     ];

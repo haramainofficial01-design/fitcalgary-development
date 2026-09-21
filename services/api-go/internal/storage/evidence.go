@@ -52,7 +52,7 @@ func NewS3EvidenceStore(ctx context.Context, cfg config.Config) (*S3EvidenceStor
 	}
 	client := s3.NewFromConfig(loaded, func(options *s3.Options) {
 		options.BaseEndpoint = aws.String(cfg.S3Endpoint)
-		options.UsePathStyle = true
+		options.UsePathStyle = cfg.S3UsePathStyle
 	})
 	return &S3EvidenceStore{client: client, presigner: s3.NewPresignClient(client), bucket: cfg.S3Bucket, ttl: cfg.SignedURLTTL, maxBytes: cfg.MaxEvidenceBytes}, nil
 }

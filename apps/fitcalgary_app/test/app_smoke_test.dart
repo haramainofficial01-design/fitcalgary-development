@@ -13,6 +13,9 @@ import 'package:fitcalgary_app/features/leaderboards/competition_providers.dart'
 void main() {
   ProviderScope testApp(OnboardingStore store) => ProviderScope(
     overrides: [
+      catalogSnapshotProvider.overrideWith(
+        (ref) async => const CatalogSnapshot(gyms: 273, events: 531, boards: 4),
+      ),
       boardsProvider.overrideWith((ref) async => []),
       directoryProvider.overrideWith(
         (ref, query) async => const GymPage([], 0),

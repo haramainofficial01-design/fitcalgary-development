@@ -47,3 +47,20 @@ func TestProductionAcceptsExplicitSecureConfiguration(t *testing.T) {
 		t.Fatalf("expected secure production configuration, got %v", err)
 	}
 }
+
+func TestStorageURLStyleIsConfigurable(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://db.example/fitcalgary")
+	t.Setenv("KEYCLOAK_ISSUER", "https://identity.example/realms/fitcalgary")
+	t.Setenv("S3_ENDPOINT", "https://storage.example")
+	t.Setenv("S3_ACCESS_KEY_ID", "access")
+	t.Setenv("S3_SECRET_ACCESS_KEY", "secret")
+	t.Setenv("S3_USE_PATH_STYLE", "false")
+	t.Setenv("DEVICE_TOKEN_ENCRYPTION_KEY", base64.StdEncoding.EncodeToString([]byte("01234567890123456789012345678901")))
+	cfg, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.S3UsePathStyle {
+		t.Fatal("expected virtual-hosted storage URL style")
+	}
+}

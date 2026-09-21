@@ -10,6 +10,7 @@
 		1B04294D18406F3A9775810F /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E55C09ED7EFFF31E9C8BC35 /* KeychainStore.swift */; };
 		299833A65E5507E479494788 /* FitCalgaryWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69F003C590CBD8FCAB82DF3 /* FitCalgaryWatchApp.swift */; };
 		5B61BC6535F24ED60CE21552 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B644C527748829D367B8A6EC /* Assets.xcassets */; };
+		68C8A377C0754C829ED1564A /* AppIcon44x44@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A466A54238B4F0CA5AF53DC /* AppIcon44x44@2x.png */; };
 		5E2651877CAEBFAD95362835 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE99A2D36CFAE0657C7E149D /* DashboardView.swift */; };
 		913FF2F57C5A68933D3D62F4 /* WatchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E0C7E87C79A7BF376CA08D /* WatchStore.swift */; };
 		ABFED850D07D02FAC0FD6487 /* WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B614061FCF7EADA723467892 /* WatchSnapshot.swift */; };
@@ -19,6 +20,7 @@
 /* Begin PBXFileReference section */
 		01D03A3AC55D01E8999B7FAB /* FitCalgaryWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitCalgaryWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		022AFFAF4E741EA6C9FDB4F6 /* FitCalgaryWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitCalgaryWatch.entitlements; sourceTree = "<group>"; };
+		1A466A54238B4F0CA5AF53DC /* AppIcon44x44@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppIcon44x44@2x.png; sourceTree = "<group>"; };
 		37E0C7E87C79A7BF376CA08D /* WatchStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchStore.swift; sourceTree = "<group>"; };
 		7D70AA2C8A3B349741DD4B7E /* GlassCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassCard.swift; sourceTree = "<group>"; };
 		9E55C09ED7EFFF31E9C8BC35 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
@@ -87,6 +89,7 @@
 		D279D694D34E1E976B71F3E9 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				1A466A54238B4F0CA5AF53DC /* AppIcon44x44@2x.png */,
 				B644C527748829D367B8A6EC /* Assets.xcassets */,
 			);
 			path = Resources;
@@ -148,6 +151,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				68C8A377C0754C829ED1564A /* AppIcon44x44@2x.png in Resources */,
 				5B61BC6535F24ED60CE21552 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

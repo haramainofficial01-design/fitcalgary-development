@@ -18,7 +18,7 @@ class EventsScreen extends ConsumerStatefulWidget {
 class _EventsScreenState extends ConsumerState<EventsScreen> {
   final search = TextEditingController();
   Timer? debounce;
-  String section = 'UPCOMING';
+  String section = 'ALL EVENTS';
   String query = '';
   int page = 1;
 

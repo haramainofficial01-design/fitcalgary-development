@@ -31,6 +31,39 @@ final disciplinesProvider = FutureProvider.autoDispose<List<Discipline>>(
           .toList(growable: false),
 );
 
+class CatalogSnapshot {
+  const CatalogSnapshot({
+    required this.gyms,
+    required this.events,
+    required this.boards,
+  });
+
+  final int gyms;
+  final int events;
+  final int boards;
+}
+
+final catalogSnapshotProvider = FutureProvider.autoDispose<CatalogSnapshot>((
+  ref,
+) async {
+  final dio = ref.read(apiProvider).dio;
+  final responses = await Future.wait([
+    dio.get<Map<String, dynamic>>('/gyms', queryParameters: {'pageSize': 1}),
+    dio.get<Map<String, dynamic>>('/events', queryParameters: {'pageSize': 1}),
+    dio.get<Map<String, dynamic>>(
+      '/disciplines',
+      queryParameters: {'pageSize': 1},
+    ),
+  ]);
+  int total(int index) {
+    final payload = responses[index].data ?? const <String, dynamic>{};
+    return (payload['total'] as num?)?.toInt() ??
+        (payload['data'] as List? ?? const []).length;
+  }
+
+  return CatalogSnapshot(gyms: total(0), events: total(1), boards: total(2));
+});
+
 final profileProvider = FutureProvider.autoDispose<AthleteProfile>((ref) async {
   final response = await ref
       .read(apiProvider)

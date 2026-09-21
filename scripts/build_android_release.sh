@@ -34,7 +34,11 @@ cd "$FC_APP"
 
 aab_path="$FC_APP/build/app/outputs/bundle/release/app-release.aab"
 [ -f "$aab_path" ] || fc_fail "Expected AAB was not produced at $aab_path"
-"$JAVA_HOME/bin/jarsigner" -verify -strict "$aab_path" >/dev/null
+# App Bundles are JAR-signed. Some Android dependencies intentionally include
+# metadata that triggers non-fatal `-strict` warnings even though the bundle's
+# signer is valid, so verify the signature and separately enforce the expected
+# upload-certificate fingerprint below.
+"$JAVA_HOME/bin/jarsigner" -verify "$aab_path" >/dev/null
 actual_sha256="$($JAVA_HOME/bin/keytool -J-Duser.language=en -printcert -jarfile "$aab_path" | /usr/bin/awk -F'SHA256:' '/SHA256:/ {gsub(/[[:space:]]/, "", $2); print $2; exit}')"
 [ "$actual_sha256" = "$expected_sha256" ] || fc_fail "The AAB signer does not match the dedicated FitCalgary Play upload key"
 

@@ -23,6 +23,7 @@ type Config struct {
 	S3Bucket              string
 	S3AccessKeyID         string
 	S3SecretAccessKey     string
+	S3UsePathStyle       bool
 	SignedURLTTL          time.Duration
 	MaxEvidenceBytes      int64
 	EvidenceRetentionDays int
@@ -34,6 +35,7 @@ type Config struct {
 }
 
 func Load() (Config, error) {
+	var err error
 	environment := value("APP_ENV", "development")
 	if environment == "production" {
 		if raw := strings.TrimSpace(os.Getenv("DEMO_DATA")); raw != "" && raw != "false" {
@@ -56,6 +58,9 @@ func Load() (Config, error) {
 		FCMClientEmail:    os.Getenv("FCM_CLIENT_EMAIL"),
 		FCMPrivateKey:     strings.ReplaceAll(os.Getenv("FCM_PRIVATE_KEY"), `\n`, "\n"),
 	}
+	if cfg.S3UsePathStyle, err = boolean("S3_USE_PATH_STYLE", true); err != nil {
+		return Config{}, err
+	}
 	deviceKey := strings.TrimSpace(os.Getenv("DEVICE_TOKEN_ENCRYPTION_KEY"))
 	decodedKey, decodeErr := base64.StdEncoding.DecodeString(deviceKey)
 	if decodeErr != nil || len(decodedKey) != 32 {
@@ -63,7 +68,6 @@ func Load() (Config, error) {
 	}
 	cfg.DeviceTokenKey = decodedKey
 
-	var err error
 	if cfg.Port, err = integer("PORT", 4000, 1, 65535); err != nil {
 		return Config{}, err
 	}
@@ -111,6 +115,18 @@ func Load() (Config, error) {
 		}
 	}
 	return cfg, nil
+}
+
+func boolean(name string, fallback bool) (bool, error) {
+	raw := strings.TrimSpace(os.Getenv(name))
+	if raw == "" {
+		return fallback, nil
+	}
+	parsed, err := strconv.ParseBool(raw)
+	if err != nil {
+		return false, fmt.Errorf("%s must be true or false: %w", name, err)
+	}
+	return parsed, nil
 }
 
 func productionURL(name, value string) error {
