@@ -46,7 +46,7 @@ func (s *Server) adminOverview(_ http.ResponseWriter, r *http.Request) (any, err
 	if err := adminOnly(r); err != nil {
 		return nil, err
 	}
-	rows, err := queryMaps(r.Context(), s.db, `SELECT (SELECT count(*) FROM profiles WHERE account_status='ACTIVE') AS total_users,(SELECT count(*) FROM submissions WHERE status='PENDING_REVIEW') AS pending_submissions,(SELECT count(*) FROM submission_evidence WHERE evidence_deleted_at IS NULL AND retain_until<now()+interval '48 hours') AS evidence_nearing_expiry,(SELECT count(*) FROM gyms WHERE publish_status='PUBLISHED') AS published_gyms,(SELECT count(*) FROM events WHERE publish_status='PUBLISHED' AND start_at>now()) AS upcoming_events,(SELECT count(*) FROM notifications WHERE delivery_status='FAILED') AS failed_notifications`)
+	rows, err := queryMaps(r.Context(), s.db, `SELECT (SELECT count(*) FROM profiles WHERE account_status='ACTIVE') AS total_users,(SELECT count(*) FROM submissions WHERE status='PENDING_REVIEW') AS pending_submissions,(SELECT count(*) FROM submission_evidence WHERE evidence_deleted_at IS NULL AND retain_until<now()+interval '48 hours') AS evidence_nearing_expiry,(SELECT count(*) FROM gyms WHERE publish_status='PUBLISHED') AS published_gyms,(SELECT count(*) FROM events WHERE publish_status='PUBLISHED' AND (start_at>now() OR (start_at IS NULL AND start_date>=(now() AT TIME ZONE 'America/Edmonton')::date))) AS upcoming_events,(SELECT count(*) FROM notifications WHERE delivery_status='FAILED') AS failed_notifications`)
 	if err != nil {
 		return nil, err
 	}

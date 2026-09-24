@@ -20,7 +20,8 @@ emulator results are not physical-device verification.
 | DATA-001 | P1 | The live gym index described 120 prices as complete all-in monthly costs although 114 source records had unknown annual or enrollment fees. | The approved-data importer converted unknown mandatory fees to zero and used source-derived estimates as proof of completeness. | Importer now requires explicitly known fee values; migration `0009` cleared misleading normalized figures for affected rows. A PostgreSQL 18 production backup was taken before migration. Live API now reports six confirmed-price gyms and 267 needing price confirmation, with all 273 gyms retained. |
 | UI-001 | P2 | Android status-bar icons lacked contrast on the first-run dark introduction and on light home screens after navigation. | System overlay style did not follow the active route/theme. | Onboarding uses light status-bar icons; the application applies theme-aware system-bar styling elsewhere. Both appearances were visually checked in the Android emulator after rebuilding. |
 | CONTENT-001 | P2 | Mobile and web described every listed competition as enterable, even though the directory includes past and undated events; raw database phase labels were visible. | The page and home copy assumed all catalog events were open, while the API intentionally returns every published event. | Replaced the claim with truthful directory copy, human-readable phase labels, and registration labels only on current/upcoming events; home cards now open their own detail page. Flutter and web label regression tests pass. |
-| CONTENT-002 | P1 content dependency | All 531 live competition records have no structured `start_at`, so none can truthfully appear as upcoming or open for entry. | Client-supplied `next_dates` is natural-language schedule text, sometimes approximate or multiple dates. The conservative importer parses only explicit ISO dates; it did not invent one event start from a series description. | No date was guessed. Source schedule text remains available on detail pages and the UI now says “Date to be announced.” Client-approved specific event dates and registration states are needed for a reliable upcoming/open-entry catalog. |
+| CONTENT-002 | P1 content dependency | All 531 live competition records originally had no structured date. | Client-supplied `next_dates` is natural-language schedule text, often approximate or multiple dates; the original importer parsed only ISO timestamps. | Three exact single-day source entries were independently corroborated and now populate a date-only field in local migration tests: YYC-172 (Sep 26), YYC-506 (Oct 24), YYC-508 (Dec 12). Their time remains unknown. The other 528 remain undated. This correction is **not yet deployed**, and registration-open status is not inferred from the date. |
+| CONTENT-003 | P2 | Six competition registration links return HTTP 404. | The approved source retained links that have since disappeared. | Cleared only the six broken public website fields in the import source and added a provenance-guarded migration that hides the public action without deleting the original source payload. Local migration verified six of six links hidden. **Not yet deployed.** No replacement URL was invented. |
 | SEC-001 | P1 | A database tool emitted a production PostgreSQL credential in local session output during backup. | The tunnel helper includes its connection string when closing. | Database role password and Railway Postgres/API variables rotated; API readiness and catalog verified afterward. The temporary Railway SSH key was deregistered and deleted. Remote-local tunnel authentication did not provide a valid old-password rejection test; external credential rejection remains to be independently confirmed. |
 
 ## Executed evidence
@@ -42,6 +43,8 @@ emulator results are not physical-device verification.
 | Pricing correction | PASS | Fresh PostgreSQL 17 import yields `6 complete / 114 incomplete` price rows; migration tested against intentionally stale rows, then applied to backed-up Railway PostgreSQL 18 with the same result. Live public gym filter returns six complete prices, 267 incomplete gym listings; API readiness remains 200. |
 | Web deployment | PASS | Current web build deployed to Cloudflare Workers; home, gyms, events, leaderboards, privacy, support and account-deletion pages return HTTPS 200. Profile/admin authentication entry returns 307 to production OIDC and anonymous admin API returns 401. |
 | Event copy deployment | PASS | Cloudflare Worker version `8f73360c-c8ab-4e79-9f2a-02afb12c75ef` serves the corrected events heading and status labels. Live home/events/public-events return 200; admin authentication entry remains 307 and API readiness 200. |
+| Competition date recovery | LOCAL PASS; PRODUCTION PENDING | Source scan found 3 exact single-day dates in 531 records. Local PostgreSQL migration 0010 yielded 3 dated and 528 undated records; real local API queries returned 3 upcoming, 528 undated and correct month filtering. Flutter/Go/web regression checks pass. The live API has not received migration 0010. |
+| Competition URL audit | LOCAL PASS; PRODUCTION PENDING | Of 531 records, 509 contained a website string, 506 were syntactically valid and 22 were absent. A bounded HTTP check covered 395 unique public URLs; six record links were confirmed 404 after GET recheck. 67 other requests were unavailable or inconclusive, not classified as broken. Local migration 0011 hid all six confirmed links. |
 | Content quality | REVIEW REQUIRED | Supplied source has 273 gyms, 743 clubs and 531 competitions. It includes 153 gyms without an advertised membership price, 546 clubs without a street address, 223 clubs without a website, 151 competition date fields missing or explicitly not fetched, and 166 low-confidence competition records. These are source-data gaps, not facts to invent. |
 
 ## Verification boundaries
@@ -59,3 +62,21 @@ emulator results are not physical-device verification.
 - The corrected Flutter and Watch source is not in the existing store binaries.
   Replacement submission remains unsafe until registration, Google and Apple
   authentication are configured and verified through real provider flows.
+
+## Date and link provenance
+
+The exact date-only source strings are retained in
+`data/client-approved/calgary_sport_competitions.json`. Independent organizer
+pages corroborate [YYC-172](https://www.calgaryrugby.com/senior-rugby),
+[YYC-506](https://wnbfcanada.ca/pages/calgary-naturals) and
+[YYC-508](https://www.albertacheerleading.ca/alberta-cheer-competitions).
+None supplies a confirmed start time or registration-open state for the
+FitCalgary record, so neither is fabricated.
+
+The six 404 public links are YYC-159, YYC-163, YYC-165, YYC-167, YYC-419
+and YYC-458. Four distinct destinations were rechecked with GET after the
+initial HEAD scan. The old values remain in `client_source_records.payload`
+on already-imported databases and in Git history; source `source_urls` fields
+are retained for tracing. A further 67 URL checks timed out or were otherwise
+inconclusive and were not changed. Client confirmation remains appropriate
+before replacing any missing registration destination.

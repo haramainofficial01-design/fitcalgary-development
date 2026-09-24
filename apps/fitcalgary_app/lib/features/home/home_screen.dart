@@ -282,7 +282,7 @@ class _HomeEvent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = event.startAt;
+    final date = event.startAt ?? event.startDate;
     return InkWell(
       onTap: () => context.go('/events/${event.slug}'),
       child: Container(
@@ -329,7 +329,11 @@ class _HomeEvent extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    eventPhaseLabel(event.phase),
+                    eventPhaseLabel(
+                      event.phase,
+                      dateOnly:
+                          event.startAt == null && event.startDate != null,
+                    ),
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,

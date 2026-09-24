@@ -223,6 +223,18 @@ func parseDate(value string) *time.Time {
 	return &t
 }
 
+// parseEventDay accepts only a complete single-day value. A season, date range,
+// expected date, or schedule with multiple events cannot become one start day.
+func parseEventDay(value string) *time.Time {
+	value = strings.TrimSpace(value)
+	for _, layout := range []string{"Jan 2, 2006", "January 2, 2006"} {
+		if day, err := time.Parse(layout, value); err == nil {
+			return &day
+		}
+	}
+	return nil
+}
+
 func optional(value string) any {
 	if v := clean(value); v != "" {
 		return v
@@ -454,7 +466,7 @@ func importEvents(ctx context.Context, tx pgx.Tx, cityID string, rows []json.Raw
 		}
 		registration := "UNKNOWN"
 		var entityID string
-		err := tx.QueryRow(ctx, `INSERT INTO events(city_id,slug,name,organizer,category,description,start_at,registration_status,location,external_registration_url,entry_requirements,sport,official_fitcalgary,tags,source_url,event_status,publish_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,false,$13,$14,'ACTIVE','PUBLISHED') ON CONFLICT(city_id,slug) DO UPDATE SET name=EXCLUDED.name,organizer=EXCLUDED.organizer,category=EXCLUDED.category,description=EXCLUDED.description,start_at=EXCLUDED.start_at,end_at=NULL,registration_deadline=NULL,registration_status=EXCLUDED.registration_status,location=EXCLUDED.location,external_registration_url=EXCLUDED.external_registration_url,entry_requirements=EXCLUDED.entry_requirements,sport=EXCLUDED.sport,tags=EXCLUDED.tags,source_url=EXCLUDED.source_url,event_status='ACTIVE',publish_status='PUBLISHED',updated_at=now() RETURNING id::text`, cityID, eventSlug, name, optional(row.Organizer), optional(row.Category), optional(description), parseDate(row.NextDates), registration, optional(location), optional(link), optional(entry), optional(row.Sport), stringsKnown(row.CompetitionType, row.Level, row.Season), optional(source)).Scan(&entityID)
+		err := tx.QueryRow(ctx, `INSERT INTO events(city_id,slug,name,organizer,category,description,start_at,start_date,registration_status,location,external_registration_url,entry_requirements,sport,official_fitcalgary,tags,source_url,event_status,publish_status) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,false,$14,$15,'ACTIVE','PUBLISHED') ON CONFLICT(city_id,slug) DO UPDATE SET name=EXCLUDED.name,organizer=EXCLUDED.organizer,category=EXCLUDED.category,description=EXCLUDED.description,start_at=EXCLUDED.start_at,start_date=EXCLUDED.start_date,end_at=NULL,registration_deadline=NULL,registration_status=EXCLUDED.registration_status,location=EXCLUDED.location,external_registration_url=EXCLUDED.external_registration_url,entry_requirements=EXCLUDED.entry_requirements,sport=EXCLUDED.sport,tags=EXCLUDED.tags,source_url=EXCLUDED.source_url,event_status='ACTIVE',publish_status='PUBLISHED',updated_at=now() RETURNING id::text`, cityID, eventSlug, name, optional(row.Organizer), optional(row.Category), optional(description), parseDate(row.NextDates), parseEventDay(row.NextDates), registration, optional(location), optional(link), optional(entry), optional(row.Sport), stringsKnown(row.CompetitionType, row.Level, row.Season), optional(source)).Scan(&entityID)
 		if err != nil {
 			return err
 		}

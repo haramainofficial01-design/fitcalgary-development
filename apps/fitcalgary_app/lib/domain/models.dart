@@ -77,6 +77,7 @@ class EventListing {
     required this.id,
     required this.name,
     required this.startAt,
+    this.startDate,
     this.location,
     this.registrationStatus,
     this.sport,
@@ -95,6 +96,7 @@ class EventListing {
   final String slug;
   final String name;
   final DateTime? startAt;
+  final DateTime? startDate;
   final String? location;
   final String? registrationStatus;
   final String? sport;
@@ -112,6 +114,7 @@ class EventListing {
     slug: _string(json, 'slug') ?? '',
     name: _string(json, 'name') ?? 'Event',
     startAt: _date(json, 'start_at', 'startAt'),
+    startDate: _date(json, 'start_date', 'startDate'),
     location: _string(json, 'location') ?? _string(json, 'city'),
     registrationStatus: _string(
       json,

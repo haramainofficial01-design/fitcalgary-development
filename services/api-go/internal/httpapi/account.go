@@ -374,7 +374,7 @@ func (s *Server) watchSummary(_ http.ResponseWriter, r *http.Request) (any, erro
 	if err != nil {
 		return nil, err
 	}
-	events, err := queryMaps(r.Context(), s.db, `SELECT e.id,e.name,e.start_at,e.location FROM events e WHERE e.city_id=$1 AND e.publish_status='PUBLISHED' AND e.event_status='ACTIVE' AND e.start_at>=now() ORDER BY e.start_at LIMIT 8`, profiles[0]["city_id"])
+	events, err := queryMaps(r.Context(), s.db, `SELECT e.id,e.name,e.start_at,e.start_date,e.location FROM events e WHERE e.city_id=$1 AND e.publish_status='PUBLISHED' AND e.event_status='ACTIVE' AND (e.start_at>=now() OR (e.start_at IS NULL AND e.start_date>=(now() AT TIME ZONE 'America/Edmonton')::date)) ORDER BY COALESCE(e.start_at,e.start_date::timestamp AT TIME ZONE 'America/Edmonton') LIMIT 8`, profiles[0]["city_id"])
 	if err != nil {
 		return nil, err
 	}

@@ -81,6 +81,28 @@ func TestUnknownAndQuoteOnlyValuesStayUnknown(t *testing.T) {
 	}
 }
 
+func TestEventDayRequiresOneExplicitCalendarDate(t *testing.T) {
+	for source, expected := range map[string]string{
+		"Sep 26, 2026": "2026-09-26",
+		"Oct 24, 2026": "2026-10-24",
+		"Dec 12, 2026": "2026-12-12",
+	} {
+		got := parseEventDay(source)
+		if got == nil || got.Format("2006-01-02") != expected {
+			t.Fatalf("%q: expected %s, got %v", source, expected, got)
+		}
+	}
+	for _, source := range []string{
+		"2026-27 season", "June 2027 (unconfirmed)",
+		"Sep 26, 2026; Oct 1, 2026", "Expected Sep 26, 2026",
+		"registration date not fetched", "2026 edition listed online",
+	} {
+		if got := parseEventDay(source); got != nil {
+			t.Fatalf("%q must not become a single event day: %v", source, got)
+		}
+	}
+}
+
 func TestStableSourceSlugs(t *testing.T) {
 	if got := slug("Calgary Sport & Social Club (CSSC) - CLB-0012"); got != "calgary-sport-social-club-cssc-clb-0012" {
 		t.Fatalf("unexpected slug %q", got)

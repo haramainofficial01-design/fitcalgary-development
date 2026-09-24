@@ -80,7 +80,14 @@ class _EventDetail extends StatelessWidget {
           spacing: 7,
           runSpacing: 7,
           children: [
-            Chip(label: Text(eventPhaseLabel(event.phase))),
+            Chip(
+              label: Text(
+                eventPhaseLabel(
+                  event.phase,
+                  dateOnly: event.startAt == null && event.startDate != null,
+                ),
+              ),
+            ),
             if (eventRegistrationLabel(event.phase, event.registrationStatus)
                 case final registration?)
               Chip(label: Text(registration)),
@@ -94,6 +101,11 @@ class _EventDetail extends StatelessWidget {
               _Fact(
                 Icons.calendar_today_outlined,
                 DateFormat('EEEE, MMMM d, y · h:mm a').format(date.toLocal()),
+              ),
+            if (date == null && event.startDate != null)
+              _Fact(
+                Icons.calendar_today_outlined,
+                DateFormat('EEEE, MMMM d, y').format(event.startDate!),
               ),
             if (event.endAt != null)
               _Fact(

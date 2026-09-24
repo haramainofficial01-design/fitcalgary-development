@@ -277,7 +277,13 @@ class _EventCard extends StatelessWidget {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    _Label(eventPhaseLabel(event.phase)),
+                    _Label(
+                      eventPhaseLabel(
+                        event.phase,
+                        dateOnly:
+                            event.startAt == null && event.startDate != null,
+                      ),
+                    ),
                     if (eventRegistrationLabel(
                           event.phase,
                           event.registrationStatus,

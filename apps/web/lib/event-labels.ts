@@ -1,7 +1,7 @@
-export function eventPhaseLabel(phase: unknown): string {
+export function eventPhaseLabel(phase: unknown, dateOnly = false): string {
   switch (phase) {
     case 'UPCOMING': return 'Upcoming';
-    case 'CURRENT': return 'Happening now';
+    case 'CURRENT': return dateOnly ? 'Today' : 'Happening now';
     case 'COMPLETED': return 'Past event';
     case 'CANCELLED': return 'Cancelled';
     case 'POSTPONED': return 'Postponed';

@@ -7,6 +7,7 @@ void main() {
     expect(eventPhaseLabel('COMPLETED'), 'PAST EVENT');
     expect(eventPhaseLabel('UNSCHEDULED'), 'DATE TO BE ANNOUNCED');
     expect(eventPhaseLabel(null), 'DATE NOT CONFIRMED');
+    expect(eventPhaseLabel('CURRENT', dateOnly: true), 'TODAY');
   });
 
   test('stale registration state is not shown for old or undated events', () {
