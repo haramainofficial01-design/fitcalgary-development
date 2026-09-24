@@ -67,7 +67,7 @@ void main() {
 
     await tester.tap(find.text('Compete'));
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('You can enter\nthese.'), findsOneWidget);
+    expect(find.text('Calgary\ncompetitions.'), findsOneWidget);
 
     await tester.tap(find.text('Me'));
     await tester.pump(const Duration(milliseconds: 300));

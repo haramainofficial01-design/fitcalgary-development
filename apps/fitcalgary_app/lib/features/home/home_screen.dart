@@ -7,6 +7,7 @@ import '../../app/providers.dart';
 import '../../app/widgets.dart';
 import '../../core/theme.dart';
 import '../../domain/models.dart';
+import '../events/event_labels.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -141,7 +142,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'You can enter these.',
+                  'Explore Calgary events.',
                   style: TextStyle(
                     fontSize: 38,
                     fontWeight: FontWeight.w900,
@@ -157,8 +158,8 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   data: (items) => items.isEmpty
                       ? const EmptyPanel(
-                          title: 'No upcoming events',
-                          body: 'Published Calgary events will appear here when dates are available.',
+                          title: 'No events listed',
+                          body: 'Published Calgary competitions will appear here when available.',
                         )
                       : Column(
                           children: items
@@ -283,7 +284,7 @@ class _HomeEvent extends StatelessWidget {
   Widget build(BuildContext context) {
     final date = event.startAt;
     return InkWell(
-      onTap: () => context.go('/events'),
+      onTap: () => context.go('/events/${event.slug}'),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
@@ -325,6 +326,15 @@ class _HomeEvent extends StatelessWidget {
                   Text(
                     event.location ?? 'Calgary',
                     style: TextStyle(fontSize: 10, color: context.fitMuted),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    eventPhaseLabel(event.phase),
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: context.fitMuted,
+                    ),
                   ),
                 ],
               ),

@@ -7,6 +7,7 @@ import '../../app/widgets.dart';
 import '../../core/theme.dart';
 import '../../domain/models.dart';
 import 'content_providers.dart';
+import 'event_labels.dart';
 
 class ContentDetailScreen extends ConsumerWidget {
   const ContentDetailScreen({
@@ -79,9 +80,10 @@ class _EventDetail extends StatelessWidget {
           spacing: 7,
           runSpacing: 7,
           children: [
-            if (event.phase != null) Chip(label: Text(event.phase!)),
-            if (event.registrationStatus != null)
-              Chip(label: Text('REGISTRATION ${event.registrationStatus}')),
+            Chip(label: Text(eventPhaseLabel(event.phase))),
+            if (eventRegistrationLabel(event.phase, event.registrationStatus)
+                case final registration?)
+              Chip(label: Text(registration)),
             if (event.sport != null) Chip(label: Text(event.sport!)),
           ],
         ),

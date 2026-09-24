@@ -39,8 +39,8 @@ export default function Home() {
       </section>
 
       <section id="compete" className="content-section events-section">
-        <div className="section-topline"><span>Next up</span><a href="/events">All events <ArrowRight size={14} /></a></div>
-        <div className="section-heading"><div><h2>You can enter these.</h2><p>Find your next race, recreational league or local competition.</p></div></div>
+        <div className="section-topline"><span>Compete</span><a href="/events">All events <ArrowRight size={14} /></a></div>
+        <div className="section-heading"><div><h2>Explore local competitions.</h2><p>Find Calgary races, leagues and events. Check dates and entry details with the organizer.</p></div></div>
         <PublicDirectory domain="events" preview />
       </section>
 

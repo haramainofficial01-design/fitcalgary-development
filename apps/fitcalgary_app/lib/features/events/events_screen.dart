@@ -8,6 +8,7 @@ import '../../app/widgets.dart';
 import '../../core/theme.dart';
 import '../../domain/models.dart';
 import 'content_providers.dart';
+import 'event_labels.dart';
 
 class EventsScreen extends ConsumerStatefulWidget {
   const EventsScreen({super.key});
@@ -79,7 +80,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                   const Overline('Compete'),
                   const SizedBox(height: 15),
                   const Text(
-                    'You can enter\nthese.',
+                    'Calgary\ncompetitions.',
                     style: TextStyle(
                       fontSize: 46,
                       height: .98,
@@ -89,7 +90,7 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'Published Calgary events and recreational clubs, backed by the FitCalgary directory.',
+                    'Browse upcoming, past and undated competitions, plus local recreational clubs. Confirm entry details with the organizer.',
                     style: TextStyle(color: context.fitMuted, height: 1.5),
                   ),
                   const SizedBox(height: 22),
@@ -276,9 +277,13 @@ class _EventCard extends StatelessWidget {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    if (event.phase != null) _Label(event.phase!),
-                    if (event.registrationStatus == 'OPEN')
-                      const _Label('OPEN ENTRY'),
+                    _Label(eventPhaseLabel(event.phase)),
+                    if (eventRegistrationLabel(
+                          event.phase,
+                          event.registrationStatus,
+                        )
+                        case final registration?)
+                      _Label(registration),
                   ],
                 ),
               ],

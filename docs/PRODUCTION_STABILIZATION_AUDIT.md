@@ -1,6 +1,6 @@
 # Production stabilization audit
 
-Last updated: 2026-09-23
+Last updated: 2026-09-24
 
 This is the working evidence register for the post-release FitCalgary V1
 stabilization pass. A status of `PASS` records an executed check. Simulator and
@@ -19,6 +19,8 @@ emulator results are not physical-device verification.
 | WATCH-002 | P2 | Watch home provided only a terse rank and three plain links, with no dedicated rankings experience or clear cached/offline state. | Initial companion shell was intentionally minimal. | Added real-data home summaries, dedicated results/rankings/review/event views, intentional empty states, clearer connectivity feedback and accessibility labels. |
 | DATA-001 | P1 | The live gym index described 120 prices as complete all-in monthly costs although 114 source records had unknown annual or enrollment fees. | The approved-data importer converted unknown mandatory fees to zero and used source-derived estimates as proof of completeness. | Importer now requires explicitly known fee values; migration `0009` cleared misleading normalized figures for affected rows. A PostgreSQL 18 production backup was taken before migration. Live API now reports six confirmed-price gyms and 267 needing price confirmation, with all 273 gyms retained. |
 | UI-001 | P2 | Android status-bar icons lacked contrast on the first-run dark introduction and on light home screens after navigation. | System overlay style did not follow the active route/theme. | Onboarding uses light status-bar icons; the application applies theme-aware system-bar styling elsewhere. Both appearances were visually checked in the Android emulator after rebuilding. |
+| CONTENT-001 | P2 | Mobile and web described every listed competition as enterable, even though the directory includes past and undated events; raw database phase labels were visible. | The page and home copy assumed all catalog events were open, while the API intentionally returns every published event. | Replaced the claim with truthful directory copy, human-readable phase labels, and registration labels only on current/upcoming events; home cards now open their own detail page. Flutter and web label regression tests pass. |
+| CONTENT-002 | P1 content dependency | All 531 live competition records have no structured `start_at`, so none can truthfully appear as upcoming or open for entry. | Client-supplied `next_dates` is natural-language schedule text, sometimes approximate or multiple dates. The conservative importer parses only explicit ISO dates; it did not invent one event start from a series description. | No date was guessed. Source schedule text remains available on detail pages and the UI now says “Date to be announced.” Client-approved specific event dates and registration states are needed for a reliable upcoming/open-entry catalog. |
 | SEC-001 | P1 | A database tool emitted a production PostgreSQL credential in local session output during backup. | The tunnel helper includes its connection string when closing. | Database role password and Railway Postgres/API variables rotated; API readiness and catalog verified afterward. The temporary Railway SSH key was deregistered and deleted. Remote-local tunnel authentication did not provide a valid old-password rejection test; external credential rejection remains to be independently confirmed. |
 
 ## Executed evidence
@@ -31,7 +33,7 @@ emulator results are not physical-device verification.
 | Web authentication entry | PASS | Profile and admin sign-in return a PKCE authorization redirect to the production realm; anonymous admin proxy access returns 401. Full authenticated completion still depends on working account/provider credentials. |
 | Approved catalogue | PASS | Live API totals: 273 gyms, 743 clubs, 531 competitions. |
 | Flutter static analysis | PASS | Flutter 3.47.2 reports no issues after the broker-routing fix. |
-| Flutter tests | PASS | 23 tests pass, including Google/Apple provider-hint tests. |
+| Flutter tests | PASS | 25 tests pass, including Google/Apple provider-hint and event-status copy tests. |
 | Go tests | PASS | All non-external Go packages pass; external integration tests remain explicitly skipped without isolated resources. |
 | Go vet and production build | PASS | `go vet ./...` and `go build ./cmd/api` pass. |
 | Apple Watch compile | PASS | Refined source builds through both the standalone XcodeGen project and the Watch target embedded in Runner. |
@@ -39,6 +41,7 @@ emulator results are not physical-device verification.
 | Android emulator | PASS | Production-configured debug APK built, installed and launched on Pixel 9 API 36 emulator; onboarding to home flow exercised. This is not a signed store build. |
 | Pricing correction | PASS | Fresh PostgreSQL 17 import yields `6 complete / 114 incomplete` price rows; migration tested against intentionally stale rows, then applied to backed-up Railway PostgreSQL 18 with the same result. Live public gym filter returns six complete prices, 267 incomplete gym listings; API readiness remains 200. |
 | Web deployment | PASS | Current web build deployed to Cloudflare Workers; home, gyms, events, leaderboards, privacy, support and account-deletion pages return HTTPS 200. Profile/admin authentication entry returns 307 to production OIDC and anonymous admin API returns 401. |
+| Event copy deployment | PASS | Cloudflare Worker version `8f73360c-c8ab-4e79-9f2a-02afb12c75ef` serves the corrected events heading and status labels. Live home/events/public-events return 200; admin authentication entry remains 307 and API readiness 200. |
 | Content quality | REVIEW REQUIRED | Supplied source has 273 gyms, 743 clubs and 531 competitions. It includes 153 gyms without an advertised membership price, 546 clubs without a street address, 223 clubs without a website, 151 competition date fields missing or explicitly not fetched, and 166 low-confidence competition records. These are source-data gaps, not facts to invent. |
 
 ## Verification boundaries
