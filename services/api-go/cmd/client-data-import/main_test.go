@@ -86,3 +86,20 @@ func TestStableSourceSlugs(t *testing.T) {
 		t.Fatalf("unexpected slug %q", got)
 	}
 }
+
+func TestAllInPricingRequiresKnownMandatoryFees(t *testing.T) {
+	ongoing, firstYear := 2500, 2700
+	row := gymRecord{}
+	if confirmedAllInPricing(row, &ongoing, &firstYear) {
+		t.Fatal("unknown fees must not be treated as zero-dollar fees")
+	}
+	zero := 0.0
+	row.Pricing.AnnualFee = &zero
+	row.Pricing.EnrollmentFee = &zero
+	if !confirmedAllInPricing(row, &ongoing, &firstYear) {
+		t.Fatal("explicit zero-dollar fees permit a complete all-in estimate")
+	}
+	if confirmedAllInPricing(row, nil, &firstYear) {
+		t.Fatal("missing normalized cost cannot be complete")
+	}
+}

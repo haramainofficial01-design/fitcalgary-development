@@ -352,7 +352,12 @@ func importGyms(ctx context.Context, tx pgx.Tx, cityID string, rows []json.RawMe
 		}
 		if recurring != nil {
 			ongoing, firstYear := cents(row.Derived.EstMonthlyCost), cents(row.Derived.EstFirstYearCost)
-			complete := ongoing != nil && firstYear != nil
+			complete := confirmedAllInPricing(row, ongoing, firstYear)
+			if !complete {
+				// Unknown mandatory fees are not zero-dollar fees. Keep the
+				// advertised rate, but never publish an all-in estimate.
+				ongoing, firstYear = nil, nil
+			}
 			if _, err = tx.Exec(ctx, `INSERT INTO gym_pricing(gym_id,plan_name,recurring_cents,billing_frequency,mandatory_recurring_fee_cents,mandatory_annual_fee_cents,initiation_fee_cents,ongoing_monthly_cents,first_year_monthly_cents,pricing_complete,source_url,last_verified_at,membership_type,contract_months,drop_in_cents,trial_details,notes) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`, entityID, "Membership from", *recurring, frequency, 0, valueOrZero(cents(row.Pricing.AnnualFee)), valueOrZero(cents(row.Pricing.EnrollmentFee)), ongoing, firstYear, complete, optional(validURL(row.Pricing.PriceSourceURL)), optionalTime(row.Pricing.PriceVerifiedDate), optional(row.Pricing.MembershipModel), row.Pricing.MinTermMonths, cents(row.Pricing.DropInPrice), optional(row.Pricing.FreeTrial), optional(row.Pricing.PriceNotes)); err != nil {
 				return err
 			}
@@ -363,6 +368,11 @@ func importGyms(ctx context.Context, tx pgx.Tx, cityID string, rows []json.RawMe
 		result.Gyms++
 	}
 	return nil
+}
+
+func confirmedAllInPricing(row gymRecord, ongoing, firstYear *int) bool {
+	return ongoing != nil && firstYear != nil &&
+		row.Pricing.AnnualFee != nil && row.Pricing.EnrollmentFee != nil
 }
 
 func valueOrZero(value *int) int {
