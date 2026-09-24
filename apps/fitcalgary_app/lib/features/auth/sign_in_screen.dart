@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
 import '../../app/widgets.dart';
+import '../../core/auth_service.dart';
 import '../../core/theme.dart';
 import '../gyms/gym_providers.dart';
 
@@ -25,10 +26,18 @@ class SignInScreen extends ConsumerStatefulWidget {
 class _SignInScreenState extends ConsumerState<SignInScreen> {
   bool busy = false;
   String? error;
-  Future<void> signIn() async {
+  Future<void> signIn([AuthIdentityProvider? provider]) async {
     setState(() => busy = true);
     try {
-      await ref.read(authServiceProvider).signIn();
+      final auth = ref.read(authServiceProvider);
+      switch (provider) {
+        case AuthIdentityProvider.google:
+          await auth.signInWithGoogle();
+        case AuthIdentityProvider.apple:
+          await auth.signInWithApple();
+        case null:
+          await auth.signIn();
+      }
       ref.invalidate(savedGymsProvider);
       ref.invalidate(profileProvider);
       ref.invalidate(submissionsProvider);
@@ -58,7 +67,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             children: [
               const Overline('Account'),
               const SizedBox(height: 18),
-              const Text(
+              Text(
                 'Sign in.',
                 style: TextStyle(
                   fontSize: 52,
@@ -67,10 +76,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 ),
               ),
               const SizedBox(height: 18),
-              const Text(
+              Text(
                 'Browsing is open to everyone. Sign in only to post marks, save gyms, and manage your profile.',
                 style: TextStyle(
-                  color: FitColors.muted,
+                  color: context.fitMuted,
                   height: 1.55,
                   fontSize: 16,
                 ),
@@ -92,13 +101,17 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               ),
               const SizedBox(height: 10),
               OutlinedButton.icon(
-                onPressed: busy ? null : signIn,
+                onPressed: busy
+                    ? null
+                    : () => signIn(AuthIdentityProvider.google),
                 icon: const Icon(Icons.g_mobiledata, size: 25),
                 label: const Text('CONTINUE WITH GOOGLE'),
               ),
               const SizedBox(height: 10),
               OutlinedButton.icon(
-                onPressed: busy ? null : signIn,
+                onPressed: busy
+                    ? null
+                    : () => signIn(AuthIdentityProvider.apple),
                 icon: const Icon(Icons.apple),
                 label: const Text('SIGN IN WITH APPLE'),
               ),
@@ -111,11 +124,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   ),
                 ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Continue securely to your FitCalgary account. You can also reset your password from the sign-in page.',
                 style: TextStyle(
                   fontSize: 11,
-                  color: FitColors.muted,
+                  color: context.fitMuted,
                   height: 1.5,
                 ),
               ),

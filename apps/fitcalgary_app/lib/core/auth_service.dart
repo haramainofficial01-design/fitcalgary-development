@@ -4,6 +4,14 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'build_config.dart';
 import 'watch_bridge.dart';
 
+enum AuthIdentityProvider {
+  google('google'),
+  apple('apple');
+
+  const AuthIdentityProvider(this.alias);
+  final String alias;
+}
+
 class AuthTokens {
   const AuthTokens({
     required this.accessToken,
@@ -37,7 +45,7 @@ class AuthService {
     return _restoreAndRefresh();
   }
 
-  Future<AuthTokens> signIn() async {
+  Future<AuthTokens> signIn({AuthIdentityProvider? provider}) async {
     final result = await _appAuth.authorizeAndExchangeCode(
       AuthorizationTokenRequest(
         clientId,
@@ -45,6 +53,9 @@ class AuthService {
         issuer: issuer,
         scopes: ['openid', 'profile', 'email', 'offline_access'],
         promptValues: ['login'],
+        additionalParameters: provider == null
+            ? const {}
+            : {'kc_idp_hint': provider.alias},
         allowInsecureConnections: BuildConfig.allowInsecureOidc,
       ),
     );
@@ -60,6 +71,12 @@ class AuthService {
     await _save(tokens);
     return tokens;
   }
+
+  Future<AuthTokens> signInWithGoogle() =>
+      signIn(provider: AuthIdentityProvider.google);
+
+  Future<AuthTokens> signInWithApple() =>
+      signIn(provider: AuthIdentityProvider.apple);
 
   Future<AuthTokens?> refresh() async {
     final refreshToken =
