@@ -134,7 +134,7 @@ class _LeaderboardsScreenState extends ConsumerState<LeaderboardsScreen> {
                               const SizedBox(height: 18),
                               Text(
                                 "${active['entry_count']} athletes ranked",
-                                style: const TextStyle(color: FitColors.muted),
+                                style: TextStyle(color: context.fitMuted),
                               ),
                               const SizedBox(height: 10),
                               ref
@@ -223,8 +223,8 @@ class _ResultRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: FitColors.white,
-        border: Border.all(color: FitColors.line),
+        color: context.fitSurface,
+        border: Border.all(color: context.fitLine),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -234,7 +234,7 @@ class _ResultRow extends StatelessWidget {
             height: 36,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: rank <= 3 ? FitColors.coral : FitColors.ink,
+              color: rank <= 3 ? FitColors.coral : context.fitInk,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -257,14 +257,11 @@ class _ResultRow extends StatelessWidget {
                 if (row['gym_name'] != null)
                   Text(
                     row['gym_name'] as String,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: FitColors.muted,
-                    ),
+                    style: TextStyle(fontSize: 11, color: context.fitMuted),
                   ),
                 Text(
                   verified ? 'Verified performance' : 'Unverified claim',
-                  style: const TextStyle(fontSize: 11, color: FitColors.muted),
+                  style: TextStyle(fontSize: 11, color: context.fitMuted),
                 ),
                 if (previous != null && previous != rank)
                   Text(

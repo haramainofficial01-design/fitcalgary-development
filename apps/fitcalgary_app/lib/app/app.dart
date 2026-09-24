@@ -175,6 +175,9 @@ class _FitCalgaryAppState extends State<FitCalgaryApp> {
         title: 'FitCalgary Index',
         debugShowCheckedModeBanner: false,
         theme: fitTheme(),
+        darkTheme: fitDarkTheme(),
+        themeMode: ThemeMode.system,
+        builder: _withSystemBarStyle,
         home: const Scaffold(
           backgroundColor: FitColors.ink,
           body: Center(
@@ -187,7 +190,19 @@ class _FitCalgaryAppState extends State<FitCalgaryApp> {
       title: 'FitCalgary Index',
       debugShowCheckedModeBanner: false,
       theme: fitTheme(),
+      darkTheme: fitDarkTheme(),
+      themeMode: ThemeMode.system,
+      builder: _withSystemBarStyle,
       routerConfig: configuredRouter,
+    );
+  }
+
+  Widget _withSystemBarStyle(BuildContext context, Widget? child) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: (dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
+          .copyWith(statusBarColor: Colors.transparent),
+      child: child ?? const SizedBox.shrink(),
     );
   }
 }

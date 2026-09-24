@@ -53,9 +53,9 @@ class _SignedOutProfile extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 18),
-      const Text(
+      Text(
         'Sign in to see verified results, leaderboard positions, saved gyms, submissions, and notification preferences.',
-        style: TextStyle(color: FitColors.muted, height: 1.55),
+        style: TextStyle(color: context.fitMuted, height: 1.55),
       ),
       const SizedBox(height: 28),
       FilledButton(
@@ -95,8 +95,8 @@ class _AccountFeature extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(vertical: 18),
-    decoration: const BoxDecoration(
-      border: Border(bottom: BorderSide(color: FitColors.line)),
+    decoration: BoxDecoration(
+      border: Border(bottom: BorderSide(color: context.fitLine)),
     ),
     child: Row(
       children: [
@@ -117,9 +117,9 @@ class _AccountFeature extends StatelessWidget {
               const SizedBox(height: 5),
               Text(
                 body,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: FitColors.muted,
+                  color: context.fitMuted,
                   height: 1.4,
                 ),
               ),
@@ -171,7 +171,7 @@ class _SignedInProfile extends ConsumerWidget {
             child: const Text('SAVED GYMS'),
           ),
           const SizedBox(height: 28),
-          const Divider(color: FitColors.ink),
+          Divider(color: context.fitInk),
           const SizedBox(height: 22),
           const Overline('Performance'),
           const SizedBox(height: 8),
@@ -183,7 +183,7 @@ class _SignedInProfile extends ConsumerWidget {
             ),
             data: (value) => _PerformancePanel(performance: value),
           ),
-          const Divider(color: FitColors.ink),
+          Divider(color: context.fitInk),
           const SizedBox(height: 22),
           const Overline('Submissions'),
           submissions.when(
@@ -291,7 +291,7 @@ class _ProfileIdentity extends ConsumerWidget {
       ),
       if (profile.gymName != null) ...[
         const SizedBox(height: 12),
-        Text(profile.gymName!, style: const TextStyle(color: FitColors.muted)),
+        Text(profile.gymName!, style: TextStyle(color: context.fitMuted)),
       ],
       if (profile.city != null || profile.sexCategory != null) ...[
         const SizedBox(height: 8),
@@ -304,9 +304,9 @@ class _ProfileIdentity extends ConsumerWidget {
                   ? 'Men’s division'
                   : 'Women’s division',
           ].join(' · '),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
-            color: FitColors.muted,
+            color: context.fitMuted,
             fontWeight: FontWeight.w700,
             letterSpacing: .8,
           ),
@@ -481,9 +481,9 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
               .watch(gymsProvider)
               .when(
                 loading: () => const LinearProgressIndicator(),
-                error: (_, _) => const Text(
+                error: (_, _) => Text(
                   'Gym choices are temporarily unavailable. Your current affiliation will be kept.',
-                  style: TextStyle(fontSize: 11, color: FitColors.muted),
+                  style: TextStyle(fontSize: 11, color: context.fitMuted),
                 ),
                 data: (gyms) {
                   final choices = [...gyms];
@@ -601,8 +601,8 @@ class _ResultRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(vertical: 15),
-    decoration: const BoxDecoration(
-      border: Border(bottom: BorderSide(color: FitColors.line)),
+    decoration: BoxDecoration(
+      border: Border(bottom: BorderSide(color: context.fitLine)),
     ),
     child: Row(
       children: [
@@ -620,7 +620,7 @@ class _ResultRow extends StatelessWidget {
                   if (result.division != null) result.division!,
                   if (result.rank != null) 'Rank ${result.rank}',
                 ].join(' · '),
-                style: const TextStyle(fontSize: 11, color: FitColors.muted),
+                style: TextStyle(fontSize: 11, color: context.fitMuted),
               ),
             ],
           ),
@@ -635,11 +635,11 @@ class _ResultRow extends StatelessWidget {
             const SizedBox(height: 5),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              color: result.official ? FitColors.coral : FitColors.line,
+              color: result.official ? FitColors.coral : context.fitLine,
               child: Text(
                 result.official ? 'VERIFIED' : 'COMMUNITY',
                 style: TextStyle(
-                  color: result.official ? Colors.white : FitColors.ink,
+                  color: result.official ? Colors.white : context.fitInk,
                   fontSize: 8,
                   fontWeight: FontWeight.w900,
                   letterSpacing: .8,
@@ -661,8 +661,8 @@ class _SubmissionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(vertical: 18),
-    decoration: const BoxDecoration(
-      border: Border(bottom: BorderSide(color: FitColors.line)),
+    decoration: BoxDecoration(
+      border: Border(bottom: BorderSide(color: context.fitLine)),
     ),
     child: Row(
       children: [
@@ -677,7 +677,7 @@ class _SubmissionRow extends StatelessWidget {
               const SizedBox(height: 5),
               Text(
                 'Claimed mark ${submission.claimedMetric}',
-                style: const TextStyle(fontSize: 11, color: FitColors.muted),
+                style: TextStyle(fontSize: 11, color: context.fitMuted),
               ),
               if (submission.reviewComment != null) ...[
                 const SizedBox(height: 7),

@@ -12,53 +12,72 @@ abstract final class FitColors {
 }
 
 ThemeData fitTheme() {
-  final scheme = ColorScheme.fromSeed(
-    seedColor: FitColors.coral,
-    brightness: Brightness.light,
-    surface: FitColors.paper,
-  );
+  return _fitTheme(Brightness.light);
+}
+
+ThemeData fitDarkTheme() => _fitTheme(Brightness.dark);
+
+ThemeData _fitTheme(Brightness brightness) {
+  final dark = brightness == Brightness.dark;
+  final paper = dark ? const Color(0xFF111315) : FitColors.paper;
+  final surface = dark ? const Color(0xFF1D2024) : FitColors.white;
+  final ink = dark ? const Color(0xFFF5F3ED) : FitColors.ink;
+  final muted = dark ? const Color(0xFFB9B8B2) : FitColors.muted;
+  final line = dark ? const Color(0xFF4A4D50) : FitColors.line;
+  final scheme =
+      ColorScheme.fromSeed(
+        seedColor: FitColors.coral,
+        brightness: brightness,
+        surface: surface,
+      ).copyWith(
+        onSurface: ink,
+        onSurfaceVariant: muted,
+        outline: line,
+        outlineVariant: line.withValues(alpha: .65),
+      );
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    scaffoldBackgroundColor: FitColors.paper,
+    brightness: brightness,
+    scaffoldBackgroundColor: paper,
     fontFamily: 'Helvetica Neue',
-    dividerColor: FitColors.line,
+    dividerColor: line,
     cardTheme: CardThemeData(
-      color: FitColors.white,
+      color: surface,
       surfaceTintColor: Colors.transparent,
       elevation: 3,
       shadowColor: FitColors.black.withValues(alpha: .15),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: FitColors.line.withValues(alpha: .45)),
+        side: BorderSide(color: line.withValues(alpha: .45)),
       ),
     ),
-    bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: FitColors.white,
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: surface,
       surfaceTintColor: Colors.transparent,
       showDragHandle: true,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
     ),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: FitColors.paper,
-      foregroundColor: FitColors.ink,
+    appBarTheme: AppBarTheme(
+      backgroundColor: paper,
+      foregroundColor: ink,
       elevation: 0,
       scrolledUnderElevation: 0,
     ),
-    inputDecorationTheme: const InputDecorationTheme(
+    inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: FitColors.white,
+      fillColor: surface,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-        borderSide: BorderSide(color: FitColors.ink),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+        borderSide: BorderSide(color: ink),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-        borderSide: BorderSide(color: FitColors.ink),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+        borderSide: BorderSide(color: ink),
       ),
-      focusedBorder: OutlineInputBorder(
+      focusedBorder: const OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(12)),
         borderSide: BorderSide(color: FitColors.coral, width: 2),
       ),
@@ -79,7 +98,8 @@ ThemeData fitTheme() {
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        side: const BorderSide(color: FitColors.ink),
+        side: BorderSide(color: ink),
+        foregroundColor: ink,
         minimumSize: const Size(48, 52),
         textStyle: const TextStyle(
           fontSize: 11,
@@ -89,4 +109,11 @@ ThemeData fitTheme() {
       ),
     ),
   );
+}
+
+extension FitThemeColors on BuildContext {
+  Color get fitInk => Theme.of(this).colorScheme.onSurface;
+  Color get fitMuted => Theme.of(this).colorScheme.onSurfaceVariant;
+  Color get fitLine => Theme.of(this).colorScheme.outlineVariant;
+  Color get fitSurface => Theme.of(this).colorScheme.surface;
 }

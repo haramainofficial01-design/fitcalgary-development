@@ -88,9 +88,9 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  const Text(
+                  Text(
                     'Published Calgary events and recreational clubs, backed by the FitCalgary directory.',
-                    style: TextStyle(color: FitColors.muted, height: 1.5),
+                    style: TextStyle(color: context.fitMuted, height: 1.5),
                   ),
                   const SizedBox(height: 22),
                   TextField(
@@ -189,11 +189,11 @@ class _DirectoryResults extends StatelessWidget {
       children: [
         Text(
           '$total PUBLISHED ${section == 'CLUBS' ? 'CLUBS' : 'EVENTS'}',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
             letterSpacing: 1.6,
             fontWeight: FontWeight.w800,
-            color: FitColors.muted,
+            color: context.fitMuted,
           ),
         ),
         const SizedBox(height: 12),
@@ -239,8 +239,8 @@ class _EventCard extends StatelessWidget {
     onTap: () => context.go('/events/${event.slug}'),
     child: Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: FitColors.line)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: context.fitLine)),
       ),
       child: Row(
         children: [
@@ -269,7 +269,7 @@ class _EventCard extends StatelessWidget {
                 const SizedBox(height: 7),
                 Text(
                   event.location ?? 'Calgary',
-                  style: const TextStyle(fontSize: 11, color: FitColors.muted),
+                  style: TextStyle(fontSize: 11, color: context.fitMuted),
                 ),
                 const SizedBox(height: 9),
                 Wrap(
@@ -300,8 +300,8 @@ class _ClubCard extends StatelessWidget {
     onTap: () => context.go('/clubs/${club.slug}'),
     child: Container(
       padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 4),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: FitColors.line)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: context.fitLine)),
       ),
       child: Row(
         children: [
@@ -330,7 +330,7 @@ class _ClubCard extends StatelessWidget {
                 const SizedBox(height: 7),
                 Text(
                   [club.sport, club.city].whereType<String>().join(' · '),
-                  style: const TextStyle(fontSize: 11, color: FitColors.muted),
+                  style: TextStyle(fontSize: 11, color: context.fitMuted),
                 ),
                 if (club.category != null) ...[
                   const SizedBox(height: 9),

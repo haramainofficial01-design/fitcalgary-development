@@ -10,23 +10,24 @@
 		1B04294D18406F3A9775810F /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E55C09ED7EFFF31E9C8BC35 /* KeychainStore.swift */; };
 		299833A65E5507E479494788 /* FitCalgaryWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69F003C590CBD8FCAB82DF3 /* FitCalgaryWatchApp.swift */; };
 		5B61BC6535F24ED60CE21552 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B644C527748829D367B8A6EC /* Assets.xcassets */; };
-		68C8A377C0754C829ED1564A /* AppIcon44x44@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1A466A54238B4F0CA5AF53DC /* AppIcon44x44@2x.png */; };
 		5E2651877CAEBFAD95362835 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE99A2D36CFAE0657C7E149D /* DashboardView.swift */; };
 		913FF2F57C5A68933D3D62F4 /* WatchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E0C7E87C79A7BF376CA08D /* WatchStore.swift */; };
 		ABFED850D07D02FAC0FD6487 /* WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B614061FCF7EADA723467892 /* WatchSnapshot.swift */; };
+		C57F3F3261E389087E5A7E81 /* AppIcon44x44@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C894BF235A3BA9445B44FAB0 /* AppIcon44x44@2x.png */; };
 		E1B970FA8DAF3B45AEEF55B4 /* GlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D70AA2C8A3B349741DD4B7E /* GlassCard.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		01D03A3AC55D01E8999B7FAB /* FitCalgaryWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitCalgaryWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		022AFFAF4E741EA6C9FDB4F6 /* FitCalgaryWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FitCalgaryWatch.entitlements; sourceTree = "<group>"; };
-		1A466A54238B4F0CA5AF53DC /* AppIcon44x44@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppIcon44x44@2x.png; sourceTree = "<group>"; };
 		37E0C7E87C79A7BF376CA08D /* WatchStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchStore.swift; sourceTree = "<group>"; };
+		6D546F7201959D67E2C5C2D3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7D70AA2C8A3B349741DD4B7E /* GlassCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassCard.swift; sourceTree = "<group>"; };
 		9E55C09ED7EFFF31E9C8BC35 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
 		B614061FCF7EADA723467892 /* WatchSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSnapshot.swift; sourceTree = "<group>"; };
 		B644C527748829D367B8A6EC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C69F003C590CBD8FCAB82DF3 /* FitCalgaryWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitCalgaryWatchApp.swift; sourceTree = "<group>"; };
+		C894BF235A3BA9445B44FAB0 /* AppIcon44x44@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "AppIcon44x44@2x.png"; sourceTree = "<group>"; };
 		CE99A2D36CFAE0657C7E149D /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -44,6 +45,7 @@
 			children = (
 				022AFFAF4E741EA6C9FDB4F6 /* FitCalgaryWatch.entitlements */,
 				C69F003C590CBD8FCAB82DF3 /* FitCalgaryWatchApp.swift */,
+				6D546F7201959D67E2C5C2D3 /* Info.plist */,
 				043036FE8A8131D6D1461FA8 /* Models */,
 				D279D694D34E1E976B71F3E9 /* Resources */,
 				86A57D677531BDEC680DCCE9 /* Services */,
@@ -89,7 +91,7 @@
 		D279D694D34E1E976B71F3E9 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				1A466A54238B4F0CA5AF53DC /* AppIcon44x44@2x.png */,
+				C894BF235A3BA9445B44FAB0 /* AppIcon44x44@2x.png */,
 				B644C527748829D367B8A6EC /* Assets.xcassets */,
 			);
 			path = Resources;
@@ -151,7 +153,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				68C8A377C0754C829ED1564A /* AppIcon44x44@2x.png in Resources */,
+				C57F3F3261E389087E5A7E81 /* AppIcon44x44@2x.png in Resources */,
 				5B61BC6535F24ED60CE21552 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -236,10 +238,11 @@
 		0E92AAFAD4200B0F893F9263 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				APS_ENVIRONMENT = production;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = FitCalgaryWatch/FitCalgaryWatch.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FitCalgaryWatch/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FitCalgary;
 				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = NO;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ca.fitcalgary.index;
@@ -319,10 +322,11 @@
 		C344C909BD5B1D0257EBE238 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				APS_ENVIRONMENT = development;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = FitCalgaryWatch/FitCalgaryWatch.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FitCalgaryWatch/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FitCalgary;
 				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = NO;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ca.fitcalgary.index;

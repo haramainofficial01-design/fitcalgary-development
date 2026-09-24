@@ -110,9 +110,9 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text(
+                Text(
                   'Biweekly means 26 payments each year. Mandatory fees stay visible and incomplete pricing stays honest.',
-                  style: TextStyle(height: 1.55, color: FitColors.muted),
+                  style: TextStyle(height: 1.55, color: context.fitMuted),
                 ),
                 const SizedBox(height: 24),
                 FilledButton(
@@ -157,8 +157,8 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   data: (items) => items.isEmpty
                       ? const EmptyPanel(
-                          title: 'Client event data pending',
-                          body: 'Published events will appear here through the Go service and PostgreSQL data path.',
+                          title: 'No upcoming events',
+                          body: 'Published Calgary events will appear here when dates are available.',
                         )
                       : Column(
                           children: items
@@ -224,10 +224,10 @@ class _SnapshotGrid extends StatelessWidget {
       ('YOU', 'YOUR NEXT BEST'),
     ];
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
-          left: BorderSide(color: FitColors.line),
-          top: BorderSide(color: FitColors.line),
+          left: BorderSide(color: context.fitLine),
+          top: BorderSide(color: context.fitLine),
         ),
       ),
       child: GridView.builder(
@@ -240,10 +240,10 @@ class _SnapshotGrid extends StatelessWidget {
         itemCount: values.length,
         itemBuilder: (context, index) => Container(
           padding: const EdgeInsets.all(20),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             border: Border(
-              right: BorderSide(color: FitColors.line),
-              bottom: BorderSide(color: FitColors.line),
+              right: BorderSide(color: context.fitLine),
+              bottom: BorderSide(color: context.fitLine),
             ),
           ),
           child: Column(
@@ -260,9 +260,9 @@ class _SnapshotGrid extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 values[index].$2,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 8,
-                  color: FitColors.muted,
+                  color: context.fitMuted,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.3,
                 ),
@@ -286,8 +286,8 @@ class _HomeEvent extends StatelessWidget {
       onTap: () => context.go('/events'),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 18),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: FitColors.line)),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: context.fitLine)),
         ),
         child: Row(
           children: [
@@ -311,7 +311,7 @@ class _HomeEvent extends StatelessWidget {
                 ],
               ),
             ),
-            Container(width: 1, height: 56, color: FitColors.ink),
+            Container(width: 1, height: 56, color: context.fitInk),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -324,10 +324,7 @@ class _HomeEvent extends StatelessWidget {
                   const SizedBox(height: 5),
                   Text(
                     event.location ?? 'Calgary',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: FitColors.muted,
-                    ),
+                    style: TextStyle(fontSize: 10, color: context.fitMuted),
                   ),
                 ],
               ),

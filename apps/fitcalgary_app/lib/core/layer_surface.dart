@@ -30,12 +30,14 @@ class FitLayerSurface extends StatelessWidget {
     final radius = BorderRadius.circular(floating ? (apple ? 28 : 22) : 18);
     final content = DecoratedBox(
       decoration: BoxDecoration(
-        color: FitColors.white.withValues(alpha: translucent ? .78 : 1),
+        color: context.fitSurface.withValues(alpha: translucent ? .78 : 1),
         borderRadius: radius,
         border: Border.all(
           color: media.highContrast
-              ? FitColors.ink
-              : Colors.white.withValues(alpha: floating ? .85 : .65),
+              ? context.fitInk
+              : (Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withValues(alpha: floating ? .18 : .12)
+                    : Colors.white.withValues(alpha: floating ? .85 : .65)),
         ),
       ),
       child: child,

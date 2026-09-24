@@ -150,10 +150,7 @@ class PricingPlans extends StatelessWidget {
                 if (plan['source_url'] != null)
                   SelectableText(
                     'Source: ${plan['source_url']}',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: FitColors.muted,
-                    ),
+                    style: TextStyle(fontSize: 11, color: context.fitMuted),
                   ),
               ],
             ),

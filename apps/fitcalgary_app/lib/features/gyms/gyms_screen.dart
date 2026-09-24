@@ -78,9 +78,9 @@ class _GymsScreenState extends ConsumerState<GymsScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Advertised rates and normalized all-in monthly cost, side by side.',
-                    style: TextStyle(color: FitColors.muted, height: 1.5),
+                  Text(
+                    'Compare advertised rates. All-in costs appear when mandatory fees are confirmed.',
+                    style: TextStyle(color: context.fitMuted, height: 1.5),
                   ),
                   const SizedBox(height: 22),
                   TextField(
@@ -232,9 +232,9 @@ class _GymsScreenState extends ConsumerState<GymsScreen> {
                           Container(
                             key: ValueKey('gym-${gym.slug}'),
                             padding: const EdgeInsets.symmetric(vertical: 18),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               border: Border(
-                                bottom: BorderSide(color: FitColors.line),
+                                bottom: BorderSide(color: context.fitLine),
                               ),
                             ),
                             child: Column(

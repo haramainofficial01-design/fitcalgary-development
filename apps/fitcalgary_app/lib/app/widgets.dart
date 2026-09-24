@@ -29,13 +29,13 @@ class BrandHeader extends StatelessWidget {
                 ),
               ),
             ),
-            const Text(
+            Text(
               'INDEX',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 8,
                 letterSpacing: 2.4,
-                color: FitColors.muted,
+                color: context.fitMuted,
               ),
             ),
           ],
@@ -75,8 +75,8 @@ class BrandHeader extends StatelessWidget {
             horizontal: compact ? 12 : 20,
             vertical: 14,
           ),
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: FitColors.ink)),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: context.fitInk)),
           ),
           child: largeText && showActions
               ? Column(
@@ -106,7 +106,11 @@ class Overline extends StatelessWidget {
       fontSize: 10,
       fontWeight: FontWeight.w800,
       letterSpacing: 2,
-      color: light ? const Color(0xFFE07A69) : FitColors.coralDark,
+      color: light
+          ? const Color(0xFFE07A69)
+          : Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFFF08A79)
+          : FitColors.coralDark,
     ),
   );
 }
@@ -138,7 +142,7 @@ class EmptyPanel extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     width: double.infinity,
     padding: const EdgeInsets.all(24),
-    decoration: BoxDecoration(border: Border.all(color: FitColors.line)),
+    decoration: BoxDecoration(border: Border.all(color: context.fitLine)),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -147,7 +151,7 @@ class EmptyPanel extends StatelessWidget {
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
-        Text(body, style: const TextStyle(color: FitColors.muted, height: 1.5)),
+        Text(body, style: TextStyle(color: context.fitMuted, height: 1.5)),
       ],
     ),
   );

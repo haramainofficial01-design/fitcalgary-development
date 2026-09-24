@@ -128,7 +128,7 @@ export default function AdminPage() {
         <div className="admin-user"><span>{session.displayName}</span><button onClick={async () => { await fetch('/api/auth/logout', { method: 'POST' }); location.href = '/'; }}>Sign out</button></div>
       </aside>
       <section className="admin-main">
-        <header><div><p className="overline">Operations console</p><h1>{sections.find(([key]) => key === active)?.[1]}</h1></div><span className="connection-chip"><i /> Authoritative API</span></header>
+        <header><div><p className="overline">Operations console</p><h1>{sections.find(([key]) => key === active)?.[1]}</h1></div><span className="connection-chip"><i /> Connected</span></header>
         {notice && <div className="admin-notice">{notice}</div>}
         {error && <div className="admin-error"><strong>Could not load this area.</strong><p>{error}</p><button onClick={() => void load(active, remoteSearch, page)}>Retry</button></div>}
         {busy ? <div className="admin-loading"><div className="loading-bar" /></div> : !error && (
@@ -152,7 +152,7 @@ export default function AdminPage() {
 }
 
 function AdminGate({ title, action }: { title: string; action?: string }) {
-  return <main className="admin-gate"><div><a className="wordmark" href="/"><strong>FITCALGARY</strong><span>ADMIN</span></a><h1>{title}</h1>{action && <a className="primary-button" href={action}>Sign in securely →</a>}<p>All administrator permissions are enforced again by the Go API. UI visibility is never treated as authorization.</p></div></main>;
+  return <main className="admin-gate"><div><a className="wordmark" href="/"><strong>FITCALGARY</strong><span>ADMIN</span></a><h1>{title}</h1>{action && <a className="primary-button" href={action}>Sign in securely →</a>}<p>Administrator access is protected by your assigned FitCalgary permissions.</p></div></main>;
 }
 
 function AdminContent({ active, data, reference, search, setSearch, onChanged }: { active: string; data: Json; reference: Json; search: string; setSearch: (value: string) => void; onChanged: (message: string) => Promise<void> }) {
@@ -162,7 +162,7 @@ function AdminContent({ active, data, reference, search, setSearch, onChanged }:
   const visible = rows.filter((row) => JSON.stringify(row).toLowerCase().includes(search.toLowerCase()));
   return <div className="admin-content">
     <div className="admin-toolbar"><input aria-label={`Search ${active}`} value={search} onChange={(event) => setSearch(event.target.value)} placeholder={`Search ${active}`} />{contentFields[active] && <ContentEditor area={active} reference={reference} onChanged={onChanged}/ >}{['disciplines','divisions','leaderboards'].includes(active) && <CompetitionForm area={active} reference={reference} onChanged={onChanged} />}</div>
-    {visible.length ? <AdminTable rows={visible} actions={row => <AdminRowActions area={active} row={row} reference={reference} onChanged={onChanged}/>} /> : <div className="admin-empty"><h2>No records returned</h2><p>Client-approved content can be added here. Empty production data is never replaced with fabricated records.</p></div>}
+    {visible.length ? <AdminTable rows={visible} actions={row => <AdminRowActions area={active} row={row} reference={reference} onChanged={onChanged}/>} /> : <div className="admin-empty"><h2>No records found</h2><p>Adjust the search or add content when it is ready to publish.</p></div>}
   </div>;
 }
 
@@ -218,7 +218,7 @@ function Overview({ data }: { data: Json }) {
     ['Upcoming events', data.upcoming_events],
     ['Failed notifications', data.failed_notifications],
   ];
-  return <div className="kpi-grid">{cards.map(([label, value]) => <article key={String(label)}><span>{label}</span><strong>{String(value ?? '—')}</strong><p>Live database value</p></article>)}</div>;
+  return <div className="kpi-grid">{cards.map(([label, value]) => <article key={String(label)}><span>{label}</span><strong>{String(value ?? '—')}</strong><p>Current total</p></article>)}</div>;
 }
 
 function AdminTable({ rows, actions }: { rows: Json[]; actions?: (row: Json) => React.ReactNode }) {

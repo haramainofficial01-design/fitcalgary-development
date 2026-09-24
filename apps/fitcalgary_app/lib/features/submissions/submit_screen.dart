@@ -390,9 +390,9 @@ class _SubmitScreenState extends ConsumerState<SubmitScreen> {
                                 : 'SELECT PRIVATE GPX FILE'),
                       ),
                     ),
-                    const Text(
+                    Text(
                       'Evidence is private, limited to authorized reviewers, and removed under the retention policy.',
-                      style: TextStyle(fontSize: 12, color: FitColors.muted),
+                      style: TextStyle(fontSize: 12, color: context.fitMuted),
                     ),
                   ],
                   if (message != null)

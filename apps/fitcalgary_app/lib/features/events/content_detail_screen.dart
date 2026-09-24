@@ -200,8 +200,8 @@ class _Facts extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
-      color: FitColors.paper,
-      border: Border.all(color: FitColors.line),
+      color: context.fitSurface,
+      border: Border.all(color: context.fitLine),
       borderRadius: BorderRadius.circular(14),
     ),
     child: Column(children: children),
