@@ -271,9 +271,15 @@ struct EventsView: View {
         ForEach(store.snapshot.events) { item in
           VStack(alignment: .leading, spacing: 3) {
             Text(item.name).font(.headline)
-            Text(item.startAt, format: .dateTime.month(.abbreviated).day())
-              .font(.caption.weight(.semibold))
-              .foregroundStyle(FitWatchTheme.coral)
+            if let date = item.displayDate {
+              Text(date, format: .dateTime.month(.abbreviated).day())
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(FitWatchTheme.coral)
+            } else {
+              Text("Date to be confirmed")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            }
             if let location = item.location, !location.isEmpty {
               Label(location, systemImage: "mappin")
                 .font(.caption2)

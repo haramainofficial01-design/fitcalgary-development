@@ -8,8 +8,8 @@ final class WatchStore: NSObject, ObservableObject {
   @Published private(set) var isLoading = false
   @Published private(set) var message: String?
   var isConnected: Bool { KeychainStore.read(account: "accessToken") != nil }
-  private let decoder: JSONDecoder = { let value = JSONDecoder(); value.dateDecodingStrategy = .iso8601; return value }()
-  private let encoder: JSONEncoder = { let value = JSONEncoder(); value.dateEncodingStrategy = .iso8601; return value }()
+  private let decoder = WatchSnapshotCodec.decoder()
+  private let encoder = WatchSnapshotCodec.encoder()
   override init() { super.init(); restore(); if WCSession.isSupported() { WCSession.default.delegate = self; WCSession.default.activate() } }
   @MainActor func refresh() async {
     guard let token = KeychainStore.read(account: "accessToken"), let base = KeychainStore.read(account: "apiURL"), let url = URL(string: "\(base)/watch/summary") else { message = "Open FitCalgary on iPhone to connect your account."; return }
