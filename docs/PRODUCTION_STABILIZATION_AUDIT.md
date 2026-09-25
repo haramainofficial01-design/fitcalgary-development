@@ -1,6 +1,6 @@
 # Production stabilization audit
 
-Last updated: 2026-09-24
+Last updated: 2026-09-25
 
 This is the working evidence register for the post-release FitCalgary V1
 stabilization pass. A status of `PASS` records an executed check. Simulator and
@@ -12,7 +12,7 @@ emulator results are not physical-device verification.
 |---|---|---|---|---|
 | AUTH-001 | P1 | Registration reaches an email-delivery error in production. | The live Keycloak realm requires verified email, but its SMTP configuration is empty. Railway logs record `Invalid sender address 'null'`. | `BLOCKED_EXTERNAL`: configure a verified SMTP provider/sender, then receive and open a real verification message. Email verification is intentionally still enabled. |
 | AUTH-002 | P1 | Google sign-in fails in production. | The live Google identity provider is disabled and has no client ID or secret. | Mobile now routes directly to the Google broker alias and has regression coverage. `BLOCKED_EXTERNAL` for Google OAuth credentials and live-provider verification. |
-| AUTH-003 | P1 | Apple sign-in fails in production. | The realm import used unsupported provider ID `apple`; the live provider is absent and Apple credentials are not available. | Realm source now uses Keycloak's standards-based OIDC provider with Apple's documented endpoints. Mobile routes directly to the Apple alias. `BLOCKED_EXTERNAL` for Apple Services ID/key/team material and live-provider verification. |
+| AUTH-003 | P1 | Apple sign-in fails in production. | The realm import used unsupported provider ID `apple`; the live provider is absent and Apple credentials are not available. | Realm source now uses Keycloak's standards-based OIDC provider with Apple's documented endpoints. Mobile routes directly to the Apple alias. The Apple Developer account has the existing FitCalgary App ID with Sign in with Apple enabled and a newly created Services ID, `ca.fitcalgary.index.auth`. That Services ID's web capability, return URL, signing key and live Keycloak broker remain unconfigured; no Apple login is verified. |
 | AUTH-004 | P2 | Google and Apple buttons opened the generic Keycloak sign-in page rather than their selected providers. | Both buttons invoked the same provider-neutral method. | Fixed with `kc_idp_hint`; Flutter regression tests pass. |
 | WEB-001 | P1 | Live profile and admin sign-in returned HTTP 503. | The Cloudflare Worker retained its encrypted session secrets but the latest deployment had no runtime bindings for the public URL, API URL, issuer or web client ID. | Fixed by restoring the four production bindings. Profile and admin entry points now return a PKCE authorization redirect to the live Keycloak realm. |
 | WATCH-001 | P2 | The standalone Watch project could not be opened by Xcode. | The generated project file was invalid, while the embedded Runner target still compiled. | Regenerated from the checked-in XcodeGen specification; standalone and embedded Watch targets now build. |
@@ -54,6 +54,12 @@ emulator results are not physical-device verification.
 - Email registration, password-reset delivery, Google login and Apple login are
   not production verified until the corresponding externally controlled
   provider configuration is supplied and tested end to end.
+- The Apple Developer Services ID exists but is not yet a working Sign in with
+  Apple integration. Its web domain/return URL and a signing key must be
+  configured before enabling the Keycloak broker. The currently open Google
+  Cloud project is unrelated to FitCalgary and must not be modified to fill the
+  missing FitCalgary OAuth credentials. No authorized email provider or sender
+  domain has yet been confirmed for Keycloak SMTP.
 - iOS, Android and watchOS physical-device verification must not be inferred
   from simulator or emulator results.
 - The Client GitHub repository is outside this stabilization work and remains
