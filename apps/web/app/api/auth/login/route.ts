@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { oidcConfig, pkceChallenge, randomUrlSafe, seal, transactionCookie } from '@/lib/server-auth';
+import { oidcConfig, pkceChallenge, randomUrlSafe, safeReturnTo, seal, transactionCookie } from '@/lib/server-auth';
 
 export async function GET(request: NextRequest) {
   try {
     const config = oidcConfig();
     const verifier = randomUrlSafe(64);
     const state = randomUrlSafe();
-    const requested = request.nextUrl.searchParams.get('returnTo') ?? '/';
-    const returnTo = requested.startsWith('/') && !requested.startsWith('//') ? requested : '/';
+    const returnTo = safeReturnTo(request.nextUrl.searchParams.get('returnTo'));
     const transaction = await seal({ verifier, state, returnTo }, config.cookieSecret);
     const authorization = new URL(`${config.issuer}/protocol/openid-connect/auth`);
     authorization.search = new URLSearchParams({
@@ -29,7 +28,7 @@ export async function GET(request: NextRequest) {
       maxAge: 600,
     });
     return response;
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Authentication unavailable' }, { status: 503 });
+  } catch {
+    return NextResponse.json({ error: 'Sign-in is temporarily unavailable. Please try again shortly.' }, { status: 503 });
   }
 }

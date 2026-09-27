@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { oidcConfig, open, setSession, transactionCookie } from '@/lib/server-auth';
+import { oidcConfig, open, parseTokenResponse, setSession, transactionCookie } from '@/lib/server-auth';
 
 type Transaction = { verifier: string; state: string; returnTo: string };
 
@@ -28,15 +28,19 @@ export async function GET(request: NextRequest) {
     cache: 'no-store',
   });
   if (!tokenResponse.ok) return failure('token_exchange_failed');
-  const tokens = (await tokenResponse.json()) as Record<string, unknown>;
-  if (!tokens.access_token) return failure('missing_access_token');
+  let tokens;
+  try {
+    tokens = parseTokenResponse(await tokenResponse.json());
+  } catch {
+    return failure('invalid_token_response');
+  }
   const response = NextResponse.redirect(`${config.publicUrl}${transaction.returnTo}`);
   response.cookies.delete(transactionCookie);
   await setSession(response, {
-    accessToken: String(tokens.access_token),
-    refreshToken: tokens.refresh_token ? String(tokens.refresh_token) : undefined,
-    idToken: tokens.id_token ? String(tokens.id_token) : undefined,
-    expiresAt: Date.now() + Number(tokens.expires_in ?? 300) * 1000,
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    idToken: tokens.idToken,
+    expiresAt: Date.now() + tokens.expiresIn * 1000,
   });
   return response;
 }

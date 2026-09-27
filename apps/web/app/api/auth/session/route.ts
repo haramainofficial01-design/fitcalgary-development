@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { oidcConfig, readSession, refreshSession, setSession } from '@/lib/server-auth';
+import { oidcConfig, readSession, refreshSession, SessionExpiredError, setSession } from '@/lib/server-auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,7 +24,10 @@ export async function GET(request: NextRequest) {
     });
     if (refreshed.changed) await setSession(response, refreshed.session);
     return response;
-  } catch {
+  } catch (error) {
+    if (!(error instanceof SessionExpiredError)) {
+      return NextResponse.json({ authenticated: false, error: 'Account service temporarily unavailable' }, { status: 503 });
+    }
     const response = NextResponse.json({ authenticated: false }, { status: 401 });
     response.cookies.delete('fitcalgary_session');
     return response;

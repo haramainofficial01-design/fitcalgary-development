@@ -59,7 +59,7 @@ class AuthService {
         allowInsecureConnections: BuildConfig.allowInsecureOidc,
       ),
     );
-    if (result.accessToken == null) {
+    if (result.accessToken == null || result.accessToken!.isEmpty) {
       throw StateError('Identity provider returned no access token');
     }
     final tokens = AuthTokens(
@@ -92,7 +92,7 @@ class AuthService {
         allowInsecureConnections: BuildConfig.allowInsecureOidc,
       ),
     );
-    if (result.accessToken == null) {
+    if (result.accessToken == null || result.accessToken!.isEmpty) {
       await signOut();
       return null;
     }

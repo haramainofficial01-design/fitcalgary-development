@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitcalgary_app/core/auth_service.dart';
 
 class _FakeAppAuth extends FlutterAppAuth {
+  _FakeAppAuth({this.accessToken = 'access'});
+
+  final String accessToken;
   AuthorizationTokenRequest? lastRequest;
 
   @override
@@ -13,7 +16,7 @@ class _FakeAppAuth extends FlutterAppAuth {
   ) async {
     lastRequest = request;
     return AuthorizationTokenResponse(
-      'access',
+      accessToken,
       'refresh',
       DateTime.now().add(const Duration(hours: 1)),
       'id',
@@ -96,5 +99,16 @@ void main() {
     await service.signInWithApple();
 
     expect(appAuth.lastRequest?.additionalParameters?['kc_idp_hint'], 'apple');
+  });
+
+  test('an empty provider access token is never stored as a session', () async {
+    final storage = _MemoryStorage();
+    final service = AuthService(
+      appAuth: _FakeAppAuth(accessToken: ''),
+      storage: storage,
+    );
+
+    await expectLater(service.signIn(), throwsStateError);
+    expect(storage.values, isEmpty);
   });
 }

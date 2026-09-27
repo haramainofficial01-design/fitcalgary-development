@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { oidcConfig, readSession, refreshSession, setSession } from '@/lib/server-auth';
+import { oidcConfig, readSession, refreshSession, SessionExpiredError, setSession } from '@/lib/server-auth';
 import { trustedMutation } from '@/lib/request-security';
 
 async function proxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
@@ -36,7 +36,12 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
     });
     if (refreshed.changed) await setSession(response, refreshed.session);
     return response;
-  } catch {
+  } catch (error) {
+    if (error instanceof SessionExpiredError) {
+      const response = NextResponse.json({ error: { code: 'SESSION_EXPIRED', message: 'Your session has expired. Please sign in again.' } }, { status: 401 });
+      response.cookies.delete('fitcalgary_session');
+      return response;
+    }
     return NextResponse.json(
       { error: { code: 'WEB_SESSION_ERROR', message: 'Your session or the service is unavailable. Please sign in again or retry shortly.' } },
       { status: 503 },

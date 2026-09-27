@@ -10,6 +10,45 @@ export type WebSession = {
   expiresAt: number;
 };
 
+export class SessionExpiredError extends Error {
+  constructor() {
+    super('Session expired');
+  }
+}
+
+export function safeReturnTo(value: string | null): string {
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return '/';
+  for (let index = 0; index < value.length; index++) {
+    const code = value.charCodeAt(index);
+    if (code < 32 || code === 127) return '/';
+  }
+  return value;
+}
+
+export function parseTokenResponse(value: unknown): {
+  accessToken: string;
+  refreshToken?: string;
+  idToken?: string;
+  expiresIn: number;
+} {
+  if (!value || typeof value !== 'object') throw new Error('Authentication response invalid');
+  const tokens = value as Record<string, unknown>;
+  const accessToken = tokens.access_token;
+  const expiresIn = tokens.expires_in === undefined ? 300 : tokens.expires_in;
+  if (typeof accessToken !== 'string' || !accessToken ||
+      typeof expiresIn !== 'number' || !Number.isFinite(expiresIn) || expiresIn <= 0 ||
+      (tokens.refresh_token !== undefined && typeof tokens.refresh_token !== 'string') ||
+      (tokens.id_token !== undefined && typeof tokens.id_token !== 'string')) {
+    throw new Error('Authentication response invalid');
+  }
+  return {
+    accessToken,
+    refreshToken: tokens.refresh_token as string | undefined,
+    idToken: tokens.id_token as string | undefined,
+    expiresIn,
+  };
+}
+
 type OidcConfig = {
   issuer: string;
   clientId: string;
@@ -99,7 +138,7 @@ export async function readSession(request: NextRequest): Promise<WebSession | nu
 
 export async function refreshSession(session: WebSession): Promise<{ session: WebSession; changed: boolean }> {
   if (session.expiresAt > Date.now() + 60_000) return { session, changed: false };
-  if (!session.refreshToken) throw new Error('Session expired');
+  if (!session.refreshToken) throw new SessionExpiredError();
   const config = oidcConfig();
   const body = new URLSearchParams({
     grant_type: 'refresh_token',
@@ -113,15 +152,16 @@ export async function refreshSession(session: WebSession): Promise<{ session: We
     body,
     cache: 'no-store',
   });
-  if (!response.ok) throw new Error('Session refresh failed');
-  const tokens = (await response.json()) as Record<string, unknown>;
+  if (response.status === 400 || response.status === 401) throw new SessionExpiredError();
+  if (!response.ok) throw new Error('Session refresh unavailable');
+  const tokens = parseTokenResponse(await response.json());
   return {
     changed: true,
     session: {
-      accessToken: String(tokens.access_token),
-      refreshToken: String(tokens.refresh_token ?? session.refreshToken),
-      idToken: tokens.id_token ? String(tokens.id_token) : session.idToken,
-      expiresAt: Date.now() + Number(tokens.expires_in ?? 300) * 1000,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken ?? session.refreshToken,
+      idToken: tokens.idToken ?? session.idToken,
+      expiresAt: Date.now() + tokens.expiresIn * 1000,
     },
   };
 }

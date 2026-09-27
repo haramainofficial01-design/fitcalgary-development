@@ -1,6 +1,6 @@
 # Production stabilization audit
 
-Last updated: 2026-09-25
+Last updated: 2026-09-27
 
 This is the working evidence register for the post-release FitCalgary V1
 stabilization pass. A status of `PASS` records an executed check. Simulator and
@@ -14,7 +14,9 @@ emulator results are not physical-device verification.
 | AUTH-002 | P1 | Google sign-in fails in production. | The live Google identity provider is disabled and has no client ID or secret. | Mobile now routes directly to the Google broker alias and has regression coverage. `BLOCKED_EXTERNAL` for Google OAuth credentials and live-provider verification. |
 | AUTH-003 | P1 | Apple sign-in fails in production. | The realm import used unsupported provider ID `apple`; the live provider is absent and Apple credentials are not available. | Realm source now uses Keycloak's standards-based OIDC provider with Apple's documented endpoints. Mobile routes directly to the Apple alias. The Apple Developer account has the existing FitCalgary App ID with Sign in with Apple enabled and a newly created Services ID, `ca.fitcalgary.index.auth`. That Services ID's web capability, return URL, signing key and live Keycloak broker remain unconfigured; no Apple login is verified. |
 | AUTH-004 | P2 | Google and Apple buttons opened the generic Keycloak sign-in page rather than their selected providers. | Both buttons invoked the same provider-neutral method. | Fixed with `kc_idp_hint`; Flutter regression tests pass. |
+| AUTH-005 | P1 | A protected mobile API request could fail to settle when refreshing an expired session throws; a public directory request could also fail before reaching the API during an identity outage. | The Dio interceptors awaited identity refresh without handling exceptions, including before public requests. | The original 401 now completes if refresh fails, while public reads can proceed without a token. Empty provider access tokens are also rejected before persistence. Three regression tests, the 28-test Flutter suite and static analysis pass. Replacement mobile binaries are required; this is **not yet store verified**. |
 | WEB-001 | P1 | Live profile and admin sign-in returned HTTP 503. | The Cloudflare Worker retained its encrypted session secrets but the latest deployment had no runtime bindings for the public URL, API URL, issuer or web client ID. | Fixed by restoring the four production bindings. Profile and admin entry points now return a PKCE authorization redirect to the live Keycloak realm. |
+| WEB-002 | P2 | A malformed HTTP 200 token response could produce the literal web access token `undefined`; sign-in configuration failures could expose internal error text; an identity-provider outage could unnecessarily clear a valid session. | The callback and refresh paths coerced absent token fields to strings, the login route returned the caught exception message, and session errors were not distinguished from service outages. | Token responses now require a nonempty access token and valid expiry before a session is stored; sign-in returns a safe message. Return paths reject cross-origin and control-character inputs. Revoked refresh tokens clear sessions while temporary provider outages preserve them. Eight web-auth tests, lint, type-check and production build pass locally. **Not yet deployed.** |
 | WATCH-001 | P2 | The standalone Watch project could not be opened by Xcode. | The generated project file was invalid, while the embedded Runner target still compiled. | Regenerated from the checked-in XcodeGen specification; standalone and embedded Watch targets now build. |
 | WATCH-002 | P2 | Watch home provided only a terse rank and three plain links, with no dedicated rankings experience or clear cached/offline state. | Initial companion shell was intentionally minimal. | Added real-data home summaries, dedicated results/rankings/review/event views, intentional empty states, clearer connectivity feedback and accessibility labels. |
 | WATCH-003 | P1 | A Watch account with nonempty data could fail to load its entire summary. | The Go API emits snake-case result fields and fractional RFC 3339 timestamps, but the Watch decoder expected camel-case fields and basic ISO 8601 dates. Date-only events also have no `start_at`. | The Watch decoder now accepts the real API field names and timestamp precision; the event model accepts a verified day without inventing a time. An API-shaped nonempty snapshot and cache round-trip pass locally. Standalone and embedded Watch simulator builds pass; the logged-out Watch launches. A production authenticated Watch session remains unverified until sign-in works. |
@@ -35,7 +37,7 @@ emulator results are not physical-device verification.
 | Web authentication entry | PASS | Profile and admin sign-in return a PKCE authorization redirect to the production realm; anonymous admin proxy access returns 401. Full authenticated completion still depends on working account/provider credentials. |
 | Approved catalogue | PASS | Live API totals: 273 gyms, 743 clubs, 531 competitions. |
 | Flutter static analysis | PASS | Flutter 3.47.2 reports no issues after the broker-routing fix. |
-| Flutter tests | PASS | 25 tests pass, including Google/Apple provider-hint and event-status copy tests. |
+| Flutter tests | PASS | 28 tests pass, including Google/Apple provider-hint, event-status copy, failed-refresh handling, empty-token rejection and guest browsing through an identity outage. |
 | Go tests | PASS | All non-external Go packages pass; external integration tests remain explicitly skipped without isolated resources. |
 | Go vet and production build | PASS | `go vet ./...` and `go build ./cmd/api` pass. |
 | Apple Watch compile | PASS | Refined source builds through both the standalone XcodeGen project and the Watch target embedded in Runner. |
@@ -43,10 +45,12 @@ emulator results are not physical-device verification.
 | Android emulator | PASS | Production-configured debug APK built, installed and launched on Pixel 9 API 36 emulator; onboarding to home flow exercised. This is not a signed store build. |
 | Pricing correction | PASS | Fresh PostgreSQL 17 import yields `6 complete / 114 incomplete` price rows; migration tested against intentionally stale rows, then applied to backed-up Railway PostgreSQL 18 with the same result. Live public gym filter returns six complete prices, 267 incomplete gym listings; API readiness remains 200. |
 | Web deployment | PASS | Current web build deployed to Cloudflare Workers; home, gyms, events, leaderboards, privacy, support and account-deletion pages return HTTPS 200. Profile/admin authentication entry returns 307 to production OIDC and anonymous admin API returns 401. |
+| Web session validation | LOCAL PASS; PRODUCTION PENDING | Eight web-auth tests include malformed token responses, return-path rejection and revoked-versus-unavailable refresh handling; lint, TypeScript checking and production build pass. The corrected web build has not been deployed to the live Worker. |
 | Event copy deployment | PASS | Cloudflare Worker version `8f73360c-c8ab-4e79-9f2a-02afb12c75ef` serves the corrected events heading and status labels. Live home/events/public-events return 200; admin authentication entry remains 307 and API readiness 200. |
 | Competition date recovery | LOCAL PASS; PRODUCTION PENDING | Source scan found 3 exact single-day dates in 531 records. Local PostgreSQL migration 0010 yielded 3 dated and 528 undated records; real local API queries returned 3 upcoming, 528 undated and correct month filtering. Flutter/Go/web regression checks pass. The live API has not received migration 0010. |
 | Competition URL audit | LOCAL PASS; PRODUCTION PENDING | Of 531 records, 509 contained a website string, 506 were syntactically valid and 22 were absent. A bounded HTTP check covered 395 unique public URLs; six record links were confirmed 404 after GET recheck. 67 other requests were unavailable or inconclusive, not classified as broken. Local migration 0011 hid all six confirmed links. |
 | Watch nonempty-data decoding | LOCAL PASS; PRODUCTION PENDING | `WatchSnapshotCodecSmoke.swift` decodes representative Go-shaped rankings, approved results, submissions, fractional timestamps and a date-only event, then reloads the cache. Standalone Watch and embedded iOS/Watch simulator builds pass; the Watch app launches in the simulator. Real account data and physical hardware remain unverified. |
+| Stabilization smoke | PASS, LIMITED | Live web home, gyms, clubs, events and leaderboards return HTTPS 200; API health/readiness and OIDC discovery return 200; anonymous admin API returns 401. These are reachability and access-boundary checks, not authenticated end-to-end proof. |
 | Content quality | REVIEW REQUIRED | Supplied source has 273 gyms, 743 clubs and 531 competitions. It includes 153 gyms without an advertised membership price, 546 clubs without a street address, 223 clubs without a website, 151 competition date fields missing or explicitly not fetched, and 166 low-confidence competition records. These are source-data gaps, not facts to invent. |
 
 ## Verification boundaries
@@ -58,8 +62,9 @@ emulator results are not physical-device verification.
   Apple integration. Its web domain/return URL and a signing key must be
   configured before enabling the Keycloak broker. The currently open Google
   Cloud project is unrelated to FitCalgary and must not be modified to fill the
-  missing FitCalgary OAuth credentials. No authorized email provider or sender
-  domain has yet been confirmed for Keycloak SMTP.
+  missing FitCalgary OAuth credentials. A Resend account is now signed in on
+  this Mac, but a verified sending domain, SMTP credential and live email
+  receipt have not been confirmed for Keycloak.
 - iOS, Android and watchOS physical-device verification must not be inferred
   from simulator or emulator results.
 - The Client GitHub repository is outside this stabilization work and remains

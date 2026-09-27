@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { open, pkceChallenge, seal } from '../lib/server-auth.ts';
+import { open, parseTokenResponse, pkceChallenge, refreshSession, safeReturnTo, seal, SessionExpiredError } from '../lib/server-auth.ts';
 import { trustedMutation } from '../lib/request-security.ts';
 import { productLink } from '../lib/product-link.ts';
 
@@ -56,4 +56,53 @@ test('web session is encrypted, authenticated, and bound to its secret', async (
 test('PKCE challenge matches the RFC 7636 S256 example', async () => {
   const verifier = 'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk';
   assert.equal(await pkceChallenge(verifier), 'E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM');
+});
+
+test('sign-in return paths cannot escape the website origin', () => {
+  assert.equal(safeReturnTo('/profile?tab=results'), '/profile?tab=results');
+  for (const value of [null, '', 'https://evil.example', '//evil.example', '/\\evil.example', '/profile\nLocation: https://evil.example']) {
+    assert.equal(safeReturnTo(value), '/');
+  }
+});
+
+test('token exchange and refresh reject malformed successful responses', () => {
+  assert.deepEqual(parseTokenResponse({ access_token: 'signed-token', expires_in: 300 }), {
+    accessToken: 'signed-token', expiresIn: 300, refreshToken: undefined, idToken: undefined,
+  });
+  for (const value of [null, {}, { expires_in: 300 }, { access_token: '', expires_in: 300 },
+    { access_token: 'signed-token', expires_in: '300' }, { access_token: 'signed-token', expires_in: -1 },
+    { access_token: 'signed-token', refresh_token: 42 }]) {
+    assert.throws(() => parseTokenResponse(value), /Authentication response invalid/);
+  }
+});
+
+test('missing refresh tokens are expired sessions, not service outages', async () => {
+  await assert.rejects(
+    refreshSession({ accessToken: 'expired', expiresAt: 0 }),
+    SessionExpiredError,
+  );
+});
+
+test('revoked refresh tokens expire sessions while provider outages do not', async () => {
+  const originalFetch = globalThis.fetch;
+  const names = ['OIDC_ISSUER', 'OIDC_WEB_CLIENT_ID', 'WEB_PUBLIC_URL', 'API_BASE_URL', 'SESSION_COOKIE_SECRET'];
+  const original = Object.fromEntries(names.map(name => [name, process.env[name]]));
+  try {
+    process.env.OIDC_ISSUER = 'https://identity.example';
+    process.env.OIDC_WEB_CLIENT_ID = 'fitcalgary-web';
+    process.env.WEB_PUBLIC_URL = 'https://fitcalgary.example';
+    process.env.API_BASE_URL = 'https://api.example';
+    process.env.SESSION_COOKIE_SECRET = 'unit-test-secret';
+    const session = { accessToken: 'expired', refreshToken: 'old-refresh', expiresAt: 0 };
+    globalThis.fetch = async () => new Response(null, { status: 400 });
+    await assert.rejects(refreshSession(session), SessionExpiredError);
+    globalThis.fetch = async () => new Response(null, { status: 503 });
+    await assert.rejects(refreshSession(session), /Session refresh unavailable/);
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const name of names) {
+      if (original[name] === undefined) delete process.env[name];
+      else process.env[name] = original[name];
+    }
+  }
 });

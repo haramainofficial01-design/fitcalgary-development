@@ -16,24 +16,32 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final token = await auth.current();
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer ${token.accessToken}';
+          try {
+            final token = await auth.current();
+            if (token != null) {
+              options.headers['Authorization'] = 'Bearer ${token.accessToken}';
+            }
+          } catch (_) {
+            // Public browsing remains available during an identity outage.
+            options.extra['authUnavailable'] = true;
           }
           options.headers['Accept'] = 'application/json';
           handler.next(options);
         },
         onError: (error, handler) async {
           if (error.response?.statusCode == 401 &&
+              error.requestOptions.extra['authUnavailable'] != true &&
               error.requestOptions.extra['retried'] != true) {
-            final token = await auth.refresh();
-            if (token != null) {
-              final request = error.requestOptions
-                ..extra['retried'] = true
-                ..headers['Authorization'] = 'Bearer ${token.accessToken}';
-              try {
+            try {
+              final token = await auth.refresh();
+              if (token != null) {
+                final request = error.requestOptions
+                  ..extra['retried'] = true
+                  ..headers['Authorization'] = 'Bearer ${token.accessToken}';
                 return handler.resolve(await dio.fetch(request));
-              } catch (_) {}
+              }
+            } catch (_) {
+              // Keep the original unauthorized response if refreshing fails.
             }
           }
           handler.next(error);
