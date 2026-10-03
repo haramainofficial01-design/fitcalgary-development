@@ -9,8 +9,10 @@ import 'api_client.dart';
 typedef UploadProgress = void Function(int sentBytes, int totalBytes);
 
 class EvidenceUploader {
-  EvidenceUploader(this.api);
+  EvidenceUploader(this.api, {Dio Function(BaseOptions)? transportFactory})
+    : _transportFactory = transportFactory ?? Dio.new;
   final ApiClient api;
+  final Dio Function(BaseOptions) _transportFactory;
 
   Future<Map<String, dynamic>> upload({
     required String submissionId,
@@ -20,20 +22,34 @@ class EvidenceUploader {
     required UploadProgress onProgress,
     CancelToken? cancelToken,
   }) async {
+    if (sizeBytes <= 0 || sizeBytes > 4 * 1024 * 1024 * 1024) {
+      throw ArgumentError.value(sizeBytes, 'sizeBytes');
+    }
     final initialized = await api.dio.post<Map<String, dynamic>>(
       '/submissions/$submissionId/uploads',
       data: {'contentType': contentType, 'sizeBytes': sizeBytes},
       cancelToken: cancelToken,
     );
-    final uploadId = initialized.data!['id'] as String;
-    final partSize = (initialized.data!['partSizeBytes'] as num).toInt();
+    final uploadId = initialized.data?['id'];
+    final rawPartSize = initialized.data?['partSizeBytes'];
+    if (uploadId is! String ||
+        uploadId.trim().isEmpty ||
+        rawPartSize is! num ||
+        !rawPartSize.isFinite ||
+        rawPartSize <= 0 ||
+        rawPartSize > 64 * 1024 * 1024 ||
+        rawPartSize != rawPartSize.truncateToDouble()) {
+      throw StateError('Evidence upload could not be initialized.');
+    }
+    final partSize = rawPartSize.toInt();
     final parts = <Map<String, dynamic>>[];
     // One bounded part in memory works on browser blobs and native file handles.
     // Separate transport never attaches the API's bearer token to object storage.
-    final transport = Dio(
+    final transport = _transportFactory(
       BaseOptions(
         connectTimeout: const Duration(seconds: 20),
         sendTimeout: const Duration(minutes: 4),
+        receiveTimeout: const Duration(seconds: 45),
       ),
     );
     try {

@@ -26,6 +26,8 @@ class _SubmitScreenState extends ConsumerState<SubmitScreen> {
   final metric = TextEditingController();
   final checks = <String, bool>{};
   bool busy = false;
+  bool loadingParent = false;
+  String? parentError;
   double progress = 0;
   picker.PlatformFile? evidence;
   CancelToken? cancellation;
@@ -36,6 +38,10 @@ class _SubmitScreenState extends ConsumerState<SubmitScreen> {
   }
 
   Future<void> loadParent() async {
+    setState(() {
+      loadingParent = true;
+      parentError = null;
+    });
     try {
       final parent = await ref.read(
         submissionDetailProvider(widget.parentId ?? widget.draftId!).future,
@@ -60,7 +66,9 @@ class _SubmitScreenState extends ConsumerState<SubmitScreen> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() => message = workflowError(e));
+      if (mounted) setState(() => parentError = workflowError(e));
+    } finally {
+      if (mounted) setState(() => loadingParent = false);
     }
   }
 
@@ -90,6 +98,7 @@ class _SubmitScreenState extends ConsumerState<SubmitScreen> {
   }
 
   Future<void> send(Map<String, dynamic> d) async {
+    if (busy) return;
     final value = valueFor(d);
     final rules = (d['verification_checklist'] as List)
         .cast<Map<String, dynamic>>();
@@ -194,7 +203,8 @@ class _SubmitScreenState extends ConsumerState<SubmitScreen> {
   @override
   Widget build(BuildContext context) {
     final catalog = ref.watch(competitionCatalogProvider);
-    final locked = busy || submissionId != null;
+    final locked =
+        busy || submissionId != null || loadingParent || parentError != null;
     return Scaffold(
       appBar: AppBar(title: const Text('Post a result')),
       body: ListView(
@@ -239,193 +249,234 @@ class _SubmitScreenState extends ConsumerState<SubmitScreen> {
               ],
             ),
           const SizedBox(height: 14),
-          catalog.when(
-            loading: () => const LinearProgressIndicator(),
-            error: (_, _) => ErrorPanel(
-              message: 'Competition rules could not be loaded.',
-              onRetry: () => ref.invalidate(competitionCatalogProvider),
-            ),
-            data: (data) {
-              final ds = data['disciplines']!
-                  .where(
-                    (d) =>
-                        d[kind == 'OFFICIAL'
-                            ? 'official_eligible'
-                            : 'community_eligible'] ==
-                        true,
-                  )
-                  .toList();
-              if (ds.isEmpty) {
-                return const EmptyPanel(
-                  title: 'No eligible disciplines',
-                  body: 'Check back when the competition rules have been published.',
+          if (loadingParent)
+            Semantics(
+              label: 'Loading your submission',
+              child: const LinearProgressIndicator(),
+            )
+          else if (parentError != null)
+            ErrorPanel(message: parentError!, onRetry: loadParent)
+          else
+            catalog.when(
+              loading: () => const LinearProgressIndicator(),
+              error: (_, _) => ErrorPanel(
+                message: 'Competition rules could not be loaded.',
+                onRetry: () => ref.invalidate(competitionCatalogProvider),
+              ),
+              data: (data) {
+                final ds = data['disciplines']!
+                    .where(
+                      (d) =>
+                          d[kind == 'OFFICIAL'
+                              ? 'official_eligible'
+                              : 'community_eligible'] ==
+                          true,
+                    )
+                    .toList();
+                if (ds.isEmpty) {
+                  return const EmptyPanel(
+                    title: 'No eligible disciplines',
+                    body: 'Check back when the competition rules have been published.',
+                  );
+                }
+                if (discipline != null &&
+                    !ds.any((d) => d['id'] == discipline)) {
+                  return const EmptyPanel(
+                    title: 'Discipline unavailable',
+                    body: 'This submission no longer matches an eligible discipline. Check the published rules before posting a new result.',
+                  );
+                }
+                if ((division != null &&
+                        !data['divisions']!.any((v) => v['id'] == division)) ||
+                    (city != null &&
+                        !data['cities']!.any((c) => c['id'] == city))) {
+                  return const EmptyPanel(
+                    title: 'Submission details need updating',
+                    body: 'The saved city or division is no longer available. Please update your profile or contact support before retrying.',
+                  );
+                }
+                final d = ds.firstWhere(
+                  (d) => d['id'] == discipline,
+                  orElse: () => ds.first,
                 );
-              }
-              final d = ds.firstWhere(
-                (d) => d['id'] == discipline,
-                orElse: () => ds.first,
-              );
-              final rules = (d['verification_checklist'] as List)
-                  .cast<Map<String, dynamic>>();
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  DropdownButtonFormField<String>(
-                    key: ValueKey('discipline-${d['id']}'),
-                    initialValue: d['id'] as String,
-                    isExpanded: true,
-                    decoration: const InputDecoration(labelText: 'Discipline'),
-                    items: ds
-                        .map(
-                          (d) => DropdownMenuItem(
-                            value: d['id'] as String,
-                            child: Text(d['display_name'] as String),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: locked || widget.parentId != null
-                        ? null
-                        : (v) => setState(() {
-                            discipline = v;
-                            checks.clear();
-                            evidence = null;
-                          }),
-                  ),
-                  const SizedBox(height: 14),
-                  DropdownButtonFormField<String>(
-                    initialValue: city,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'City represented',
-                    ),
-                    items: data['cities']!
-                        .map(
-                          (c) => DropdownMenuItem(
-                            value: c['id'] as String,
-                            child: Text(c['name'] as String),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: locked ? null : (v) => setState(() => city = v),
-                  ),
-                  const SizedBox(height: 14),
-                  DropdownButtonFormField<String>(
-                    key: ValueKey('division-$division'),
-                    initialValue: division,
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Division (default: Open)',
-                    ),
-                    items: data['divisions']!
-                        .map(
-                          (v) => DropdownMenuItem(
-                            value: v['id'] as String,
-                            child: Text(v['display_label'] as String),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: locked
-                        ? null
-                        : (v) => setState(() => division = v),
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: busy ? null : () => context.push('/profile'),
-                    child: const Text('EDIT AGE / CATEGORY ELIGIBILITY'),
-                  ),
-                  TextField(
-                    controller: metric,
-                    enabled: !locked,
-                    keyboardType: TextInputType.text,
-                    decoration: InputDecoration(
-                      labelText: d['metric_type'] == 'TIME'
-                          ? 'Time (mm:ss or seconds)'
-                          : 'Result (${d['unit']})',
-                    ),
-                  ),
-                  if (kind == 'OFFICIAL') ...[
-                    const SizedBox(height: 14),
-                    Text(
-                      "Verification rules · version ${d['rules_version']}",
-                      style: const TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                    for (final rule in rules)
-                      CheckboxListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(rule['label'] as String),
-                        value: checks[rule['key']] == true,
-                        onChanged: locked
-                            ? null
-                            : (v) => setState(
-                                () =>
-                                    checks[rule['key'] as String] = v ?? false,
-                              ),
+                final rules = (d['verification_checklist'] as List)
+                    .cast<Map<String, dynamic>>();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    DropdownButtonFormField<String>(
+                      key: ValueKey('discipline-${d['id']}'),
+                      initialValue: d['id'] as String,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Discipline',
                       ),
-                    OutlinedButton.icon(
-                      onPressed: busy
+                      items: ds
+                          .map(
+                            (d) => DropdownMenuItem(
+                              value: d['id'] as String,
+                              child: Text(d['display_name'] as String),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: locked || widget.parentId != null
                           ? null
-                          : () async {
-                              final file = await ref.read(
-                                evidencePickerProvider,
-                              )(d['evidence_type'] == 'VIDEO');
-                              if (file == null || !mounted) return;
-                              final size = await file.length();
-                              if (!mounted) return;
-                              if (size <= 0 || size > 4 * 1024 * 1024 * 1024) {
-                                setState(
-                                  () => message = 'Choose an evidence file between 1 byte and 4 GB.',
-                                );
-                                return;
-                              }
-                              setState(() {
-                                evidence = file;
-                                message = null;
-                              });
-                            },
-                      icon: const Icon(Icons.attach_file),
-                      label: Text(
-                        evidence?.name ??
-                            (d['evidence_type'] == 'VIDEO'
-                                ? 'SELECT PRIVATE VIDEO'
-                                : 'SELECT PRIVATE GPX FILE'),
+                          : (v) => setState(() {
+                              discipline = v;
+                              checks.clear();
+                              evidence = null;
+                            }),
+                    ),
+                    const SizedBox(height: 14),
+                    DropdownButtonFormField<String>(
+                      key: ValueKey('city-$city'),
+                      initialValue: city,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        labelText: 'City represented',
+                      ),
+                      items: data['cities']!
+                          .map(
+                            (c) => DropdownMenuItem(
+                              value: c['id'] as String,
+                              child: Text(c['name'] as String),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: locked
+                          ? null
+                          : (v) => setState(() => city = v),
+                    ),
+                    const SizedBox(height: 14),
+                    DropdownButtonFormField<String>(
+                      key: ValueKey('division-$division'),
+                      initialValue: division,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Division (default: Open)',
+                      ),
+                      items: data['divisions']!
+                          .map(
+                            (v) => DropdownMenuItem(
+                              value: v['id'] as String,
+                              child: Text(v['display_label'] as String),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: locked
+                          ? null
+                          : (v) => setState(() => division = v),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: busy ? null : () => context.push('/profile'),
+                      child: const Text('EDIT AGE / CATEGORY ELIGIBILITY'),
+                    ),
+                    TextField(
+                      controller: metric,
+                      enabled: !locked,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        labelText: d['metric_type'] == 'TIME'
+                            ? 'Time (mm:ss or seconds)'
+                            : 'Result (${d['unit']})',
                       ),
                     ),
-                    Text(
-                      'Evidence is private, limited to authorized reviewers, and removed under the retention policy.',
-                      style: TextStyle(fontSize: 12, color: context.fitMuted),
+                    if (kind == 'OFFICIAL') ...[
+                      const SizedBox(height: 14),
+                      Text(
+                        "Verification rules · version ${d['rules_version']}",
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      for (final rule in rules)
+                        CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(rule['label'] as String),
+                          value: checks[rule['key']] == true,
+                          onChanged: locked
+                              ? null
+                              : (v) => setState(
+                                  () => checks[rule['key'] as String] =
+                                      v ?? false,
+                                ),
+                        ),
+                      OutlinedButton.icon(
+                        onPressed: busy
+                            ? null
+                            : () async {
+                                try {
+                                  final file = await ref.read(
+                                    evidencePickerProvider,
+                                  )(d['evidence_type'] == 'VIDEO');
+                                  if (file == null || !mounted) return;
+                                  final size = await file.length();
+                                  if (!mounted) return;
+                                  if (size <= 0 ||
+                                      size > 4 * 1024 * 1024 * 1024) {
+                                    setState(
+                                      () => message = 'Choose an evidence file between 1 byte and 4 GB.',
+                                    );
+                                    return;
+                                  }
+                                  setState(() {
+                                    evidence = file;
+                                    message = null;
+                                  });
+                                } catch (_) {
+                                  if (mounted) {
+                                    setState(
+                                      () => message = 'The file could not be opened. Please select it again or choose another file.',
+                                    );
+                                  }
+                                }
+                              },
+                        icon: const Icon(Icons.attach_file),
+                        label: Text(
+                          evidence?.name ??
+                              (d['evidence_type'] == 'VIDEO'
+                                  ? 'SELECT PRIVATE VIDEO'
+                                  : 'SELECT PRIVATE GPX FILE'),
+                        ),
+                      ),
+                      Text(
+                        'Evidence is private, limited to authorized reviewers, and removed under the retention policy.',
+                        style: TextStyle(fontSize: 12, color: context.fitMuted),
+                      ),
+                    ],
+                    if (message != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        child: Semantics(
+                          liveRegion: true,
+                          child: Text(message!),
+                        ),
+                      ),
+                    if (busy) ...[
+                      LinearProgressIndicator(
+                        value: progress > 0 ? progress : null,
+                      ),
+                      TextButton(
+                        onPressed: () => cancellation?.cancel(),
+                        child: const Text('PAUSE UPLOAD'),
+                      ),
+                    ],
+                    const SizedBox(height: 18),
+                    FilledButton(
+                      onPressed: busy ? null : () => send(d),
+                      child: Text(
+                        busy
+                            ? 'SAVING…'
+                            : submissionId != null
+                            ? 'RETRY EVIDENCE UPLOAD'
+                            : kind == 'OFFICIAL'
+                            ? 'SUBMIT FOR REVIEW'
+                            : 'POST UNVERIFIED CLAIM',
+                      ),
                     ),
                   ],
-                  if (message != null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      child: Text(message!, semanticsLabel: message),
-                    ),
-                  if (busy) ...[
-                    LinearProgressIndicator(
-                      value: progress > 0 ? progress : null,
-                    ),
-                    TextButton(
-                      onPressed: () => cancellation?.cancel(),
-                      child: const Text('PAUSE UPLOAD'),
-                    ),
-                  ],
-                  const SizedBox(height: 18),
-                  FilledButton(
-                    onPressed: busy ? null : () => send(d),
-                    child: Text(
-                      busy
-                          ? 'SAVING…'
-                          : submissionId != null
-                          ? 'RETRY EVIDENCE UPLOAD'
-                          : kind == 'OFFICIAL'
-                          ? 'SUBMIT FOR REVIEW'
-                          : 'POST UNVERIFIED CLAIM',
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
+                );
+              },
+            ),
         ],
       ),
     );

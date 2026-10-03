@@ -40,6 +40,26 @@ emulator results are not physical-device verification.
 
 ## Executed evidence
 
+### Submission recovery increment
+
+- Private baseline: `bf7bd93`. File-picker and unreadable-file exceptions now
+  produce a safe, announced retry message instead of escaping the UI callback.
+- Resumed drafts/corrections wait for their original data before enabling the
+  form. Failed loading offers retry; unavailable saved disciplines/cities/divisions
+  produce a controlled state rather than silently changing rules or asserting.
+  Saved city selection is synchronized with the form state.
+- Evidence transport now limits its response wait to 45 seconds, validates
+  initialization and bounded part sizes, rejects empty/oversized uploads before
+  creating a server upload, and continues using a separate bearer-free transport.
+  Repeated submit callbacks are guarded while a request is in progress.
+- Executed: **55 Flutter tests PASS**, static analysis PASS. Eleven new isolated
+  regressions cover picker/read failure and retry, resumed city/unavailable rules,
+  storage timeout configuration, bearer isolation, malformed multipart sizes and
+  empty evidence. Controlled API/storage responses are not production upload proof.
+- No production deployment, store replacement or Client repository changes in
+  this increment. SMTP/domain, dedicated Google OAuth, Apple broker and physical
+  verification remain unresolved. Full product/design/release work is not closed.
+
 ### Current independent stabilization pass
 
 - Web callback now bounds code exchange to 15 seconds, handles provider/network
