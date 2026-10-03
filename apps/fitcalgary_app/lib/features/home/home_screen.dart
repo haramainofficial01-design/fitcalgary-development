@@ -171,7 +171,7 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(height: 38),
                 Container(
                   width: double.infinity,
-                  color: FitColors.coral,
+                  color: FitColors.coralDark,
                   padding: const EdgeInsets.all(28),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

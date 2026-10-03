@@ -1,5 +1,12 @@
 import Foundation
 
+/// Invalidates responses started under an earlier account/session context.
+struct WatchSessionRevision {
+  private(set) var value: UInt64 = 0
+  mutating func invalidate() { value &+= 1 }
+  func accepts(_ revision: UInt64) -> Bool { value == revision }
+}
+
 struct WatchSnapshot: Codable, Equatable {
   var displayName: String
   var rankings: [WatchRanking]

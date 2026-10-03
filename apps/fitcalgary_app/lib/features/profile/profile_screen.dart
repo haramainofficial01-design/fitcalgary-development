@@ -635,7 +635,7 @@ class _ResultRow extends StatelessWidget {
             const SizedBox(height: 5),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              color: result.official ? FitColors.coral : context.fitLine,
+              color: result.official ? FitColors.coralDark : context.fitLine,
               child: Text(
                 result.official ? 'VERIFIED' : 'COMMUNITY',
                 style: TextStyle(

@@ -3,6 +3,17 @@ import type { NextRequest, NextResponse } from 'next/server';
 export const sessionCookie = 'fitcalgary_session';
 export const transactionCookie = 'fitcalgary_oidc_transaction';
 
+export function clearTransaction(response: NextResponse): void {
+  // Cookie deletion must match the path used when starting sign-in.
+  response.cookies.set(transactionCookie, '', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'lax',
+    path: '/api/auth',
+    maxAge: 0,
+  });
+}
+
 export type WebSession = {
   accessToken: string;
   refreshToken?: string;
@@ -17,7 +28,13 @@ export class SessionExpiredError extends Error {
 }
 
 export function safeReturnTo(value: string | null): string {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return '/';
+  if (
+    !value ||
+    !value.startsWith('/') ||
+    value.startsWith('//') ||
+    value.includes('\\')
+  )
+    return '/';
   for (let index = 0; index < value.length; index++) {
     const code = value.charCodeAt(index);
     if (code < 32 || code === 127) return '/';
@@ -31,14 +48,21 @@ export function parseTokenResponse(value: unknown): {
   idToken?: string;
   expiresIn: number;
 } {
-  if (!value || typeof value !== 'object') throw new Error('Authentication response invalid');
+  if (!value || typeof value !== 'object')
+    throw new Error('Authentication response invalid');
   const tokens = value as Record<string, unknown>;
   const accessToken = tokens.access_token;
   const expiresIn = tokens.expires_in === undefined ? 300 : tokens.expires_in;
-  if (typeof accessToken !== 'string' || !accessToken ||
-      typeof expiresIn !== 'number' || !Number.isFinite(expiresIn) || expiresIn <= 0 ||
-      (tokens.refresh_token !== undefined && typeof tokens.refresh_token !== 'string') ||
-      (tokens.id_token !== undefined && typeof tokens.id_token !== 'string')) {
+  if (
+    typeof accessToken !== 'string' ||
+    !accessToken.trim() ||
+    typeof expiresIn !== 'number' ||
+    !Number.isFinite(expiresIn) ||
+    expiresIn <= 0 ||
+    (tokens.refresh_token !== undefined &&
+      typeof tokens.refresh_token !== 'string') ||
+    (tokens.id_token !== undefined && typeof tokens.id_token !== 'string')
+  ) {
     throw new Error('Authentication response invalid');
   }
   return {
@@ -58,6 +82,33 @@ type OidcConfig = {
   cookieSecret: string;
 };
 
+export async function exchangeAuthorizationCode(
+  code: string,
+  verifier: string,
+) {
+  const config = oidcConfig();
+  const body = new URLSearchParams({
+    grant_type: 'authorization_code',
+    client_id: config.clientId,
+    redirect_uri: `${config.publicUrl}/api/auth/callback`,
+    code,
+    code_verifier: verifier,
+  });
+  if (config.clientSecret) body.set('client_secret', config.clientSecret);
+  const response = await fetch(
+    `${config.issuer}/protocol/openid-connect/token`,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body,
+      cache: 'no-store',
+      signal: AbortSignal.timeout(15_000),
+    },
+  );
+  if (!response.ok) throw new Error('Sign-in unavailable');
+  return parseTokenResponse(await response.json());
+}
+
 export function oidcConfig(): OidcConfig {
   const issuer = process.env.OIDC_ISSUER;
   const clientId = process.env.OIDC_WEB_CLIENT_ID;
@@ -65,7 +116,9 @@ export function oidcConfig(): OidcConfig {
   const apiBaseUrl = process.env.API_BASE_URL;
   const cookieSecret = process.env.SESSION_COOKIE_SECRET;
   if (!issuer || !clientId || !publicUrl || !apiBaseUrl || !cookieSecret) {
-    throw new Error('Web authentication is awaiting production environment configuration.');
+    throw new Error(
+      'Web authentication is awaiting production environment configuration.',
+    );
   }
   return {
     issuer: issuer.replace(/\/$/, ''),
@@ -80,11 +133,17 @@ export function oidcConfig(): OidcConfig {
 function base64Url(bytes: Uint8Array): string {
   let binary = '';
   for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
+  return btoa(binary)
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replace(/=+$/, '');
 }
 
 function fromBase64Url(value: string): Uint8Array {
-  const padded = value.replaceAll('-', '+').replaceAll('_', '/').padEnd(Math.ceil(value.length / 4) * 4, '=');
+  const padded = value
+    .replaceAll('-', '+')
+    .replaceAll('_', '/')
+    .padEnd(Math.ceil(value.length / 4) * 4, '=');
   const binary = atob(padded);
   return Uint8Array.from(binary, (character) => character.charCodeAt(0));
 }
@@ -94,13 +153,22 @@ export function randomUrlSafe(bytes = 32): string {
 }
 
 export async function pkceChallenge(verifier: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  const digest = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(verifier),
+  );
   return base64Url(new Uint8Array(digest));
 }
 
 async function key(secret: string): Promise<CryptoKey> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(secret));
-  return crypto.subtle.importKey('raw', digest, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+  const digest = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(secret),
+  );
+  return crypto.subtle.importKey('raw', digest, { name: 'AES-GCM' }, false, [
+    'encrypt',
+    'decrypt',
+  ]);
 }
 
 export async function seal(value: unknown, secret: string): Promise<string> {
@@ -113,7 +181,10 @@ export async function seal(value: unknown, secret: string): Promise<string> {
   return `${base64Url(iv)}.${base64Url(new Uint8Array(ciphertext))}`;
 }
 
-export async function open<T>(value: string, secret: string): Promise<T | null> {
+export async function open<T>(
+  value: string,
+  secret: string,
+): Promise<T | null> {
   try {
     const [rawIv, rawCiphertext] = value.split('.');
     if (!rawIv || !rawCiphertext) return null;
@@ -130,14 +201,19 @@ export async function open<T>(value: string, secret: string): Promise<T | null> 
   }
 }
 
-export async function readSession(request: NextRequest): Promise<WebSession | null> {
+export async function readSession(
+  request: NextRequest,
+): Promise<WebSession | null> {
   const raw = request.cookies.get(sessionCookie)?.value;
   if (!raw) return null;
   return open<WebSession>(raw, oidcConfig().cookieSecret);
 }
 
-export async function refreshSession(session: WebSession): Promise<{ session: WebSession; changed: boolean }> {
-  if (session.expiresAt > Date.now() + 60_000) return { session, changed: false };
+export async function refreshSession(
+  session: WebSession,
+): Promise<{ session: WebSession; changed: boolean }> {
+  if (session.expiresAt > Date.now() + 60_000)
+    return { session, changed: false };
   if (!session.refreshToken) throw new SessionExpiredError();
   const config = oidcConfig();
   const body = new URLSearchParams({
@@ -146,13 +222,18 @@ export async function refreshSession(session: WebSession): Promise<{ session: We
     refresh_token: session.refreshToken,
   });
   if (config.clientSecret) body.set('client_secret', config.clientSecret);
-  const response = await fetch(`${config.issuer}/protocol/openid-connect/token`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body,
-    cache: 'no-store',
-  });
-  if (response.status === 400 || response.status === 401) throw new SessionExpiredError();
+  const response = await fetch(
+    `${config.issuer}/protocol/openid-connect/token`,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body,
+      cache: 'no-store',
+      signal: AbortSignal.timeout(15_000),
+    },
+  );
+  if (response.status === 400 || response.status === 401)
+    throw new SessionExpiredError();
   if (!response.ok) throw new Error('Session refresh unavailable');
   const tokens = parseTokenResponse(await response.json());
   return {
@@ -166,20 +247,32 @@ export async function refreshSession(session: WebSession): Promise<{ session: We
   };
 }
 
-export async function setSession(response: NextResponse, session: WebSession): Promise<void> {
-  response.cookies.set(sessionCookie, await seal(session, oidcConfig().cookieSecret), {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 30,
-  });
+export async function setSession(
+  response: NextResponse,
+  session: WebSession,
+): Promise<void> {
+  response.cookies.set(
+    sessionCookie,
+    await seal(session, oidcConfig().cookieSecret),
+    {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30,
+    },
+  );
 }
 
 export function decodeClaims(token: string): Record<string, unknown> {
   try {
     const payload = token.split('.')[1];
-    return payload ? (JSON.parse(new TextDecoder().decode(fromBase64Url(payload))) as Record<string, unknown>) : {};
+    return payload
+      ? (JSON.parse(new TextDecoder().decode(fromBase64Url(payload))) as Record<
+          string,
+          unknown
+        >)
+      : {};
   } catch {
     return {};
   }

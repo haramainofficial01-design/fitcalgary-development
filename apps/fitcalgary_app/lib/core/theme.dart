@@ -6,7 +6,7 @@ abstract final class FitColors {
   static const black = Color(0xFF17181A);
   static const coral = Color(0xFFC75A49);
   static const coralDark = Color(0xFFA74235);
-  static const muted = Color(0xFF70716F);
+  static const muted = Color(0xFF696A68);
   static const line = Color(0xFFB8B8B2);
   static const white = Color(0xFFFAF9F5);
 }
@@ -30,6 +30,8 @@ ThemeData _fitTheme(Brightness brightness) {
         brightness: brightness,
         surface: surface,
       ).copyWith(
+        primary: dark ? const Color(0xFFF08A79) : FitColors.coralDark,
+        onPrimary: dark ? FitColors.black : FitColors.white,
         onSurface: ink,
         onSurfaceVariant: muted,
         outline: line,
@@ -84,7 +86,7 @@ ThemeData _fitTheme(Brightness brightness) {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: FitColors.coral,
+        backgroundColor: FitColors.coralDark,
         foregroundColor: FitColors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         minimumSize: const Size(48, 52),

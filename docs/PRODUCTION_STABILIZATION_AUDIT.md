@@ -1,6 +1,6 @@
 # Production stabilization audit
 
-Last updated: 2026-09-27
+Last updated: 2026-10-03
 
 This is the working evidence register for the post-release FitCalgary V1
 stabilization pass. A status of `PASS` records an executed check. Simulator and
@@ -28,6 +28,77 @@ emulator results are not physical-device verification.
 | SEC-001 | P1 | A database tool emitted a production PostgreSQL credential in local session output during backup. | The tunnel helper includes its connection string when closing. | Database role password and Railway Postgres/API variables rotated; API readiness and catalog verified afterward. The temporary Railway SSH key was deregistered and deleted. Remote-local tunnel authentication did not provide a valid old-password rejection test; external credential rejection remains to be independently confirmed. |
 
 ## Executed evidence
+
+### Current independent stabilization pass
+
+- Web callback now bounds code exchange to 15 seconds, handles provider/network
+  and malformed-token failures safely, revalidates the return path, and clears
+  the transaction cookie on its actual `/api/auth` path. Refresh is also bounded;
+  logout revocation is bounded to five seconds. Ten web-auth regression tests,
+  lint, type checking and production build pass.
+- Mobile refresh exchanges are single-flight. Session revisions and serialized
+  credential writes reject late refresh/sign-in responses after logout or account
+  change. Local logout clears credentials before the browser/provider completes.
+  A failed optional Watch sync no longer fails phone authentication. Provider
+  logout cancellation does not undo local sign-out; server-side revocation is
+  **not** claimed if the provider is unavailable.
+- Notification API cleanup failure no longer prevents local sign-out and the
+  subsequent provider-token deletion attempt. Remote push delivery/revocation
+  still requires real provider testing.
+- Watch rejects in-flight data from a previous session, clears cached data on
+  credential changes/logout, and does not restore account data without a token.
+  Empty offline state no longer claims a previous update exists. The native
+  watchOS glass surface uses opaque/high-contrast fallbacks for Reduce
+  Transparency and increased contrast. Codec/session-invalidation smoke and
+  standalone simulator build pass; logged-out Series 12 simulator launch was
+  visually inspected. Authenticated and physical Watch tests remain unverified.
+- Measured small-text contrast defects were corrected without changing the
+  brand: light-theme secondary text and filled actions now meet 4.5:1; dark
+  leaderboard ranks beyond the podium no longer render light-on-light. Theme
+  and dark-board regression coverage added. This is not a full VoiceOver,
+  TalkBack, performance or screen-by-screen acceptance claim.
+
+Current executed checks: **39 Flutter tests**, Flutter analysis, **10 web-auth
+tests**, web lint/type-check/production build, Watch codec/session-invalidation
+smoke and standalone Watch simulator build. Updated iOS simulator build includes
+the embedded Watch target; Android debug APK builds successfully with production
+endpoint configuration. These are not signed replacement store artifacts.
+The iOS app launches and its dark home screen was inspected against the live
+catalog. Watch logged-out launch was inspected. Android installation/launch passed
+on the earlier snapshot in this pass. The contrast/notification-cleanup APK was
+also installed and its dark home visually inspected, with no AndroidRuntime
+error in the captured log. The latest revoked-refresh/ID-token-retention changes
+pass tests but require a subsequent binary rebuild before store preparation.
+
+Additional mobile regressions prove that revoked refresh tokens clear local
+credentials without a browser logout, temporary provider failures preserve the
+credentials for retry, and refresh retains the prior ID token when a provider
+omits its replacement. These tests use development fakes, not real provider login.
+
+Cloudflare Worker `5f06bc8d-f335-4c74-b1a4-416070c77b80` contains the current web
+callback/logout/contrast fixes. Home, gyms, clubs, events, privacy and support
+return HTTPS 200; invalid callback returns 307 with transaction-cookie removal
+on `/api/auth`, and anonymous admin API returns 401. Full authenticated sessions
+are still not verified.
+
+### Exact external actions remaining
+
+1. Confirm the authorized FitCalgary/FitAlberta sending domain and provide its
+   DNS operator access. No changes were made to HBIC Resend or DNS, and
+   `fitxplor.com` is not assumed authorized. Real email receipt remains unverified.
+2. Identify the dedicated FitCalgary Google project or authorize creating one.
+   Read-only inventory showed HBIC projects, a default project and My First
+   Project; none is clearly FitCalgary. No Google project configuration changed.
+   Exact broker/OAuth setup is documented in `infrastructure/keycloak/README.md`.
+3. Complete Apple Services ID web configuration and authorize/secure its signing
+   key. Test the completed provider on real iPhone hardware.
+4. Connect authorized physical iPhone/Android/Watch devices for the corresponding
+   device-only verification. Currently connected Apple targets are simulators.
+
+Store replacement uploads and final Client export/push remain gated. Client
+source/history has not been modified. Work still required independently:
+finish screen-by-screen visual/accessibility/performance checks and the complete
+authenticated production acceptance matrix once provider access is available.
 
 | Area | Result | Evidence |
 |---|---|---|

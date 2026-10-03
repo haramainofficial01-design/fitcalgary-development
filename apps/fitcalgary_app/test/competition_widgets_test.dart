@@ -10,6 +10,51 @@ import 'package:fitcalgary_app/features/submissions/submit_screen.dart';
 import 'package:fitcalgary_app/features/submissions/review_screen.dart';
 
 void main() {
+  testWidgets('dark leaderboard ranks remain readable beyond the podium', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          boardsProvider.overrideWith(
+            (ref) async => [
+              {
+                'id': 'official',
+                'board_type': 'OFFICIAL',
+                'discipline_name': 'Push-Ups',
+                'division_label': 'Open',
+                'region_name': 'Calgary',
+                'entry_count': 1,
+              },
+            ],
+          ),
+          boardProvider.overrideWith(
+            (ref, key) async => {
+              'entries': [
+                {
+                  'result_id': 'r',
+                  'rank': 4,
+                  'display_name': 'Test Athlete',
+                  'profile_id': 'athlete',
+                  'display_metric': '42 reps',
+                  'verification_type': 'VIDEO_REVIEWED',
+                },
+              ],
+            },
+          ),
+        ],
+        child: MaterialApp(
+          theme: fitDarkTheme(),
+          home: const LeaderboardsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final rank = tester.widget<Text>(find.text('4'));
+    expect(rank.style?.color, fitDarkTheme().colorScheme.surface);
+    expect(rank.style?.color, isNot(fitDarkTheme().colorScheme.onSurface));
+    expect(tester.takeException(), isNull);
+  });
   testWidgets(
     'real board projection distinguishes verified and unverified results at phone width',
     (tester) async {

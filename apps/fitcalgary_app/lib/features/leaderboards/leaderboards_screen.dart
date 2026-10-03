@@ -234,13 +234,13 @@ class _ResultRow extends StatelessWidget {
             height: 36,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: rank <= 3 ? FitColors.coral : context.fitInk,
+              color: rank <= 3 ? FitColors.coralDark : context.fitInk,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               '$rank',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: rank <= 3 ? FitColors.white : context.fitSurface,
                 fontWeight: FontWeight.w900,
               ),
             ),

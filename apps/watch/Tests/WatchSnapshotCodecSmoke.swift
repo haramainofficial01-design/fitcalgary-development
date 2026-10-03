@@ -3,6 +3,15 @@ import Foundation
 @main
 struct WatchSnapshotCodecSmoke {
   static func main() throws {
+    var session = WatchSessionRevision()
+    let inFlight = session.value
+    precondition(session.accepts(inFlight))
+    session.invalidate()
+    precondition(!session.accepts(inFlight), "Logout must reject an earlier in-flight response")
+    let nextAccount = session.value
+    session.invalidate()
+    precondition(!session.accepts(nextAccount), "Account changes must reject stale account data")
+    precondition(session.accepts(session.value))
     let payload = #"{"displayName":"Athlete","rankings":[{"id":"r1","discipline":"5K","rank":2,"division":"Open","board_type":"OFFICIAL"}],"results":[{"id":"v1","discipline":"5K","mark":"18:01","verified_at":"2026-09-24T12:30:40.123456Z"}],"submissions":[{"id":"s1","discipline":"5K","status":"PENDING_REVIEW","updated_at":"2026-09-24T12:30:40Z"}],"events":[{"id":"e1","name":"Competition","start_at":null,"start_date":"2026-10-24","location":"Calgary"}],"refreshedAt":"2026-09-24T12:30:40.123456789Z"}"#
     let snapshot = try WatchSnapshotCodec.decoder().decode(WatchSnapshot.self, from: Data(payload.utf8))
     precondition(snapshot.rankings.first?.boardType == "OFFICIAL")
@@ -15,6 +24,6 @@ struct WatchSnapshotCodecSmoke {
     precondition(restored.rankings.first?.boardType == "OFFICIAL")
     precondition(restored.results.first?.mark == "18:01")
     precondition(restored.events.first?.displayDate != nil)
-    print("Watch snapshot decoder: PASS")
+    print("Watch snapshot decoder and session invalidation: PASS")
   }
 }

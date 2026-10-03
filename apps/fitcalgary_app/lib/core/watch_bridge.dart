@@ -16,6 +16,8 @@ abstract final class WatchBridge {
       });
     } on MissingPluginException {
       /* Watch is optional on unsupported hosts. */
+    } on PlatformException {
+      // A disconnected companion must not invalidate a successful phone login.
     }
   }
 
@@ -25,6 +27,8 @@ abstract final class WatchBridge {
       await _channel.invokeMethod<void>('logout');
     } on MissingPluginException {
       /* Watch is optional. */
+    } on PlatformException {
+      // Local phone sign-out still completes if the companion is unreachable.
     }
   }
 }

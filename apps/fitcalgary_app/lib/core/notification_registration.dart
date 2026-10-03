@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -103,11 +104,16 @@ class NotificationRegistration {
     if (id != null) {
       try {
         await api.dio.delete<void>('/notification-devices/$id');
+      } on DioException {
+        // An API outage must not prevent local sign-out or provider-token deletion.
       } finally {
         await prefs.remove(_deviceIDKey);
       }
     }
     try {
+      if (_messaging == null && Firebase.apps.isNotEmpty) {
+        _messaging = FirebaseMessaging.instance;
+      }
       await _messaging?.deleteToken();
     } catch (_) {}
   }

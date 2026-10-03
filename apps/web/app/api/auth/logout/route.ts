@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         body,
+        signal: AbortSignal.timeout(5_000),
       });
     }
   } catch {

@@ -13,6 +13,28 @@ class _NoAuth extends AuthService {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('an API outage does not block device cleanup during logout', () async {
+    SharedPreferences.setMockInitialValues({
+      'notification_device_id': 'test-device',
+    });
+    final api = ApiClient(_NoAuth());
+    api.dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          handler.reject(
+            DioException(
+              requestOptions: options,
+              type: DioExceptionType.connectionError,
+            ),
+          );
+        },
+      ),
+    );
+    await NotificationRegistration(api).unregister();
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('notification_device_id'), isNull);
+  });
+
   test(
     'device token is registered, refreshed and removed on sign-out',
     () async {
