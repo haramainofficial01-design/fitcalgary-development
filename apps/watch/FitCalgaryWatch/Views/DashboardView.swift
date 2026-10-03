@@ -44,7 +44,7 @@ struct DashboardView: View {
                     Text(best.discipline)
                       .font(.headline)
                       .lineLimit(1)
-                    Text(best.division)
+                    Text("\(best.boardType.readableStatus) · \(best.division)")
                       .font(.caption2)
                       .foregroundStyle(.secondary)
                       .lineLimit(1)
@@ -57,13 +57,13 @@ struct DashboardView: View {
               }
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Current rank \(best.rank), \(best.discipline), \(best.division)")
+            .accessibilityLabel("\(best.boardType.readableStatus) rank \(best.rank), \(best.discipline), \(best.division)")
           } else {
             GlassCard {
               VStack(alignment: .leading, spacing: 5) {
-                Label("No verified placement yet", systemImage: "chart.bar")
+                Label("No placement yet", systemImage: "chart.bar")
                   .font(.caption.weight(.semibold))
-                Text("Approved results will appear here.")
+                Text("Your eligible results appear on their matching boards.")
                   .font(.caption2)
                   .foregroundStyle(.secondary)
               }
@@ -199,7 +199,7 @@ struct RankingsView: View {
         ContentUnavailableView(
           "No placement yet",
           systemImage: "chart.bar.xaxis",
-          description: Text("A placement appears after a result is verified.")
+          description: Text("Your eligible results appear on their matching boards.")
         )
       } else {
         ForEach(store.snapshot.rankings) { item in

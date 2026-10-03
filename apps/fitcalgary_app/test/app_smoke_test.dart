@@ -51,6 +51,25 @@ void main() {
     expect(find.text('POST A RESULT →'), findsOneWidget);
   });
 
+  testWidgets(
+    'compact phone navigation remains usable with large system text',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 760);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.pumpWidget(testApp(MemoryOnboardingStore(complete: true)));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.text('Gyms'));
+      await tester.pumpAndSettle();
+      expect(find.text('Every major gym\nin Calgary.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('home gym index action opens the actual directory', (
     tester,
   ) async {

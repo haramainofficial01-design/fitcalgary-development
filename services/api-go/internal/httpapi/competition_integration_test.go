@@ -310,6 +310,19 @@ func TestCompetitionDatabaseWorkflow(t *testing.T) {
 	if len(entries(claim["leaderboard_id"].(string))) != 1 {
 		t.Fatal("community claim not ranked")
 	}
+	watch := request("GET", "/watch/summary", "athlete", nil, 200)
+	watchResults := watch["results"].([]any)
+	if len(watchResults) != 2 {
+		t.Fatal("Watch verified history must retain approved results only")
+	}
+	for _, value := range watchResults {
+		if mark := value.(map[string]any)["mark"]; mark != "20 reps" && mark != "10 reps" {
+			t.Fatal("Watch presented an unverified community claim as verified")
+		}
+	}
+	if len(watch["rankings"].([]any)) != 2 {
+		t.Fatal("Watch must preserve both official and community placements")
+	}
 	// Changes preserve judge comments and require owner-only, one-child corrections.
 	correctionSource := request("POST", "/submissions", "athlete", body(40), 201)["id"].(string)
 	upload(correctionSource, "athlete")

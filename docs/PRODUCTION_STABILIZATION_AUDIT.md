@@ -32,6 +32,7 @@ emulator results are not physical-device verification.
 | WATCH-004 | P1 | A response started before logout/account change could repopulate cached athlete data afterward. | The async refresh did not check a session revision. | Response/cache updates now reject outdated revisions, logout takes precedence, and cached account data is cleared appropriately. Revision smoke and simulator build pass; authenticated device workflow remains unverified. |
 | UI-002 | P2 | Small text failed contrast in selected light-theme surfaces; dark leaderboard non-podium badges were light-on-light. | Static brand colors and fixed white badge text were used across appearances. | Thematic accent/secondary colors and inverse badge text fixed. Light/dark contrast and dark-board widget tests pass. |
 | ROUTE-001 | P2 | The home gym-index arrow looked like a link but had no action. | The affordance was plain text. | It is now a 44-point-minimum action routing to the directory; widget navigation regression passes. |
+| WATCH-005 | P2 | Self-reported community results appeared in the Watch's verified result history. | The summary selected all non-invalidated results, including `UNVERIFIED` claims. | Verified history now excludes unverified claims while retaining official and community rankings, with explicit board labels. A real local PostgreSQL workflow asserts both boundaries. Source verified; production API deployment remains held behind the existing authentication/safety gate. |
 
 ## Executed evidence
 
@@ -64,17 +65,25 @@ emulator results are not physical-device verification.
   and dark-board regression coverage added. This is not a full VoiceOver,
   TalkBack, performance or screen-by-screen acceptance claim.
 
-Current executed checks: **40 Flutter tests**, Flutter analysis, **10 web-auth
+Current executed checks: **41 Flutter tests**, Flutter analysis, **10 web-auth
 tests**, web lint/type-check/production build, Watch codec/session-invalidation
 smoke and standalone Watch simulator build. Updated iOS simulator build includes
 the embedded Watch target; Android debug APK builds successfully with production
 endpoint configuration. These are not signed replacement store artifacts.
 The iOS app launches and its dark home screen was inspected against the live
 catalog. Watch logged-out launch was inspected. Android installation/launch passed
-on the earlier snapshot in this pass. The contrast/notification-cleanup APK was
-also installed and its dark home visually inspected, with no AndroidRuntime
-error in the captured log. The latest revoked-refresh/ID-token-retention changes
-pass tests but require a subsequent binary rebuild before store preparation.
+with the latest session and contrast changes in this pass. Its dark home was
+visually inspected, with no AndroidRuntime error in the captured log. iPad
+simulator first-launch onboarding was also inspected. Signed release builds and
+full authenticated device workflows still remain unverified.
+
+The complete Go suite now passes with the PostgreSQL-backed competition
+workflow enabled, including immediate role revocation, stale-role refresh/re-login,
+restoration, judge decisions, ranking and Watch verified-history boundaries.
+The existing migrations were applied only to the isolated loopback test database
+before running this workflow. Go vet and production binary build pass. Storage
+and identity-provider interactions in this workflow use controlled mocks; these
+results do not verify real SMTP, social login or production evidence storage.
 
 Additional mobile regressions prove that revoked refresh tokens clear local
 credentials without a browser logout, temporary provider failures preserve the

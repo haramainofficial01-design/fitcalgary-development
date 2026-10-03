@@ -366,7 +366,7 @@ func (s *Server) watchSummary(_ http.ResponseWriter, r *http.Request) (any, erro
 	if err != nil {
 		return nil, err
 	}
-	results, err := queryMaps(r.Context(), s.db, `SELECT rs.id,d.display_name AS discipline,rs.display_metric AS mark,rs.verified_at FROM results rs JOIN leaderboards l ON l.id=rs.leaderboard_id JOIN disciplines d ON d.id=l.discipline_id WHERE rs.profile_id=$1 AND rs.invalidated_at IS NULL ORDER BY rs.verified_at DESC LIMIT 8`, owner)
+	results, err := queryMaps(r.Context(), s.db, `SELECT rs.id,d.display_name AS discipline,rs.display_metric AS mark,rs.verified_at FROM results rs JOIN leaderboards l ON l.id=rs.leaderboard_id JOIN disciplines d ON d.id=l.discipline_id WHERE rs.profile_id=$1 AND rs.invalidated_at IS NULL AND rs.verification_type <> 'UNVERIFIED' ORDER BY rs.verified_at DESC LIMIT 8`, owner)
 	if err != nil {
 		return nil, err
 	}
