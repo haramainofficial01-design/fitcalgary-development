@@ -1,5 +1,20 @@
 import 'package:dio/dio.dart';
 
+String submissionSignInLocation({String? draftId, String? parentId}) {
+  final parameters = <String, String>{
+    'draft': ?draftId,
+    if (draftId == null) 'parent': ?parentId,
+  };
+  final next = Uri(
+    path: '/submit',
+    queryParameters: parameters.isEmpty ? null : parameters,
+  );
+  return Uri(
+    path: '/signin',
+    queryParameters: {'next': next.toString()},
+  ).toString();
+}
+
 String workflowError(Object error) {
   if (error is DioException) {
     if (CancelToken.isCancel(error)) {

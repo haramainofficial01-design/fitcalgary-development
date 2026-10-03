@@ -40,6 +40,23 @@ emulator results are not physical-device verification.
 
 ## Executed evidence
 
+### Logout notification race and interrupted-submission increment
+
+- Registration and permission/token refresh work now carry a local revision.
+  Logout invalidates pending work before awaiting cleanup. A late device response
+  cannot restore the preference or restart a token listener; remote record cleanup
+  is attempted without claiming success if authorization/provider access is lost.
+- An API 401 during submission now preserves its current draft (or correction
+  parent before draft creation) in the sign-in return URI. Identifiers are URI
+  encoded; resuming does not intentionally create a replacement empty submission.
+- Executed: **59 Flutter tests PASS**; analysis PASS after resolving two style
+  findings. Targeted late-response/logout and encoded-return-path regressions PASS.
+  Tests use isolated responses/preferences, not real push delivery or social login.
+- Private baseline for this increment: `dc0ad68`. No Client repository changes.
+  Remaining native iOS integration must own its controls rather than placing a
+  UIKit backdrop beneath duplicated Flutter controls; the rejected preview is
+  not a release asset. Full provider/device/store/handoff gates remain open.
+
 ### Account, content and responsive-layout increment
 
 - Profile identity-provider failures now show a safe, retryable account state

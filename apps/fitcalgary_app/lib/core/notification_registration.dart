@@ -15,6 +15,7 @@ class NotificationRegistration {
   final ApiClient api;
   FirebaseMessaging? _messaging;
   StreamSubscription<String>? _refresh;
+  int _revision = 0;
   static const _deviceIDKey = 'notification_device_id';
 
   static bool get configured =>
@@ -24,6 +25,7 @@ class NotificationRegistration {
       const String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID').isNotEmpty;
 
   Future<bool> enable() async {
+    final revision = _revision;
     if (!configured) return false;
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
@@ -46,6 +48,7 @@ class NotificationRegistration {
       sound: true,
       provisional: false,
     );
+    if (revision != _revision) return false;
     if (permission.authorizationStatus != AuthorizationStatus.authorized &&
         permission.authorizationStatus != AuthorizationStatus.provisional) {
       return false;
@@ -56,15 +59,21 @@ class NotificationRegistration {
         await Future<void>.delayed(const Duration(milliseconds: 250));
       }
     }
+    if (revision != _revision) return false;
     final token = await messaging.getToken(
       vapidKey: const String.fromEnvironment('FIREBASE_WEB_VAPID_KEY').isEmpty
           ? null
           : const String.fromEnvironment('FIREBASE_WEB_VAPID_KEY'),
     );
-    if (token == null || token.length < 20) return false;
+    if (revision != _revision || token == null || token.length < 20) {
+      return false;
+    }
     await registerToken(token);
+    if (revision != _revision) return false;
     await _refresh?.cancel();
+    if (revision != _revision) return false;
     _refresh = messaging.onTokenRefresh.listen((value) async {
+      if (revision != _revision) return;
       try {
         await registerToken(value);
       } catch (_) {
@@ -76,7 +85,9 @@ class NotificationRegistration {
 
   @visibleForTesting
   Future<void> registerToken(String token) async {
+    final revision = _revision;
     final prefs = await SharedPreferences.getInstance();
+    if (revision != _revision) return;
     final existing = prefs.getString(_deviceIDKey);
     final platform = kIsWeb
         ? 'WEB'
@@ -93,10 +104,22 @@ class NotificationRegistration {
             data: {'platform': platform, 'token': token},
           );
     final id = response.data?['id'] as String?;
+    if (revision != _revision) {
+      if (id != null) {
+        try {
+          await api.dio.delete<void>('/notification-devices/$id');
+        } on DioException {
+          // The provider token is deleted on sign-out. Remote cleanup is
+          // best-effort if the old session has already been revoked.
+        }
+      }
+      return;
+    }
     if (id != null) await prefs.setString(_deviceIDKey, id);
   }
 
   Future<void> unregister() async {
+    _revision++;
     await _refresh?.cancel();
     _refresh = null;
     final prefs = await SharedPreferences.getInstance();

@@ -3,6 +3,29 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitcalgary_app/features/submissions/submission_feedback.dart';
 
 void main() {
+  test(
+    'sign-in preserves the interrupted draft before its correction parent',
+    () {
+      final signIn = Uri.parse(
+        submissionSignInLocation(draftId: 'draft', parentId: 'parent'),
+      );
+      expect(signIn.path, '/signin');
+      final next = Uri.parse(signIn.queryParameters['next']!);
+      expect(next.path, '/submit');
+      expect(next.queryParameters, {'draft': 'draft'});
+      expect(
+        Uri.parse(
+          Uri.parse(submissionSignInLocation(parentId: 'parent&other=value'))
+              .queryParameters['next']!,
+        ).queryParameters,
+        {'parent': 'parent&other=value'},
+      );
+      expect(
+        Uri.parse(submissionSignInLocation()).queryParameters['next'],
+        '/submit',
+      );
+    },
+  );
   test('protected-action failures use safe account wording', () {
     for (final status in [401, 403, 404, 409, 413, 422, 429, 500]) {
       final request = RequestOptions(path: '/protected');

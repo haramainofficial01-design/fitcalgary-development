@@ -190,7 +190,12 @@ class _SubmitScreenState extends ConsumerState<SubmitScreen> {
       if (mounted) context.go('/submissions/$submissionId');
     } on DioException catch (e) {
       if (e.response?.statusCode == 401 && mounted) {
-        context.push('/signin?next=/submit');
+        context.push(
+          submissionSignInLocation(
+            draftId: submissionId,
+            parentId: widget.parentId,
+          ),
+        );
       }
       if (mounted) setState(() => message = workflowError(e));
     } catch (e) {

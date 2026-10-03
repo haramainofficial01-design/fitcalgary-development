@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:fitcalgary_app/core/api_client.dart';
 import 'package:fitcalgary_app/core/auth_service.dart';
@@ -12,6 +14,54 @@ class _NoAuth extends AuthService {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test(
+    'a device registration finishing after logout cannot restore local state',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final api = ApiClient(_NoAuth());
+      final started = Completer<void>();
+      final finish = Completer<void>();
+      final requests = <String>[];
+      api.dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) async {
+            requests.add('${options.method} ${options.path}');
+            if (options.method == 'POST') {
+              started.complete();
+              await finish.future;
+            }
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: options.method == 'DELETE' ? 204 : 200,
+                data: options.method == 'DELETE' ? null : {'id': 'late-device'},
+              ),
+            );
+          },
+        ),
+      );
+      final registration = NotificationRegistration(api);
+      final pending = registration.registerToken(
+        'isolated-provider-test-token',
+      );
+      await started.future;
+      await registration.unregister();
+      finish.complete();
+      await pending;
+      expect(
+        (await SharedPreferences.getInstance()).getString(
+          'notification_device_id',
+        ),
+        isNull,
+      );
+      expect(requests, [
+        'POST /notification-devices',
+        'DELETE /notification-devices/late-device',
+      ]);
+      api.dio.close();
+    },
+  );
 
   test('an API outage does not block device cleanup during logout', () async {
     SharedPreferences.setMockInitialValues({
