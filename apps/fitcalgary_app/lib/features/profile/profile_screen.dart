@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
 import '../../app/widgets.dart';
+import '../../core/refresh.dart';
 import '../../core/theme.dart';
 import '../../domain/models.dart';
 import '../gyms/gym_providers.dart';
@@ -144,11 +145,13 @@ class _SignedInProfile extends ConsumerWidget {
         ref.invalidate(profileProvider);
         ref.invalidate(performanceProvider);
         ref.invalidate(submissionsProvider);
-        await Future.wait([
-          ref.read(profileProvider.future),
-          ref.read(performanceProvider.future),
-          ref.read(submissionsProvider.future),
-        ]);
+        await settleProviderRefresh(
+          Future.wait([
+            ref.read(profileProvider.future),
+            ref.read(performanceProvider.future),
+            ref.read(submissionsProvider.future),
+          ]),
+        );
       },
       child: ListView(
         padding: const EdgeInsets.fromLTRB(24, 34, 24, 34),

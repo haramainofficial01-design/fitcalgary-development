@@ -13,6 +13,38 @@ class _TestAuth extends AuthService {
 }
 
 void main() {
+  testWidgets('empty inbox can pull refresh, report an outage, and recover', (
+    tester,
+  ) async {
+    var requests = 0;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          notificationsProvider.overrideWith((ref) async {
+            if (++requests == 2) throw StateError('Private service detail');
+            return [];
+          }),
+        ],
+        child: const MaterialApp(home: NotificationsScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, 350));
+    await tester.pumpAndSettle();
+    expect(requests, 2);
+    expect(
+      find.text('The operation could not finish. Please retry.'),
+      findsOneWidget,
+    );
+    expect(find.text('Private service detail'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await tester.drag(find.byType(ListView), const Offset(0, 350));
+    await tester.pumpAndSettle();
+    expect(requests, 3);
+    expect(find.text('You’re all caught up'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('notification choices persist through the profile API', (
     tester,
   ) async {

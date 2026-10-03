@@ -19,11 +19,28 @@ struct WatchSnapshotCodecSmoke {
     precondition(snapshot.submissions.first?.status == "PENDING_REVIEW")
     precondition(snapshot.events.first?.startAt == nil)
     precondition(snapshot.events.first?.displayDate != nil)
+    let dayFormatter = DateFormatter()
+    dayFormatter.locale = Locale(identifier: "en_US_POSIX")
+    dayFormatter.calendar = Calendar(identifier: .gregorian)
+    dayFormatter.dateFormat = "yyyy-MM-dd"
+    for zone in ["America/Edmonton", "America/Vancouver", "Pacific/Auckland", "UTC"] {
+      dayFormatter.timeZone = TimeZone(identifier: zone)!
+      precondition(dayFormatter.string(from: snapshot.events.first!.date(in: dayFormatter.timeZone)!) == "2026-10-24",
+                   "A date-only competition must keep its calendar day in \(zone)")
+    }
     let cached = try WatchSnapshotCodec.encoder().encode(snapshot)
     let restored = try WatchSnapshotCodec.decoder().decode(WatchSnapshot.self, from: cached)
     precondition(restored.rankings.first?.boardType == "OFFICIAL")
     precondition(restored.results.first?.mark == "18:01")
     precondition(restored.events.first?.displayDate != nil)
+    dayFormatter.timeZone = TimeZone(identifier: "America/Edmonton")!
+    precondition(dayFormatter.string(from: restored.events.first!.date(in: dayFormatter.timeZone)!) == "2026-10-24",
+                 "Cached date-only competitions must preserve their calendar day")
+    let instant = Date(timeIntervalSince1970: 1_800_000_000)
+    let timed = WatchEvent(id: "timed", name: "Timed event", startAt: instant, startDate: snapshot.events.first!.startDate, location: nil)
+    precondition(timed.date(in: dayFormatter.timeZone) == instant, "Timed events must retain their actual instant")
+    let undated = WatchEvent(id: "undated", name: "Undated event", startAt: nil, startDate: nil, location: nil)
+    precondition(undated.displayDate == nil, "Missing dates must not be invented")
     print("Watch snapshot decoder and session invalidation: PASS")
   }
 }

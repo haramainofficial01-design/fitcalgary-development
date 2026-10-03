@@ -127,7 +127,10 @@ class ErrorPanel extends StatelessWidget {
       children: [
         const Icon(Icons.cloud_off_outlined, size: 32),
         const SizedBox(height: 12),
-        Text(message, textAlign: TextAlign.center),
+        Semantics(
+          liveRegion: true,
+          child: Text(message, textAlign: TextAlign.center),
+        ),
         const SizedBox(height: 14),
         OutlinedButton(onPressed: onRetry, child: const Text('TRY AGAIN')),
       ],

@@ -33,6 +33,8 @@ emulator results are not physical-device verification.
 | UI-002 | P2 | Small text failed contrast in selected light-theme surfaces; dark leaderboard non-podium badges were light-on-light. | Static brand colors and fixed white badge text were used across appearances. | Thematic accent/secondary colors and inverse badge text fixed. Light/dark contrast and dark-board widget tests pass. |
 | ROUTE-001 | P2 | The home gym-index arrow looked like a link but had no action. | The affordance was plain text. | It is now a 44-point-minimum action routing to the directory; widget navigation regression passes. |
 | WATCH-005 | P2 | Self-reported community results appeared in the Watch's verified result history. | The summary selected all non-invalidated results, including `UNVERIFIED` claims. | Verified history now excludes unverified claims while retaining official and community rankings, with explicit board labels. A real local PostgreSQL workflow asserts both boundaries. Source verified; production API deployment remains held behind the existing authentication/safety gate. |
+| UI-003 | P2 | Failed pull-to-refresh leaked an unhandled future error; short inbox/review/saved lists could not be pulled to refresh. | Provider failure was awaited outside the screen's error-state handling; short lists lacked always-scrollable physics. | Refresh completion now settles without discarding the watched provider's error/retry state. Short lists remain refreshable. Directory failure/retry and actual empty-inbox drag/outage/recovery widget regressions pass. Shared error messages announce as live regions, and inbox/review loading states have semantic labels. |
+| WATCH-006 | P2 | Date-only competition entries could display one calendar day early in Calgary. | UTC midnight was treated as an event instant during local date formatting. | Watch now projects date-only calendar components into the viewer's zone; real timed events keep their instant. Smoke assertions pass for Edmonton, Vancouver, Auckland, UTC, cache round-trip, timed and missing dates. Standalone Watch simulator build passes. |
 
 ## Executed evidence
 
@@ -65,7 +67,7 @@ emulator results are not physical-device verification.
   and dark-board regression coverage added. This is not a full VoiceOver,
   TalkBack, performance or screen-by-screen acceptance claim.
 
-Current executed checks: **41 Flutter tests**, Flutter analysis, **10 web-auth
+Current executed checks: **43 Flutter tests**, Flutter analysis, **10 web-auth
 tests**, web lint/type-check/production build, Watch codec/session-invalidation
 smoke and standalone Watch simulator build. Updated iOS simulator build includes
 the embedded Watch target; Android debug APK builds successfully with production
@@ -131,6 +133,24 @@ Store replacement uploads and final Client export/push remain gated. Client
 source/history has not been modified. Work still required independently:
 finish screen-by-screen visual/accessibility/performance checks and the complete
 authenticated production acceptance matrix once provider access is available.
+
+### Continuation point
+
+- Latest new checks: 43 Flutter tests and analysis pass; Watch codec/date/session
+  smoke and standalone simulator build pass. The new refresh regression first
+  reproduced an unhandled failure, and the date regression first reproduced the
+  previous-day error before the fixes.
+- Current fixes have no SMTP/social-provider configuration changes. Existing
+  production auth blockers remain open, not waived. Store binaries are still
+  older than these source fixes.
+- Next independent work: complete the remaining screen-by-screen failure-state
+  and accessibility checks, then prepare signed replacements only once source
+  stabilizes. Real-provider end-to-end tests require the exact external actions
+  above. Do not modify HBIC or the Client repository.
+- Phone floating surfaces currently use Flutter material/blur with accessible
+  opaque fallbacks, not native UIKit Liquid Glass. Watch uses supported native
+  watchOS glass with fallbacks. Full native phone treatment and final visual
+  approval are not represented as complete by these regression tests.
 
 | Area | Result | Evidence |
 |---|---|---|

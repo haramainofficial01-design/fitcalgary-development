@@ -27,7 +27,20 @@ struct WatchEvent: Codable, Identifiable, Equatable {
   let startDate: Date?
   let location: String?
 
-  var displayDate: Date? { startAt ?? startDate }
+  var displayDate: Date? { date(in: .current) }
+
+  /// A date-only value represents a calendar day, not a UTC event time.
+  /// Preserve that day when SwiftUI formats it in the viewer's time zone.
+  func date(in timeZone: TimeZone) -> Date? {
+    if let startAt { return startAt }
+    guard let startDate else { return nil }
+    var source = Calendar(identifier: .gregorian)
+    source.timeZone = TimeZone(secondsFromGMT: 0)!
+    let day = source.dateComponents([.year, .month, .day], from: startDate)
+    var display = Calendar(identifier: .gregorian)
+    display.timeZone = timeZone
+    return display.date(from: day)
+  }
 }
 
 enum WatchSnapshotCodec {

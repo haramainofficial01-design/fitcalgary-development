@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/widgets.dart';
+import '../../core/refresh.dart';
 import '../../core/theme.dart';
 import 'gym_providers.dart';
 import 'gym_widgets.dart';
@@ -60,7 +61,7 @@ class _GymsScreenState extends ConsumerState<GymsScreen> {
             child: RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(provider);
-                await ref.read(provider.future);
+                await settleProviderRefresh(ref.read(provider.future));
                 ref.invalidate(savedGymsProvider);
               },
               child: ListView(

@@ -11,14 +11,19 @@ import 'package:fitcalgary_app/features/events/content_providers.dart';
 import 'package:fitcalgary_app/features/leaderboards/competition_providers.dart';
 
 void main() {
-  ProviderScope testApp(OnboardingStore store) => ProviderScope(
+  ProviderScope testApp(
+    OnboardingStore store, {
+    Future<GymPage> Function()? loadDirectory,
+  }) => ProviderScope(
     overrides: [
       catalogSnapshotProvider.overrideWith(
         (ref) async => const CatalogSnapshot(gyms: 273, events: 531, boards: 4),
       ),
       boardsProvider.overrideWith((ref) async => []),
       directoryProvider.overrideWith(
-        (ref, query) async => const GymPage([], 0),
+        (ref, query) async => loadDirectory == null
+            ? const GymPage([], 0)
+            : await loadDirectory(),
       ),
       savedGymsProvider.overrideWith((ref) async => []),
       gymsProvider.overrideWith((ref) async => const <Gym>[]),
@@ -49,6 +54,44 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('The city,\nranked.'), findsOneWidget);
     expect(find.text('POST A RESULT →'), findsOneWidget);
+  });
+
+  testWidgets('failed pull refresh settles and shows a recoverable error', (
+    tester,
+  ) async {
+    var requests = 0;
+    await tester.pumpWidget(
+      testApp(
+        MemoryOnboardingStore(complete: true),
+        loadDirectory: () async {
+          if (++requests == 2) throw StateError('Simulated network failure');
+          return const GymPage([], 0);
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Gyms'));
+    await tester.pumpAndSettle();
+    await tester
+        .widget<RefreshIndicator>(find.byType(RefreshIndicator))
+        .onRefresh();
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('The gym index could not be reached. Try again.'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(
+      find.text('The gym index could not be reached. Try again.'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+    await tester
+        .widget<RefreshIndicator>(find.byType(RefreshIndicator))
+        .onRefresh();
+    await tester.pumpAndSettle();
+    expect(find.text('No gyms found'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets(

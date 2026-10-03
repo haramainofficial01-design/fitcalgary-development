@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/widgets.dart';
+import '../../core/refresh.dart';
 import '../../core/theme.dart';
 import '../../domain/models.dart';
 import 'content_providers.dart';
@@ -68,10 +69,14 @@ class _EventsScreenState extends ConsumerState<EventsScreen> {
               onRefresh: () async {
                 if (section == 'CLUBS') {
                   ref.invalidate(clubDirectoryProvider(parameters));
-                  await ref.read(clubDirectoryProvider(parameters).future);
+                  await settleProviderRefresh(
+                    ref.read(clubDirectoryProvider(parameters).future),
+                  );
                 } else {
                   ref.invalidate(eventDirectoryProvider(parameters));
-                  await ref.read(eventDirectoryProvider(parameters).future);
+                  await settleProviderRefresh(
+                    ref.read(eventDirectoryProvider(parameters).future),
+                  );
                 }
               },
               child: ListView(

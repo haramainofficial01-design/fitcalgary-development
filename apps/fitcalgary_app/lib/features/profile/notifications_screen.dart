@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
 import '../../app/widgets.dart';
+import '../../core/refresh.dart';
 import '../submissions/submission_feedback.dart';
 
 final notificationsProvider = FutureProvider.autoDispose(
@@ -47,13 +48,18 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     body: RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(notificationsProvider);
-        await ref.read(notificationsProvider.future);
+        await settleProviderRefresh(ref.read(notificationsProvider.future));
       },
       child: ref
           .watch(notificationsProvider)
           .when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(
+              child: CircularProgressIndicator(
+                semanticsLabel: 'Loading notifications',
+              ),
+            ),
             error: (e, _) => ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(24),
               children: [
                 ErrorPanel(
@@ -63,6 +69,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               ],
             ),
             data: (rows) => ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(20),
               children: [
                 if (error != null) Text(error!),

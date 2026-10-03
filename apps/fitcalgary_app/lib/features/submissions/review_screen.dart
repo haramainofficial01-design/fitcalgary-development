@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/providers.dart';
 import '../../app/widgets.dart';
+import '../../core/refresh.dart';
 import '../leaderboards/competition_providers.dart';
 import 'submission_feedback.dart';
 
@@ -16,13 +17,18 @@ class JudgeQueueScreen extends ConsumerWidget {
     body: RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(judgeQueueProvider);
-        await ref.read(judgeQueueProvider.future);
+        await settleProviderRefresh(ref.read(judgeQueueProvider.future));
       },
       child: ref
           .watch(judgeQueueProvider)
           .when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(
+              child: CircularProgressIndicator(
+                semanticsLabel: 'Loading review queue',
+              ),
+            ),
             error: (e, _) => ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(24),
               children: [
                 ErrorPanel(
@@ -32,6 +38,7 @@ class JudgeQueueScreen extends ConsumerWidget {
               ],
             ),
             data: (rows) => ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(20),
               children: [
                 const Text(

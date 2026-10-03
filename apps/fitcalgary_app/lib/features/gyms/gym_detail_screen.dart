@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/widgets.dart';
+import '../../core/refresh.dart';
 import '../../domain/models.dart';
 import 'gym_providers.dart';
 import 'gym_widgets.dart';
@@ -32,7 +33,9 @@ class GymDetailScreen extends ConsumerWidget {
             return RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(gymDetailProvider(slug));
-                await ref.read(gymDetailProvider(slug).future);
+                await settleProviderRefresh(
+                  ref.read(gymDetailProvider(slug).future),
+                );
               },
               child: ListView(
                 padding: const EdgeInsets.all(22),
@@ -178,9 +181,10 @@ class SavedGymsScreen extends ConsumerWidget {
           data: (gyms) => RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(savedGymsProvider);
-              await ref.read(savedGymsProvider.future);
+              await settleProviderRefresh(ref.read(savedGymsProvider.future));
             },
             child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(20),
               children: [
                 if (gyms.isEmpty)
