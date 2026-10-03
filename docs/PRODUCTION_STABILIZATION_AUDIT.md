@@ -99,6 +99,14 @@ Live Go health/readiness return 200; anonymous profile, Watch summary, submissio
 notifications and admin requests all return 401. These are not authenticated
 workflow or exhaustive accessibility/performance checks.
 
+Fresh Android emulator, iPhone simulator and iPad simulator integration tests against the
+production-configured app pass first launch, all onboarding steps, Home, Gyms, Board, Compete and Me,
+and persisted onboarding completion. The old test assertion was updated to
+the already-corrected competition heading; no product copy was regressed.
+The 42 mm and 46 mm Watch simulators launch the current companion and show a
+readable logged-out account-connect state. Populated account screens and real
+Watch connectivity remain unverified until authenticated access is available.
+
 Cloudflare Worker `5f06bc8d-f335-4c74-b1a4-416070c77b80` contains the current web
 callback/logout/contrast fixes. Home, gyms, clubs, events, privacy and support
 return HTTPS 200; invalid callback returns 307 with transaction-cookie removal
