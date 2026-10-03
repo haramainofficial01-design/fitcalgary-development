@@ -248,7 +248,7 @@ class AppShell extends StatelessWidget {
                 indicatorColor: FitColors.coral.withValues(alpha: .14),
                 selectedIndex: index < 0 ? 0 : index,
                 onDestinationSelected: (value) {
-                  if (value == index) return;
+                  if (location == paths[value]) return;
                   if (!MediaQuery.disableAnimationsOf(context)) {
                     HapticFeedback.selectionClick();
                   }

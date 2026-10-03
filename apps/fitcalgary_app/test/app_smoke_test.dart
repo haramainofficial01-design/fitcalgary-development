@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:fitcalgary_app/app/app.dart';
 import 'package:fitcalgary_app/app/providers.dart';
 import 'package:fitcalgary_app/core/onboarding_store.dart';
@@ -34,6 +35,14 @@ void main() {
       clubDirectoryProvider.overrideWith(
         (ref, query) async => const ContentPage<ClubListing>([], 0),
       ),
+      clubDetailProvider.overrideWith(
+        (ref, slug) async => ClubListing(
+          id: 'test-club',
+          slug: slug,
+          name: 'Test Club',
+          sport: 'Running',
+        ),
+      ),
       disciplinesProvider.overrideWith((ref) async => const <Discipline>[]),
       submissionsProvider.overrideWith(
         (ref) async => const <SubmissionRecord>[],
@@ -54,6 +63,24 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('The city,\nranked.'), findsOneWidget);
     expect(find.text('POST A RESULT →'), findsOneWidget);
+  });
+
+  testWidgets('selected Compete tab returns from club detail to directory', (
+    tester,
+  ) async {
+    await tester.pumpWidget(testApp(MemoryOnboardingStore(complete: true)));
+    await tester.pumpAndSettle();
+    GoRouter.of(tester.element(find.text('Home'))).go('/clubs/test-club');
+    await tester.pumpAndSettle();
+    expect(find.text('CLUB DETAILS'), findsOneWidget);
+    await tester.tap(find.text('Compete'));
+    await tester.pumpAndSettle();
+    expect(find.text('Calgary\ncompetitions.'), findsOneWidget);
+    GoRouter.of(tester.element(find.text('Home'))).go('/clubs/test-club');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('BACK TO COMPETE'));
+    await tester.pumpAndSettle();
+    expect(find.text('Calgary\ncompetitions.'), findsOneWidget);
   });
 
   testWidgets('failed pull refresh settles and shows a recoverable error', (

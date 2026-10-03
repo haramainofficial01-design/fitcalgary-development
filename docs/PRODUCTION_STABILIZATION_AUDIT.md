@@ -35,6 +35,8 @@ emulator results are not physical-device verification.
 | WATCH-005 | P2 | Self-reported community results appeared in the Watch's verified result history. | The summary selected all non-invalidated results, including `UNVERIFIED` claims. | Verified history now excludes unverified claims while retaining official and community rankings, with explicit board labels. A real local PostgreSQL workflow asserts both boundaries. Source verified; production API deployment remains held behind the existing authentication/safety gate. |
 | UI-003 | P2 | Failed pull-to-refresh leaked an unhandled future error; short inbox/review/saved lists could not be pulled to refresh. | Provider failure was awaited outside the screen's error-state handling; short lists lacked always-scrollable physics. | Refresh completion now settles without discarding the watched provider's error/retry state. Short lists remain refreshable. Directory failure/retry and actual empty-inbox drag/outage/recovery widget regressions pass. Shared error messages announce as live regions, and inbox/review loading states have semantic labels. |
 | WATCH-006 | P2 | Date-only competition entries could display one calendar day early in Calgary. | UTC midnight was treated as an event instant during local date formatting. | Watch now projects date-only calendar components into the viewer's zone; real timed events keep their instant. Smoke assertions pass for Edmonton, Vancouver, Auckland, UTC, cache round-trip, timed and missing dates. Standalone Watch simulator build passes. |
+| ROUTE-002 | P2 | Club/event detail pages had no back control; the selected Compete tab could not return to its directory. | Detail content lacked an exit affordance, and tab selection ignored every route sharing its tab index. | Added a back control with directory fallback and made tab no-op conditional on the exact root path. The selected-tab and back-control regression first failed, then passed after correction. |
+| CONTENT-004 | P2 | Date-only event detail responses used a timestamp, unlike directory responses; the web date-only formatter would receive an invalid concatenated timestamp. | Raw PostgreSQL DATE columns were serialized as Go time values, while PostgreSQL JSON aggregation already used YYYY-MM-DD. | Typed event start_date columns now use the consistent calendar-date contract; actual timestamp and established profile formats are unchanged. Local PostgreSQL regression reproduced the mismatch before correction. Production API deployment remains held behind the existing safety gate. |
 
 ## Executed evidence
 
@@ -67,7 +69,7 @@ emulator results are not physical-device verification.
   and dark-board regression coverage added. This is not a full VoiceOver,
   TalkBack, performance or screen-by-screen acceptance claim.
 
-Current executed checks: **43 Flutter tests**, Flutter analysis, **10 web-auth
+Current executed checks: **44 Flutter tests**, Flutter analysis, **10 web-auth
 tests**, web lint/type-check/production build, Watch codec/session-invalidation
 smoke and standalone Watch simulator build. Updated iOS simulator build includes
 the embedded Watch target; Android debug APK builds successfully with production
@@ -136,10 +138,16 @@ authenticated production acceptance matrix once provider access is available.
 
 ### Continuation point
 
-- Latest new checks: 43 Flutter tests and analysis pass; Watch codec/date/session
+- Latest new checks: 44 Flutter tests and analysis pass; Watch codec/date/session
   smoke and standalone simulator build pass. The new refresh regression first
   reproduced an unhandled failure, and the date regression first reproduced the
   previous-day error before the fixes.
+- Read-only iPhone simulator integration exercised the live gym directory,
+  gym detail, no-match search, club directory and club detail successfully.
+  No production catalog/account writes were performed. This is not an
+  authenticated workflow or a claim about every imported listing's accuracy.
+- Android emulator passed the same read-only catalog flow, including returning
+  from club detail to the Compete directory with the corrected selected tab.
 - Current fixes have no SMTP/social-provider configuration changes. Existing
   production auth blockers remain open, not waived. Store binaries are still
   older than these source fixes.

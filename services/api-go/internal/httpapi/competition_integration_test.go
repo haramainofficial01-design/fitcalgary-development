@@ -83,6 +83,13 @@ func TestCompetitionDatabaseWorkflow(t *testing.T) {
 	if err = pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM app_settings WHERE key='development_fixture_batch')`).Scan(&marker); err != nil || !marker {
 		t.Fatal("development marker required")
 	}
+	calendarRows, err := queryMaps(ctx, pool, `SELECT DATE '2026-10-24' AS start_date, TIMESTAMPTZ '2026-10-24 12:00:00+00' AS start_at`)
+	if err != nil || len(calendarRows) != 1 || calendarRows[0]["start_date"] != "2026-10-24" {
+		t.Fatal("database calendar dates must use the date-only API contract")
+	}
+	if instant, ok := calendarRows[0]["start_at"].(time.Time); !ok || instant.UTC().Format(time.RFC3339) != "2026-10-24T12:00:00Z" {
+		t.Fatal("database timestamps must retain their actual instant")
+	}
 	var logs strings.Builder
 	var evidenceStore storage.EvidenceStore = workflowStore{}
 	realStorage := os.Getenv("STORAGE_TEST_ENDPOINT") != ""

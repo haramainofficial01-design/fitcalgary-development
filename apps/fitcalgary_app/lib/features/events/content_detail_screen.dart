@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -27,6 +28,19 @@ class ContentDetailScreen extends ConsumerWidget {
       body: Column(
         children: [
           const BrandHeader(),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: TextButton.icon(
+                style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+                onPressed: () =>
+                    context.canPop() ? context.pop() : context.go('/events'),
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('BACK TO COMPETE'),
+              ),
+            ),
+          ),
           Expanded(
             child: detail.when(
               loading: () => const Center(child: CircularProgressIndicator()),

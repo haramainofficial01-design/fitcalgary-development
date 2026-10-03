@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 
 	"fitcalgary.ca/index/api/internal/auth"
 	"fitcalgary.ca/index/api/internal/config"
@@ -289,12 +290,27 @@ func queryMaps(ctx context.Context, queryer interface {
 	if err != nil {
 		return nil, err
 	}
+	calendarColumns := make(map[string]bool)
+	for _, field := range rows.FieldDescriptions() {
+		// Keep established profile response formats unchanged. Event start_date
+		// follows the same date-only contract as the public directory JSON.
+		if field.DataTypeOID == pgtype.DateOID && field.Name == "start_date" {
+			calendarColumns[field.Name] = true
+		}
+	}
 	result, err := pgx.CollectRows(rows, pgx.RowToMap)
 	if err != nil {
 		return nil, err
 	}
 	for _, row := range result {
 		for key, value := range row {
+			// SQL DATE is a calendar day, never a fabricated midnight event time.
+			if calendarColumns[key] {
+				if day, ok := value.(time.Time); ok {
+					row[key] = day.Format("2006-01-02")
+					continue
+				}
+			}
 			row[key] = normalizeDatabaseValue(value)
 		}
 	}
