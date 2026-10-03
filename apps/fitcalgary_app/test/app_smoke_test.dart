@@ -5,11 +5,17 @@ import 'package:go_router/go_router.dart';
 import 'package:fitcalgary_app/app/app.dart';
 import 'package:fitcalgary_app/app/providers.dart';
 import 'package:fitcalgary_app/core/onboarding_store.dart';
+import 'package:fitcalgary_app/core/auth_service.dart';
 import 'package:fitcalgary_app/domain/models.dart';
 import 'package:fitcalgary_app/features/profile/profile_screen.dart';
 import 'package:fitcalgary_app/features/gyms/gym_providers.dart';
 import 'package:fitcalgary_app/features/events/content_providers.dart';
 import 'package:fitcalgary_app/features/leaderboards/competition_providers.dart';
+
+class _GuestAuth extends AuthService {
+  @override
+  Future<AuthTokens?> current() async => null;
+}
 
 void main() {
   ProviderScope testApp(
@@ -17,6 +23,7 @@ void main() {
     Future<GymPage> Function()? loadDirectory,
   }) => ProviderScope(
     overrides: [
+      authServiceProvider.overrideWithValue(_GuestAuth()),
       catalogSnapshotProvider.overrideWith(
         (ref) async => const CatalogSnapshot(gyms: 273, events: 531, boards: 4),
       ),
@@ -133,10 +140,30 @@ void main() {
       await tester.pumpWidget(testApp(MemoryOnboardingStore(complete: true)));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
+      await tester.scrollUntilVisible(
+        find.text('YOUR NEXT BEST'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'Home metrics at double text size',
+      );
       await tester.tap(find.text('Gyms'));
       await tester.pumpAndSettle();
       expect(find.text('Every major gym\nin Calgary.'), findsOneWidget);
       expect(tester.takeException(), isNull);
+      for (final tab in ['Board', 'Compete', 'Me']) {
+        await tester.tap(find.text(tab));
+        await tester.pumpAndSettle();
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: '$tab at double text size',
+        );
+      }
     },
   );
 

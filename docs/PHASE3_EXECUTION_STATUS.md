@@ -1,5 +1,33 @@
 # Phase 3 execution status
 
+## Current production-stabilization override
+
+The historical milestone matrix below is not a current production acceptance.
+Use `docs/PRODUCTION_STABILIZATION_AUDIT.md` for active defects and executed evidence.
+The private baseline `bf7bd93` is preserved; `7c3de27` adds verified submission
+recovery. Subsequent account/content/layout checks pass 57 Flutter tests and
+analysis, debug Android build, iOS simulator build and primary navigation checks.
+Normal applications are restored after integration harnesses where recorded.
+
+Web, API and OIDC endpoints are live, not merely deployment templates:
+
+- Website: https://fitcalgary-web.fitcalgary.workers.dev
+- API: https://fitcalgary-api-production.up.railway.app/api/v1
+- Issuer: https://fitcalgary-auth-production.up.railway.app/realms/fitcalgary
+
+Public-browser checks and anonymous authorization boundaries do **not** prove
+authenticated production workflows. SMTP/verified sending domain, dedicated
+Google OAuth setup, Apple broker configuration and physical verification remain
+BLOCKED_EXTERNAL. Unrelated HBIC configuration is out of scope. Store binaries
+do not contain all private stabilization fixes. Native phone material adoption,
+full authenticated regression and final release/design QA remain IN_PROGRESS.
+No current final Client handoff or safe-to-release claim is authorized by a
+historical PASS label. Do not push the Client repository before the final gate.
+
+Next: notification late-response/logout regression, then remaining independent
+security/visual/accessibility checks. Resume actual provider flows immediately
+when the explicitly authorized domain/project/key and physical device are available.
+
 ## Operating record
 
 - **Scope:** Original FitCalgary V1 only. The separate future community-product

@@ -27,6 +27,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   bool busy = false;
   String? error;
   Future<void> signIn([AuthIdentityProvider? provider]) async {
+    if (busy) return;
     setState(() {
       busy = true;
       error = null;

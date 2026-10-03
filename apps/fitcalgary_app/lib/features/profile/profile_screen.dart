@@ -5,25 +5,56 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/providers.dart';
 import '../../app/widgets.dart';
+import '../../core/auth_service.dart';
 import '../../core/refresh.dart';
 import '../../core/theme.dart';
 import '../../domain/models.dart';
 import '../gyms/gym_providers.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Scaffold(
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  late Future<AuthTokens?> session;
+
+  @override
+  void initState() {
+    super.initState();
+    session = ref.read(authServiceProvider).current();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
     body: Column(
       children: [
         const BrandHeader(),
         Expanded(
           child: FutureBuilder(
-            future: ref.read(authServiceProvider).current(),
+            future: session,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return Center(
+                  child: Semantics(
+                    label: 'Loading your account',
+                    child: const CircularProgressIndicator(),
+                  ),
+                );
+              }
+              if (snapshot.hasError) {
+                return ListView(
+                  children: [
+                    ErrorPanel(
+                      message: 'Your account could not be reached. Please try again.',
+                      onRetry: () => setState(() {
+                        session = ref.read(authServiceProvider).current();
+                      }),
+                    ),
+                  ],
+                );
               }
               if (snapshot.data == null) return const _SignedOutProfile();
               return const _SignedInProfile();

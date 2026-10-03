@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -40,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 26),
                 const Text(
-                  'Find the real cost of membership. Post a mark. Every result is reviewed against a published standard before it lands.',
+                  'Compare available membership prices. Post a mark for official review, or share a clearly labeled community result.',
                   style: TextStyle(
                     color: Color(0xFFD5D4CF),
                     fontSize: 17,
@@ -86,8 +88,11 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  runSpacing: 8,
                   children: [
                     const Overline('The real number'),
                     TextButton(
@@ -134,8 +139,11 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  runSpacing: 8,
                   children: [
                     const Overline('Explore events'),
                     TextButton(
@@ -225,7 +233,7 @@ class _SnapshotGrid extends StatelessWidget {
     final values = [
       ('${gymCount ?? '—'}', 'GYMS INDEXED'),
       ('${eventCount ?? '—'}', 'EVENTS LISTED'),
-      ('${boardCount ?? '—'}', 'ACTIVE BOARDS'),
+      ('${boardCount ?? '—'}', 'PUBLISHED BOARDS'),
       ('YOU', 'YOUR NEXT BEST'),
     ];
     return Container(
@@ -238,9 +246,16 @@ class _SnapshotGrid extends StatelessWidget {
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 1.8,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: MediaQuery.textScalerOf(context).scale(29) > 43
+              ? 1
+              : 2,
+          mainAxisExtent: math.max(
+            110,
+            46 +
+                MediaQuery.textScalerOf(context).scale(29) * 1.2 +
+                MediaQuery.textScalerOf(context).scale(8) * 2.8,
+          ),
         ),
         itemCount: values.length,
         itemBuilder: (context, index) => Container(

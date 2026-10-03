@@ -1,9 +1,12 @@
 import 'package:fitcalgary_app/app/app.dart';
+import 'package:dio/dio.dart';
+import 'package:fitcalgary_app/core/api_client.dart';
 import 'package:fitcalgary_app/app/providers.dart';
 import 'package:fitcalgary_app/core/auth_service.dart';
 import 'package:fitcalgary_app/core/onboarding_store.dart';
 import 'package:fitcalgary_app/domain/models.dart';
 import 'package:fitcalgary_app/features/gyms/gym_providers.dart';
+import 'package:fitcalgary_app/features/profile/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,7 +16,79 @@ class _SignedInAuth extends AuthService {
   Future<AuthTokens?> current() async => const AuthTokens(accessToken: 'test');
 }
 
+class _RecoveringAuth extends AuthService {
+  int requests = 0;
+  @override
+  Future<AuthTokens?> current() async {
+    if (++requests == 1) throw StateError('Private provider detail');
+    return null;
+  }
+}
+
 void main() {
+  test(
+    'home board count uses published boards, not configured disciplines',
+    () async {
+      final api = ApiClient(_SignedInAuth());
+      api.dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.path, isNot('/disciplines'));
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: options.path == '/leaderboards'
+                    ? {
+                        'data': [
+                          {'id': 'published-board'},
+                        ],
+                      }
+                    : {
+                        'total': options.path == '/gyms' ? 273 : 531,
+                        'data': [],
+                      },
+              ),
+            );
+          },
+        ),
+      );
+      final container = ProviderContainer(
+        overrides: [apiProvider.overrideWithValue(api)],
+      );
+      addTearDown(container.dispose);
+      addTearDown(api.dio.close);
+      final snapshot = await container.read(catalogSnapshotProvider.future);
+      expect(snapshot.boards, 1);
+      expect(snapshot.gyms, 273);
+      expect(snapshot.events, 531);
+    },
+  );
+  testWidgets(
+    'profile identity outage shows retry instead of a false signed-out state',
+    (tester) async {
+      final auth = _RecoveringAuth();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [authServiceProvider.overrideWithValue(auth)],
+          child: const MaterialApp(home: ProfileScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Your account could not be reached. Please try again.'),
+        findsOneWidget,
+      );
+      expect(find.text('Private provider detail'), findsNothing);
+      expect(find.text('Your fitness\nidentity.'), findsNothing);
+      expect(auth.requests, 1);
+      await tester.tap(find.text('TRY AGAIN'));
+      await tester.pumpAndSettle();
+      expect(find.text('Your fitness\nidentity.'), findsOneWidget);
+      expect(auth.requests, 2);
+      expect(tester.takeException(), isNull);
+    },
+  );
   test('profile parses ranking eligibility fields and privacy controls', () {
     final profile = AthleteProfile.fromJson({
       'id': 'athlete',

@@ -51,7 +51,7 @@ final catalogSnapshotProvider = FutureProvider.autoDispose<CatalogSnapshot>((
     dio.get<Map<String, dynamic>>('/gyms', queryParameters: {'pageSize': 1}),
     dio.get<Map<String, dynamic>>('/events', queryParameters: {'pageSize': 1}),
     dio.get<Map<String, dynamic>>(
-      '/disciplines',
+      '/leaderboards',
       queryParameters: {'pageSize': 1},
     ),
   ]);

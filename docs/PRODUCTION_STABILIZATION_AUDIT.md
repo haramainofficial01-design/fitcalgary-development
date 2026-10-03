@@ -40,6 +40,35 @@ emulator results are not physical-device verification.
 
 ## Executed evidence
 
+### Account, content and responsive-layout increment
+
+- Profile identity-provider failures now show a safe, retryable account state
+  rather than incorrectly presenting the user as signed out. The session future
+  is retained across layout rebuilds; repeated sign-in callbacks are guarded.
+- Home counts published leaderboards instead of configured disciplines. Copy
+  distinguishes official review from unverified community results and does not
+  imply missing membership prices are known.
+- A scroll-through test reproduced metric-card clipping and section-header
+  overflow at double text size on a 320-point phone. Cards now switch to one
+  column with scaled height; section headers wrap. All primary tabs pass this
+  automated large-text check. This is not full VoiceOver/TalkBack verification.
+- Executed: **57 Flutter tests PASS**, analysis PASS, production-configured debug
+  Android build PASS. iOS navigation integration and simulator build passed;
+  Android navigation integration passed. These are not signed store artifacts.
+- Live headless browser checks passed seven public pages at 390px without
+  horizontal overflow or script errors. Gym search/no-match recovery, two-gym
+  comparison, and directory layout at 768px/1440px passed. Actual captures and
+  bounded logs are in the local temporary evidence directory, not Client assets.
+- Evaluated a targeted UIKit native glass backdrop. It compiled and navigation
+  passed, but its preview contained reflected Flutter labels. The experiment
+  was not retained: existing readable Flutter navigation remains intact.
+  Genuine native phone-glass adoption remains unfinished; native watchOS glass
+  is unchanged. No claim of complete design/performance verification is made.
+- Next independent action: test notification-registration responses arriving
+  after sign-out; prevent stale device state from being restored. Then continue
+  remaining authenticated/visual/accessibility/performance acceptance coverage.
+  Provider setup, real-device checks, signed replacements and handoff remain gated.
+
 ### Submission recovery increment
 
 - Private baseline: `bf7bd93`. File-picker and unreadable-file exceptions now
