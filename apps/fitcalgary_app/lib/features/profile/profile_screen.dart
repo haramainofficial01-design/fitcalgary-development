@@ -535,7 +535,7 @@ class _EditProfileSheetState extends ConsumerState<_EditProfileSheet> {
                 : null,
           ),
           if (error != null)
-            Text(error!, style: const TextStyle(color: FitColors.coralDark)),
+            Text(error!, style: TextStyle(color: context.fitAccent)),
           const SizedBox(height: 14),
           FilledButton(
             onPressed: busy ? null : save,

@@ -26,6 +26,12 @@ emulator results are not physical-device verification.
 | CONTENT-002 | P1 content dependency | All 531 live competition records originally had no structured date. | Client-supplied `next_dates` is natural-language schedule text, often approximate or multiple dates; the original importer parsed only ISO timestamps. | Three exact single-day source entries were independently corroborated and now populate a date-only field in local migration tests: YYC-172 (Sep 26), YYC-506 (Oct 24), YYC-508 (Dec 12). Their time remains unknown. The other 528 remain undated. This correction is **not yet deployed**, and registration-open status is not inferred from the date. |
 | CONTENT-003 | P2 | Six competition registration links return HTTP 404. | The approved source retained links that have since disappeared. | Cleared only the six broken public website fields in the import source and added a provenance-guarded migration that hides the public action without deleting the original source payload. Local migration verified six of six links hidden. **Not yet deployed.** No replacement URL was invented. |
 | SEC-001 | P1 | A database tool emitted a production PostgreSQL credential in local session output during backup. | The tunnel helper includes its connection string when closing. | Database role password and Railway Postgres/API variables rotated; API readiness and catalog verified afterward. The temporary Railway SSH key was deregistered and deleted. Remote-local tunnel authentication did not provide a valid old-password rejection test; external credential rejection remains to be independently confirmed. |
+| AUTH-006 | P1 | Concurrent mobile refreshes could reuse a rotating refresh token; a late response could restore a logged-out session. | No single-flight refresh or credential-write/session revision guard. | Fixed; refresh, logout-in-flight, revoked-refresh and outage-preservation regression tests pass. New signed store binaries still required. |
+| AUTH-007 | P2 | Logout could fail visibly or hang when notification cleanup or provider revocation is unavailable. | Mobile cleanup propagated API/browser failures; web revocation had no deadline. | Local cleanup now completes independently of those expected failures; web revocation is bounded. Remote revocation/delivery is not claimed without real provider verification. |
+| WEB-003 | P1 | Provider network failure during the web callback could escape its error handling; the sign-in transaction was deleted on the wrong cookie path. | Exchange fetch was unguarded/unbounded and deletion did not match `/api/auth`. | Callback catches failures, bounds exchange and safely clears the transaction; regression tests and live invalid-callback checks pass. |
+| WATCH-004 | P1 | A response started before logout/account change could repopulate cached athlete data afterward. | The async refresh did not check a session revision. | Response/cache updates now reject outdated revisions, logout takes precedence, and cached account data is cleared appropriately. Revision smoke and simulator build pass; authenticated device workflow remains unverified. |
+| UI-002 | P2 | Small text failed contrast in selected light-theme surfaces; dark leaderboard non-podium badges were light-on-light. | Static brand colors and fixed white badge text were used across appearances. | Thematic accent/secondary colors and inverse badge text fixed. Light/dark contrast and dark-board widget tests pass. |
+| ROUTE-001 | P2 | The home gym-index arrow looked like a link but had no action. | The affordance was plain text. | It is now a 44-point-minimum action routing to the directory; widget navigation regression passes. |
 
 ## Executed evidence
 
@@ -58,7 +64,7 @@ emulator results are not physical-device verification.
   and dark-board regression coverage added. This is not a full VoiceOver,
   TalkBack, performance or screen-by-screen acceptance claim.
 
-Current executed checks: **39 Flutter tests**, Flutter analysis, **10 web-auth
+Current executed checks: **40 Flutter tests**, Flutter analysis, **10 web-auth
 tests**, web lint/type-check/production build, Watch codec/session-invalidation
 smoke and standalone Watch simulator build. Updated iOS simulator build includes
 the embedded Watch target; Android debug APK builds successfully with production
@@ -74,6 +80,15 @@ Additional mobile regressions prove that revoked refresh tokens clear local
 credentials without a browser logout, temporary provider failures preserve the
 credentials for retry, and refresh retains the prior ID token when a provider
 omits its replacement. These tests use development fakes, not real provider login.
+
+Subsequent runtime inspection identified low-contrast dark gym operator labels
+and account error text; those now use the appearance-aware brand accent. Sign-in
+errors announce as a live semantic region and clear on retry. Android public
+navigation reached the production gym directory (273 locations and truthful
+known/unknown pricing) and the official/community leaderboard entry screen.
+Live Go health/readiness return 200; anonymous profile, Watch summary, submissions,
+notifications and admin requests all return 401. These are not authenticated
+workflow or exhaustive accessibility/performance checks.
 
 Cloudflare Worker `5f06bc8d-f335-4c74-b1a4-416070c77b80` contains the current web
 callback/logout/contrast fixes. Home, gyms, clubs, events, privacy and support

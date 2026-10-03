@@ -103,9 +103,9 @@ class PricingPlans extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 if (plan['pricing_complete'] != true)
-                  const Text(
+                  Text(
                     'Pricing incomplete — no all-in estimate',
-                    style: TextStyle(color: FitColors.coralDark),
+                    style: TextStyle(color: context.fitAccent),
                   )
                 else ...[
                   Text(

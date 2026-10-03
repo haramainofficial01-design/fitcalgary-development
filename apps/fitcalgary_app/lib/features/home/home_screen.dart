@@ -86,18 +86,22 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Overline('The real number'),
-                    Text(
-                      'GYM INDEX →',
-                      style: TextStyle(
-                        color: FitColors.coralDark,
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.4,
+                    const Overline('The real number'),
+                    TextButton(
+                      onPressed: () => context.go('/gyms'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: context.fitAccent,
+                        minimumSize: const Size(44, 44),
+                        textStyle: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.4,
+                        ),
                       ),
+                      child: const Text('GYM INDEX →'),
                     ),
                   ],
                 ),

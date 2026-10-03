@@ -232,7 +232,7 @@ class _Fact extends StatelessWidget {
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 19, color: FitColors.coralDark),
+        Icon(icon, size: 19, color: context.fitAccent),
         const SizedBox(width: 12),
         Expanded(child: Text(text, style: const TextStyle(height: 1.35))),
       ],

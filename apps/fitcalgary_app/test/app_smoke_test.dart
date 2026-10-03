@@ -51,6 +51,21 @@ void main() {
     expect(find.text('POST A RESULT →'), findsOneWidget);
   });
 
+  testWidgets('home gym index action opens the actual directory', (
+    tester,
+  ) async {
+    await tester.pumpWidget(testApp(MemoryOnboardingStore(complete: true)));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('GYM INDEX →'),
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('GYM INDEX →'));
+    await tester.pumpAndSettle();
+    expect(find.text('Every major gym\nin Calgary.'), findsOneWidget);
+  });
+
   testWidgets('primary product navigation opens every Client shell area', (
     tester,
   ) async {

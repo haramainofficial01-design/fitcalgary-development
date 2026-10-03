@@ -242,8 +242,8 @@ class _GymsScreenState extends ConsumerState<GymsScreen> {
                               children: [
                                 Text(
                                   gym.operatorName,
-                                  style: const TextStyle(
-                                    color: FitColors.coralDark,
+                                  style: TextStyle(
+                                    color: context.fitAccent,
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
                                   ),

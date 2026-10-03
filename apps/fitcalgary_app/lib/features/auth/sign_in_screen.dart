@@ -27,7 +27,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   bool busy = false;
   String? error;
   Future<void> signIn([AuthIdentityProvider? provider]) async {
-    setState(() => busy = true);
+    setState(() {
+      busy = true;
+      error = null;
+    });
     try {
       final auth = ref.read(authServiceProvider);
       switch (provider) {
@@ -118,9 +121,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               if (error != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 18),
-                  child: Text(
-                    error!,
-                    style: const TextStyle(color: FitColors.coralDark),
+                  child: Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      error!,
+                      style: TextStyle(color: context.fitAccent),
+                    ),
                   ),
                 ),
               const SizedBox(height: 24),

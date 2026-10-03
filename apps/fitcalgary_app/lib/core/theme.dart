@@ -114,6 +114,7 @@ ThemeData _fitTheme(Brightness brightness) {
 }
 
 extension FitThemeColors on BuildContext {
+  Color get fitAccent => Theme.of(this).colorScheme.primary;
   Color get fitInk => Theme.of(this).colorScheme.onSurface;
   Color get fitMuted => Theme.of(this).colorScheme.onSurfaceVariant;
   Color get fitLine => Theme.of(this).colorScheme.outlineVariant;
