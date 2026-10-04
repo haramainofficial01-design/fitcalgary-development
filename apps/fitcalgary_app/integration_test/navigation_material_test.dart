@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fitcalgary_app/core/onboarding_store.dart';
 import 'package:fitcalgary_app/main.dart' as app;
+import 'package:fitcalgary_app/features/profile/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -21,6 +22,14 @@ void main() {
       await tester.tap(find.text(tab));
       await tester.pump(const Duration(seconds: 1));
       expect(tester.takeException(), isNull, reason: '$tab navigation');
+      if (tab == 'Gyms') {
+        expect(find.text('Every major gym\nin Calgary.'), findsOneWidget);
+      }
+      if (tab == 'Compete') {
+        expect(find.text('Calgary\ncompetitions.'), findsOneWidget);
+      }
+      if (tab == 'Me') expect(find.byType(ProfileScreen), findsOneWidget);
+      if (tab == 'Home') expect(find.text('POST A RESULT →'), findsOneWidget);
     }
     await tester.pumpAndSettle();
     if (Platform.isIOS) {
@@ -35,5 +44,5 @@ void main() {
       // Temporary app capture path only; no account/session information.
       debugPrint('FitCalgary visual capture: ${capture.path}');
     }
-  });
+  }, skip: const bool.fromEnvironment('NATIVE_IOS_NAVIGATION'));
 }

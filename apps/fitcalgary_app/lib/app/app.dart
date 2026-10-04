@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../core/onboarding_store.dart';
 import '../core/theme.dart';
 import '../core/layer_surface.dart';
+import '../core/native_navigation.dart';
 import '../features/auth/sign_in_screen.dart';
 import '../features/events/events_screen.dart';
 import '../features/events/content_detail_screen.dart';
@@ -223,10 +224,13 @@ class AppShell extends StatelessWidget {
         ? 2
         : paths.indexOf(location);
     return Scaffold(
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 960),
-          child: child,
+      body: SafeArea(
+        bottom: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 960),
+            child: child,
+          ),
         ),
       ),
       bottomNavigationBar: SafeArea(
@@ -236,47 +240,53 @@ class AppShell extends StatelessWidget {
           heightFactor: 1,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 620),
-            child: FitLayerSurface(
-              floating: true,
-              child: NavigationBar(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                height: 68,
-                animationDuration: MediaQuery.disableAnimationsOf(context)
-                    ? Duration.zero
-                    : const Duration(milliseconds: 220),
-                indicatorColor: FitColors.coral.withValues(alpha: .14),
-                selectedIndex: index < 0 ? 0 : index,
-                onDestinationSelected: (value) {
-                  if (location == paths[value]) return;
-                  if (!MediaQuery.disableAnimationsOf(context)) {
-                    HapticFeedback.selectionClick();
-                  }
-                  context.go(paths[value]);
-                },
-                destinations: const [
-                  NavigationDestination(
-                    icon: Icon(Icons.home_outlined),
-                    selectedIcon: Icon(Icons.home),
-                    label: 'Home',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.grid_view_outlined),
-                    label: 'Gyms',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.bar_chart_outlined),
-                    label: 'Board',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.calendar_today_outlined),
-                    label: 'Compete',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.person_outline),
-                    label: 'Me',
-                  ),
-                ],
+            child: NativeFitNavigation(
+              selectedIndex: index < 0 ? 0 : index,
+              onSelected: (value) {
+                if (location != paths[value]) context.go(paths[value]);
+              },
+              fallback: FitLayerSurface(
+                floating: true,
+                child: NavigationBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  height: 68,
+                  animationDuration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 220),
+                  indicatorColor: FitColors.coral.withValues(alpha: .14),
+                  selectedIndex: index < 0 ? 0 : index,
+                  onDestinationSelected: (value) {
+                    if (location == paths[value]) return;
+                    if (!MediaQuery.disableAnimationsOf(context)) {
+                      HapticFeedback.selectionClick();
+                    }
+                    context.go(paths[value]);
+                  },
+                  destinations: const [
+                    NavigationDestination(
+                      icon: Icon(Icons.home_outlined),
+                      selectedIcon: Icon(Icons.home),
+                      label: 'Home',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.grid_view_outlined),
+                      label: 'Gyms',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.bar_chart_outlined),
+                      label: 'Board',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.calendar_today_outlined),
+                      label: 'Compete',
+                    ),
+                    NavigationDestination(
+                      icon: Icon(Icons.person_outline),
+                      label: 'Me',
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

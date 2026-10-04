@@ -82,6 +82,14 @@ class _SaveGymButtonState extends ConsumerState<SaveGymButton> {
 class PricingPlans extends StatelessWidget {
   const PricingPlans({required this.plans, super.key});
   final List<dynamic> plans;
+  String advertisedPrice(dynamic plan) {
+    final cents = num.tryParse('${plan['recurring_cents']}');
+    // Incomplete imported plans can contain zero as an unknown-price sentinel.
+    // Only a complete plan may present zero as an actual free membership.
+    return plan['pricing_complete'] == true || (cents != null && cents > 0)
+        ? money(plan['recurring_cents'])
+        : 'Unconfirmed';
+  }
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -121,7 +129,7 @@ class PricingPlans extends StatelessWidget {
                 ],
                 const SizedBox(height: 10),
                 Text(
-                  'Advertised: ${plan['pricing_complete'] == true ? money(plan['recurring_cents']) : 'Unconfirmed'} / ${plan['billing_frequency']?.toString().toLowerCase() ?? 'period'}',
+                  'Advertised: ${advertisedPrice(plan)} / ${plan['billing_frequency']?.toString().toLowerCase() ?? 'period'}',
                 ),
                 Text(
                   'Mandatory recurring fee: ${money(plan['mandatory_recurring_fee_cents'])}',

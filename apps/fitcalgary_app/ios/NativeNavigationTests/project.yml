@@ -1,0 +1,24 @@
+name: FitNavigationTests
+options:
+  deploymentTarget:
+    iOS: '26.0'
+targets:
+  FitNavigationTests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - NativeNavigationUITests.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ca.fitcalgary.index.navigation-tests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: '5.0'
+        CODE_SIGNING_ALLOWED: NO
+schemes:
+  FitNavigationTests:
+    build:
+      targets:
+        FitNavigationTests: all
+    test:
+      targets:
+        - FitNavigationTests

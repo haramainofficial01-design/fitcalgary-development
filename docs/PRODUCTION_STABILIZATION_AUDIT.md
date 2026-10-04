@@ -40,6 +40,56 @@ emulator results are not physical-device verification.
 
 ## Executed evidence
 
+### Native iOS navigation preview
+
+- Added an opt-in UIKit navigation surface using genuine `UIGlassEffect` on
+  iOS 26+. The material and all five buttons share one native view hierarchy;
+  Dart still owns application routing. Standard builds and Android retain the
+  existing Flutter navigation. Enable only for review with
+  `NATIVE_IOS_NAVIGATION=true`; publication requires visual approval.
+- Native Xcode UI tests operated Home, Gyms, Board, Compete and Me on iPhone
+  17 Pro (iOS 26.5) and iPad Pro 13-inch (iOS 27): both PASS. Result bundles:
+  `/tmp/fitcalgary-native-ui-run-v3.xcresult` and
+  `/tmp/fitcalgary-native-ui-ipad.xcresult`. The original Flutter gesture test
+  could not operate UIKit buttons and is not counted as native verification.
+  An initial XCTest assertion used incorrect filter copy; it was corrected to
+  the actual label before the successful rerun.
+- Actual iPhone light/dark captures were inspected: readable labels, selected
+  state, brand identity and no reflected duplicate Flutter controls. UIKit
+  supports Dynamic Type, selected accessibility traits and opaque surfaces for
+  Reduce Transparency/increased contrast. Full VoiceOver, physical-device
+  performance and authenticated screens remain unverified.
+- An additional native large-text/increased-contrast run failed: the home CTA
+  was below the visible viewport, and its screenshot also exposed a clipped
+  Compete label. The test now scrolls to the CTA; native preferred font metrics
+  determine the navigation height and propagate changes to Flutter. This
+  corrected run PASS (`/tmp/fitcalgary-native-ui-accessibility-v2.xcresult`);
+  its capture confirms the two-line label is no longer clipped. This is not a
+  VoiceOver audit or physical-device verification.
+- The scrolled large-text capture exposed dark content behind dark status-bar
+  icons in light mode. The shell now keeps the top safe-area backdrop outside
+  scrolling content, with a widget regression enforcing the inset. The current
+  final source passed the native route test at large text/increased contrast
+  (`/tmp/fitcalgary-native-ui-final.xcresult`). Its actual scrolled capture was
+  inspected: status icons remain readable and navigation labels are unclipped.
+  **64 Flutter tests PASS; analysis PASS; embedded Watch/iOS simulator build
+  PASS; Android debug build PASS.** These are not signed store artifacts.
+- Capability errors and unsupported platforms retain usable Flutter controls;
+  dedicated tests cover those fallbacks, including an opt-in run with mocked
+  unsupported/error responses. **63 Flutter tests PASS; analysis PASS** after
+  the pricing change below. No store binary was replaced and no
+  Client repository was changed. Provider setup and real-device auth remain the
+  release blockers; this preview does not resolve or bypass them.
+
+### Advertised pricing presentation
+
+- An incomplete plan no longer hides a known positive advertised recurring
+  price merely because other fees are unknown. Missing fees remain explicitly
+  unavailable and no all-in estimate is invented. Incomplete imported zero
+  sentinels still show Unconfirmed, not a free membership.
+- Regression checks cover a known $65 advertised price with missing fees and
+  an incomplete zero-price sentinel. Both PASS in the 63-test Flutter suite.
+
 ### Logout notification race and interrupted-submission increment
 
 - Registration and permission/token refresh work now carry a local revision.

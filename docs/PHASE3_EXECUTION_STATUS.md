@@ -19,13 +19,21 @@ Public-browser checks and anonymous authorization boundaries do **not** prove
 authenticated production workflows. SMTP/verified sending domain, dedicated
 Google OAuth setup, Apple broker configuration and physical verification remain
 BLOCKED_EXTERNAL. Unrelated HBIC configuration is out of scope. Store binaries
-do not contain all private stabilization fixes. Native phone material adoption,
+do not contain all private stabilization fixes. An opt-in native UIKit glass
+navigation preview passes real-control Xcode tests on iPhone and iPad simulators;
+light/dark captures were inspected. Default adoption requires visual approval.
+Native phone material adoption,
 full authenticated regression and final release/design QA remain IN_PROGRESS.
 No current final Client handoff or safe-to-release claim is authorized by a
 historical PASS label. Do not push the Client repository before the final gate.
 
-Next: notification late-response/logout regression, then remaining independent
-security/visual/accessibility checks. Resume actual provider flows immediately
+The notification logout race and interrupted-submission return path are fixed
+in `6cd4ef6`; their regressions pass. The native navigation preview, capability
+fallbacks, native large-text height, status-bar safe area and honest advertised
+price display are the current increment: 64 Flutter tests PASS and analysis PASS.
+Native large-text/high-contrast route testing passes; full screen-reader and
+physical-device verification remain outstanding.
+Next: remaining independent security/visual/accessibility checks. Resume actual provider flows immediately
 when the explicitly authorized domain/project/key and physical device are available.
 
 ## Operating record

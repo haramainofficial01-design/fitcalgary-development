@@ -48,6 +48,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('\$0.00 / month all-in'), findsNothing);
+    expect(find.text('Advertised: Unconfirmed / period'), findsOneWidget);
   });
   testWidgets('directory error can retry into a truthful empty state', (
     tester,
