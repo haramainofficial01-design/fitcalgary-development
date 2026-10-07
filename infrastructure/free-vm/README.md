@@ -29,7 +29,15 @@ multipart evidence storage; its internal ports are not published.
    Database files contain POSTGRES_USER/PASSWORD/DB. Keycloak contains its DB
    credentials. API contains the new private DATABASE_URL, existing device-token
    encryption key, audience and storage credentials. Storage contains matching
-   AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY. Preserve existing encryption keys.
+   AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY and S3_BUCKET for private bucket
+   initialization. Preserve existing encryption keys.
+   `hosts.env` must set IDENTITY_DB_NAME to the recovered database name (`railway`
+   in the current identity export). Its value must match POSTGRES_DB in
+   `identity-db.env`. Do not start Keycloak against an empty database named
+   `keycloak` while the original accounts remain in `railway`.
+   Service env files use Compose's raw format: store unquoted single-line values
+   so `$`/quotes in existing secrets are preserved rather than interpolated.
+   Use a current Docker Compose version supporting raw env files (2.30+).
 
 ## Restore before serving traffic
 
@@ -48,8 +56,11 @@ in place of the original identity data. Never run a clean/restore against Railwa
 Railway's recorded database images are PostgreSQL 18; verify server versions and
 extensions from current exports before choosing a different major version.
 
-Create the private bucket using `services/api-go/cmd/storage-configure` with the
-new configuration. For existing objects, copy and compare key, size and checksum
+Initialize the private bucket with storage.env's S3_BUCKET (SeaweedFS mini creates
+it with the authenticated configuration). Apply and verify browser CORS using
+`services/api-go/cmd/storage-configure`, S3_USE_PATH_STYLE=true and the exact
+approved STORAGE_CORS_ORIGIN. That command configures an existing bucket; it does
+not create one. For existing objects, copy and compare key, size and checksum
 before proceeding. Keep source copies intact. Do not run `dev-seed`.
 
 Only after restore and configuration checks, start the application profile:

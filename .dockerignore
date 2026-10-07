@@ -1,0 +1,23 @@
+# Server builds need only Go source/migrations and the Keycloak build definition.
+# Do not send private history, local secrets, client media or platform caches.
+**
+!services/
+!services/api-go/
+!services/api-go/**
+!services/api/
+!services/api/migrations/
+!services/api/migrations/**
+!infrastructure/
+!infrastructure/keycloak/
+!infrastructure/keycloak/Dockerfile
+**/.env*
+**/*.dump
+**/*.sql.enc*
+**/*.key
+**/*.pem
+**/*.p8
+**/bin/
+**/node_modules/
+**/.git/
+**/coverage/
+**/*.log

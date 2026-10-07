@@ -10,6 +10,7 @@
     "build": "vinext build",
     "start": "wrangler dev --config dist/server/wrangler.json",
     "test:auth": "node --experimental-strip-types --test test/server-auth.test.mjs",
+    "test:deployment": "node --experimental-strip-types --test test/deployment-config.test.mjs",
     "lint": "oxlint",
     "format": "oxfmt"
   },

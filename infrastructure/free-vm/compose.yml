@@ -3,7 +3,7 @@ services:
   application-db:
     image: postgres:18-alpine
     restart: unless-stopped
-    env_file: /etc/fitcalgary/application-db.env
+    env_file: [{path: /etc/fitcalgary/application-db.env, format: raw}]
     volumes: ['application-db:/var/lib/postgresql']
     healthcheck:
       test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
@@ -17,7 +17,7 @@ services:
   identity-db:
     image: postgres:18-alpine
     restart: unless-stopped
-    env_file: /etc/fitcalgary/identity-db.env
+    env_file: [{path: /etc/fitcalgary/identity-db.env, format: raw}]
     volumes: ['identity-db:/var/lib/postgresql']
     healthcheck:
       test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
@@ -30,7 +30,7 @@ services:
     image: chrislusf/seaweedfs:4.45
     command: [mini, -dir=/data, -ip=storage, -ip.bind=0.0.0.0, -s3.port=8333, -admin.ui=false, -webdav=false, -s3.port.iceberg=0, -s3.port.lance=0, -master.telemetry=false]
     restart: unless-stopped
-    env_file: /etc/fitcalgary/storage.env
+    env_file: [{path: /etc/fitcalgary/storage.env, format: raw}]
     volumes: ['evidence:/data']
     mem_limit: 1536m
     logging: *logging
@@ -40,10 +40,10 @@ services:
       context: ../..
       dockerfile: infrastructure/keycloak/Dockerfile
     restart: unless-stopped
-    env_file: /etc/fitcalgary/keycloak.env
+    env_file: [{path: /etc/fitcalgary/keycloak.env, format: raw}]
     environment:
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://identity-db:5432/keycloak
+      KC_DB_URL: jdbc:postgresql://identity-db:5432/${IDENTITY_DB_NAME:?Use the recovered identity database name}
       KC_HTTP_ENABLED: 'true'
       KC_HOSTNAME: https://${AUTH_HOST:?Provide the approved auth hostname}
       KC_HOSTNAME_STRICT: 'true'
@@ -60,7 +60,7 @@ services:
       context: ../..
       dockerfile: services/api-go/Dockerfile
     restart: unless-stopped
-    env_file: /etc/fitcalgary/api.env
+    env_file: [{path: /etc/fitcalgary/api.env, format: raw}]
     environment:
       APP_ENV: production
       DEMO_DATA: 'false'

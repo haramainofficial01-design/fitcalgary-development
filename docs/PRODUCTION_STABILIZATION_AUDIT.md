@@ -15,6 +15,15 @@ volumes are retained and all source workloads are stopped. Replacement hosting,
 actual authentication and store/handoff gates remain incomplete. See
 `ZERO_COST_MIGRATION.md` for exact recovery evidence, constraints and next actions.
 
+Local ARM migration rehearsal now restores both current dumps and exports the
+actual Keycloak realm successfully. It confirms missing SMTP, disabled Google
+without credentials and absent Apple broker. Go/optimized Keycloak images build;
+private storage transport and CORS read-back pass with temporary credentials.
+Recovered identity database-name and storage addressing mismatches are corrected.
+Explicit web deployment binding tests (5), auth tests (10), lint/type/build pass.
+Live mobile-width public pages present safe outage states; authenticated services
+are still unavailable. These checks do not resolve the external release gates.
+
 This is the working evidence register for the post-release FitCalgary V1
 stabilization pass. A status of `PASS` records an executed check. Simulator and
 emulator results are not physical-device verification.

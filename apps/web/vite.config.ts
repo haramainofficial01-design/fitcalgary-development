@@ -1,21 +1,11 @@
 import tailwindcss from '@tailwindcss/postcss';
 import vinext from 'vinext';
 import { defineConfig } from 'vite';
+import { productionDeploymentVars } from './lib/deployment-config';
 
 const usePolling = process.env.FITCALGARY_VITE_USE_POLLING === 'true';
 
-const deploymentVars: Record<string, string> =
-  process.env.FITCALGARY_DEPLOY_TARGET === 'production'
-    ? {
-        WEB_PUBLIC_URL: 'https://fitcalgary-web.fitcalgary.workers.dev',
-        NEXT_PUBLIC_SITE_URL: 'https://fitcalgary-web.fitcalgary.workers.dev',
-        API_BASE_URL:
-          'https://fitcalgary-api-production.up.railway.app/api/v1',
-        OIDC_ISSUER:
-          'https://fitcalgary-auth-production.up.railway.app/realms/fitcalgary',
-        OIDC_WEB_CLIENT_ID: 'fitcalgary-web',
-      }
-    : {};
+const deploymentVars = productionDeploymentVars(process.env);
 
 const localBindingConfig = {
   name: 'fitcalgary-web',

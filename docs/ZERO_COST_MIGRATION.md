@@ -7,6 +7,49 @@ No paid subscription, payment method, upgrade or purchased resource was used.
 The Client repository was not modified. Existing mobile and public web endpoints
 were not changed to an unverified replacement.
 
+### Local deployment rehearsal
+
+- Installed a free local Colima/Docker runtime in a dedicated `fitcalgary` ARM
+  profile; no cloud resource or paid service was created.
+- Restored the two current verified dumps into fresh, private PostgreSQL 18
+  containers. Catalog/profile/user/credential counts match; no unvalidated
+  constraints were found. Source databases/volumes were not accessed or changed.
+- Keycloak 26.3 successfully exported the restored `fitcalgary` realm. The full
+  export contains sensitive identity/configuration data and is mode-0600 in
+  protected operator storage outside Git. Mobile public client, S256 PKCE and
+  `ca.fitcalgary.index:/oauthredirect` are preserved. Verification remains enabled.
+- Recovered realm confirms **empty SMTP**, **Google disabled without client ID
+  or secret**, and **no Apple broker**. These are actual recovered configuration
+  findings, not completed live authentication tests.
+- Corrected a migration template mismatch: the recovered identity database is
+  named `railway`, not `keycloak`. Compose now requires its name explicitly.
+  Raw service env files preserve existing `$`/quoted secrets without interpolation.
+- Actual Compose configuration validates private ports, raw env files and the
+  recovered DB binding. Caddy 2.10.2 configuration validates; no public TLS
+  certificate/DNS deployment is claimed from that local syntax check.
+- Go production container and optimized Keycloak container build successfully
+  for ARM. Added a restricted `.dockerignore`: build context is about 557 KB,
+  excluding private Git history, local tooling, credentials and platform caches.
+- SeaweedFS 4.45 ARM container verifies a real 7 MiB multipart upload, exact
+  bytes, unsigned/tampered rejection, range playback and deletion. Fixed the
+  bucket CORS command to respect path-style addressing; actual configured CORS
+  is read back successfully. Production storage is not yet deployed.
+- Website production bindings now require explicit HTTPS endpoints, API version,
+  preserved realm and client. Missing configuration fails instead of silently
+  embedding old Railway URLs. Five new deployment tests, ten auth tests, lint,
+  TypeScript and full web build pass. No live bindings were changed.
+- Fresh headless Chrome checks: eight live mobile-width routes return 200 without
+  horizontal overflow or raw developer errors. Catalog routes show safe outage
+  states while the backend is stopped; this is not working live catalog proof.
+  Anonymous admin shows the sign-in-required screen, not admin authorization PASS.
+  Anonymous protected web admin/profile API requests return 401. Public gym API
+  proxy currently returns 404 with the source backend stopped.
+- Rehearsal containers/networks and their newly created temporary DB volume were
+  removed after verification. The original dumps/encrypted copies remain intact.
+  Initial local bind-mount attempts failed; named-volume rehearsal resolved it.
+  A browser check first lacked its local Playwright dependency; rerunning with
+  the installed workspace runtime completed the checks above.
+
 Railway initially reported HOBBY with no active subscription, no payment method,
 zero purchased credit and an unused Free allowance. Its explicit Free-only
 subscription operation succeeded. The workspace now reports **FREE**, an active
@@ -83,8 +126,9 @@ The newly recovered databases, not those test copies, are the migration source.
 The Oracle candidate retains the real Go/Keycloak/PostgreSQL architecture.
 Private SeaweedFS provides the current S3/multipart interface behind HTTPS rather
 than introducing a potentially billable object-storage account. See
-`infrastructure/free-vm/README.md`. YAML syntax and isolation checks are not
-container/ARM deployment evidence; that stack has **not** been deployed or tested.
+`infrastructure/free-vm/README.md`. Individual ARM containers and configuration
+have passed the local checks above; the combined stack has **not** been deployed
+to Oracle, exercised through public HTTPS or production-auth verified.
 
 Historical Railway RAM measurements: Keycloak approximately 880 MB, Go 22 MB,
 application DB 54 MB, identity DB 48 MB. These sampled historical figures do not
@@ -127,6 +171,14 @@ Required external actions:
 5. Approve the existing genuine native iOS glass preview before publication;
    complete physical-device, final authenticated regression and store update gates.
 
+The final Client domain need not block staging: after an actual eligible VM IP
+exists, temporary IP-based hostnames from nip.io/sslip.io can be evaluated with
+Caddy HTTP-01 TLS. The service documents IP resolution and individual HTTPS
+certificates. No such hostname has been assigned or tested for FitCalgary yet.
+This is a third-party DNS dependency, not a domain owned by the Client, and does
+not establish sending-domain ownership or satisfy provider domain verification.
+Do not invent a final production domain or bypass Google/Apple verification.
+
 Then provision only confirmed Always Free resources, restore both current DBs in
 isolation, preserve encryption keys, configure HTTPS/storage/OIDC callbacks and
 web sessions, and test the actual product before updating endpoints. Preserve
@@ -164,11 +216,14 @@ Executed checks for this increment:
 - All four operational script syntax checks and invalid-input preflight rejection:
   PASS. Negative preflight checks do not access or mutate the source provider.
 - VM YAML/private-port/persistent-volume/staged-profile assertions: PASS.
-  Docker runtime, ARM image pulls, HTTPS and replacement deployment: NOT TESTED.
+  Local ARM image pulls/builds, restore/realm export and private storage: PASS in
+  the later rehearsal above. Public HTTPS and replacement deployment: NOT TESTED.
 - Final Railway status: zero active deployments, original volumes READY;
   temporary TCP proxy lists empty. No account or user deletion performed.
-- No Flutter/Go/web source changed; unchanged expensive application suites were
-  not rerun. Earlier application evidence is not live authenticated verification.
+- Recovery itself changed no application source. The later rehearsal changes
+  web deployment configuration and the Go operational storage-CORS command;
+  their affected checks were rerun. Unchanged Flutter suites were not repeated.
+  Earlier application evidence is not live authenticated verification.
 
 - [Railway plans](https://docs.railway.com/pricing/plans)
 - [Railway trial](https://docs.railway.com/pricing/free-trial)
@@ -177,6 +232,7 @@ Executed checks for this increment:
 - [Cloudflare Pages limits](https://developers.cloudflare.com/pages/platform/limits/)
 - [Neon plans](https://neon.com/docs/introduction/plans)
 - [Oracle Always Free](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm)
+- [Temporary IP-based DNS and HTTPS](https://nip.io/)
 
 `snapshot_migration_config.mjs` reads and encrypts configuration outside Git.
 `export_railway_database.mjs` requires an already-running original Free-only

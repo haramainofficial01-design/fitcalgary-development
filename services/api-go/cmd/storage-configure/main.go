@@ -8,6 +8,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -51,6 +52,10 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	usePathStyle, err := pathStyle()
+	if err != nil {
+		return err
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -63,7 +68,7 @@ func run() error {
 	}
 	client := s3.NewFromConfig(loaded, func(options *s3.Options) {
 		options.BaseEndpoint = aws.String(endpoint)
-		options.UsePathStyle = false
+		options.UsePathStyle = usePathStyle
 	})
 	_, err = client.PutBucketCors(ctx, &s3.PutBucketCorsInput{
 		Bucket: &bucket,
@@ -90,6 +95,18 @@ func run() error {
 		}
 	}
 	return errors.New("storage provider did not retain the required browser policy")
+}
+
+func pathStyle() (bool, error) {
+	raw := strings.TrimSpace(os.Getenv("S3_USE_PATH_STYLE"))
+	if raw == "" {
+		return true, nil
+	}
+	value, err := strconv.ParseBool(raw)
+	if err != nil {
+		return false, errors.New("S3_USE_PATH_STYLE must be true or false")
+	}
+	return value, nil
 }
 
 func contains(values []string, wanted string) bool {

@@ -57,6 +57,25 @@ when the explicitly authorized domain/project/key and physical device are availa
   rollback constraints and the exact next actions. Current mobile endpoints,
   store binaries and Client repository remain unchanged. Do not hand off yet.
 
+### ARM migration rehearsal and configuration safeguards
+
+- Current dumps restored in fresh private PostgreSQL ARM containers; counts and
+  validated constraints PASS. Actual Keycloak realm export PASS, protected outside
+  Git. SMTP absent, Google disabled/no credentials, Apple broker absent.
+- Corrected identity DB-name mismatch, raw-env secret preservation and storage
+  CORS path-style configuration. Actual Compose/Caddy configuration PASS.
+- ARM Go and optimized Keycloak image builds PASS; restricted Docker context
+  excludes history/caches/credentials. Actual ARM SeaweedFS multipart/privacy/
+  tampered-signature/range/deletion/CORS checks PASS with temporary credentials.
+- Web binds explicit replacement endpoints rather than hard-coded Railway;
+  five deployment tests + ten auth tests, lint/type/build PASS. No live deploy.
+- Eight live mobile-width public/admin entry routes PASS for rendering/overflow/
+  safe outage presentation, not authenticated product availability. No physical
+  Apple device was discovered; real-device provider tests remain blocked.
+- Next action: Oracle signup/console access, inspect eligible Always Free capacity,
+  then provision/restore and public HTTPS testing. Do not produce final store
+  replacements for stopped API/auth URLs or perform the Client handoff.
+
 ## Operating record
 
 - **Scope:** Original FitCalgary V1 only. The separate future community-product
