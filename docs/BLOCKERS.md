@@ -1,5 +1,18 @@
 # Blockers and external dependencies
 
+## Current production hosting override
+
+This section supersedes historical schedule/service availability statements
+below. The user now requires $0 out-of-pocket infrastructure. Railway is Free
+with no payment method; its two existing databases have current, isolated-restore
+verified exports and encrypted local copies. Volumes are intact, workloads stopped.
+The web responds, but API/auth are unavailable. Oracle Free account readiness,
+eligible capacity and approved API/auth/evidence DNS are required for deployment.
+Cloudflare account Free billing/usage still needs confirmation. SMTP sender/DNS,
+dedicated Google OAuth, Apple broker credentials and real-device authentication
+remain externally blocked. See `ZERO_COST_MIGRATION.md`. Current data recovery is
+not blocked and does not require a Hobby subscription.
+
 ## Phase 2 schedule and verification
 
 September 4 morning: no new external blocker. Club/event service acceptance tests

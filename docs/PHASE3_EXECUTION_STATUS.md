@@ -9,7 +9,8 @@ recovery. Subsequent account/content/layout checks pass 57 Flutter tests and
 analysis, debug Android build, iOS simulator build and primary navigation checks.
 Normal applications are restored after integration harnesses where recorded.
 
-Web, API and OIDC endpoints are live, not merely deployment templates:
+Current hosting check: web responds HTTP 200, while the API health and OIDC
+discovery endpoints return HTTP 404. Earlier live checks are historical:
 
 - Website: https://fitcalgary-web.fitcalgary.workers.dev
 - API: https://fitcalgary-api-production.up.railway.app/api/v1
@@ -35,6 +36,26 @@ Native large-text/high-contrast route testing passes; full screen-reader and
 physical-device verification remain outstanding.
 Next: remaining independent security/visual/accessibility checks. Resume actual provider flows immediately
 when the explicitly authorized domain/project/key and physical device are available.
+
+### Zero-cost recovery and migration checkpoint
+
+- Railway switched through its explicit Free-only operation: FREE, no payment
+  method, active Free subscription, about $0.99987 included credit remaining.
+- Both original PostgreSQL volumes retained. Every non-template database and
+  globals exported; application and identity dumps restored successfully into
+  separate, socket-only PostgreSQL 18 verification clusters. Clusters stopped.
+- Current application: 35 tables, 273 gyms / 743 clubs / 531 events, 1 profile,
+  no results/submissions/reviews. Current identity: 88 tables, 2 realms, 4 users,
+  4 credentials. These are real recovered aggregates, not fixtures.
+- Two encrypted local copies per export verified; off-device copy not yet made.
+  Configuration snapshots before/after recovery are protected outside Git.
+- All Railway workloads stopped again; temporary public database proxies removed.
+  No production imports, migrations, deletions or account changes occurred.
+- VM deployment candidate prepared, not deployed. Oracle Free signup/capacity,
+  approved DNS and Cloudflare Free billing confirmation remain external gates.
+- Use `ZERO_COST_MIGRATION.md` for current provider limits, data provenance,
+  rollback constraints and the exact next actions. Current mobile endpoints,
+  store binaries and Client repository remain unchanged. Do not hand off yet.
 
 ## Operating record
 

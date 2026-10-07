@@ -1,6 +1,19 @@
 # Production stabilization audit
 
-Last updated: 2026-10-03
+Last updated: 2026-10-07
+
+## Current hosting and recovery override
+
+The public web returns HTTP 200, but Railway API health and Keycloak discovery
+currently return HTTP 404. Earlier live smoke evidence below is historical,
+not current complete-product availability. The user requires $0 out-of-pocket
+hosting and forbids paid upgrades. Railway Free was activated without a card;
+both current PostgreSQL databases were exported and restored in isolation.
+All 1,547 catalog records and Keycloak account/credential tables are preserved.
+Two encrypted local copies exist; an off-device copy remains needed. Original
+volumes are retained and all source workloads are stopped. Replacement hosting,
+actual authentication and store/handoff gates remain incomplete. See
+`ZERO_COST_MIGRATION.md` for exact recovery evidence, constraints and next actions.
 
 This is the working evidence register for the post-release FitCalgary V1
 stabilization pass. A status of `PASS` records an executed check. Simulator and

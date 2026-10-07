@@ -1,0 +1,20 @@
+{
+  email {$TLS_CONTACT_EMAIL}
+}
+
+{$API_HOST} {
+  reverse_proxy api:4000
+}
+
+{$AUTH_HOST} {
+  # Realm administration is performed privately over SSH, not the public edge.
+  @administration path /admin /admin/* /metrics /health /health/*
+  respond @administration 404
+  reverse_proxy keycloak:8080
+}
+
+{$EVIDENCE_HOST} {
+  # Never cache private or signed evidence responses at this proxy.
+  header Cache-Control "private, no-store"
+  reverse_proxy storage:8333
+}

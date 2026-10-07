@@ -1,0 +1,99 @@
+name: fitcalgary
+services:
+  application-db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    env_file: /etc/fitcalgary/application-db.env
+    volumes: ['application-db:/var/lib/postgresql']
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    mem_limit: 768m
+    logging: &logging
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+  identity-db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    env_file: /etc/fitcalgary/identity-db.env
+    volumes: ['identity-db:/var/lib/postgresql']
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    mem_limit: 768m
+    logging: *logging
+  storage:
+    image: chrislusf/seaweedfs:4.45
+    command: [mini, -dir=/data, -ip=storage, -ip.bind=0.0.0.0, -s3.port=8333, -admin.ui=false, -webdav=false, -s3.port.iceberg=0, -s3.port.lance=0, -master.telemetry=false]
+    restart: unless-stopped
+    env_file: /etc/fitcalgary/storage.env
+    volumes: ['evidence:/data']
+    mem_limit: 1536m
+    logging: *logging
+  keycloak:
+    profiles: [application]
+    build:
+      context: ../..
+      dockerfile: infrastructure/keycloak/Dockerfile
+    restart: unless-stopped
+    env_file: /etc/fitcalgary/keycloak.env
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://identity-db:5432/keycloak
+      KC_HTTP_ENABLED: 'true'
+      KC_HOSTNAME: https://${AUTH_HOST:?Provide the approved auth hostname}
+      KC_HOSTNAME_STRICT: 'true'
+      KC_PROXY_HEADERS: xforwarded
+      KC_CACHE: local
+      JAVA_OPTS_KC_HEAP: '-Xms256m -Xmx768m'
+    depends_on:
+      identity-db: {condition: service_healthy}
+    mem_limit: 1536m
+    logging: *logging
+  api:
+    profiles: [application]
+    build:
+      context: ../..
+      dockerfile: services/api-go/Dockerfile
+    restart: unless-stopped
+    env_file: /etc/fitcalgary/api.env
+    environment:
+      APP_ENV: production
+      DEMO_DATA: 'false'
+      PORT: '4000'
+      KEYCLOAK_ISSUER: https://${AUTH_HOST:?Provide the approved auth hostname}/realms/fitcalgary
+      WEB_PUBLIC_URL: https://${WEB_HOST:?Provide the approved web hostname}
+      S3_ENDPOINT: https://${EVIDENCE_HOST:?Provide the approved evidence hostname}
+      S3_USE_PATH_STYLE: 'true'
+    depends_on:
+      application-db: {condition: service_healthy}
+      keycloak: {condition: service_started}
+      storage: {condition: service_started}
+    mem_limit: 512m
+    logging: *logging
+  edge:
+    profiles: [application]
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    ports: ['80:80', '443:443', '443:443/udp']
+    environment:
+      API_HOST: ${API_HOST:?Provide the approved API hostname}
+      AUTH_HOST: ${AUTH_HOST:?Provide the approved auth hostname}
+      EVIDENCE_HOST: ${EVIDENCE_HOST:?Provide the approved evidence hostname}
+      TLS_CONTACT_EMAIL: ${TLS_CONTACT_EMAIL:?Provide the verified operator email}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - certificates:/data
+      - edge-config:/config
+    mem_limit: 256m
+    logging: *logging
+volumes:
+  application-db:
+  identity-db:
+  evidence:
+  certificates:
+  edge-config:
