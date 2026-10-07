@@ -168,8 +168,8 @@ Required external actions:
 4. Authorize/verify a FitCalgary email sending domain, dedicated Google OAuth
    project/configuration and Apple Services ID/return URL/key. Real inbox receipt
    and real iPhone Apple login remain mandatory acceptance evidence.
-5. Approve the existing genuine native iOS glass preview before publication;
-   complete physical-device, final authenticated regression and store update gates.
+5. Complete physical-device, final authenticated regression and store update
+   gates. The user has approved the existing genuine native iOS glass appearance.
 
 The final Client domain need not block staging: after an actual eligible VM IP
 exists, temporary IP-based hostnames from nip.io/sslip.io can be evaluated with

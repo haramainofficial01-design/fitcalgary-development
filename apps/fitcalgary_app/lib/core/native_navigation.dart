@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Client-review opt-in until the material change is visually approved.
+/// Approved native navigation on supported Apple versions.
 /// Unsupported Apple versions and Android retain the verified Flutter control.
 class NativeFitNavigation extends StatefulWidget {
   const NativeFitNavigation({
@@ -40,7 +40,10 @@ class _NativeFitNavigationState extends State<NativeFitNavigation> {
   }
 
   Future<bool> detectSupport() async {
-    if (!const bool.fromEnvironment('NATIVE_IOS_NAVIGATION') ||
+    if (!const bool.fromEnvironment(
+          'NATIVE_IOS_NAVIGATION',
+          defaultValue: true,
+        ) ||
         kIsWeb ||
         defaultTargetPlatform != TargetPlatform.iOS) {
       return false;

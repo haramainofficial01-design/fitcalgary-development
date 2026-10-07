@@ -22,8 +22,9 @@ Google OAuth setup, Apple broker configuration and physical verification remain
 BLOCKED_EXTERNAL. Unrelated HBIC configuration is out of scope. Store binaries
 do not contain all private stabilization fixes. An opt-in native UIKit glass
 navigation preview passes real-control Xcode tests on iPhone and iPad simulators;
-light/dark captures were inspected. Default adoption requires visual approval.
-Native phone material adoption,
+light/dark captures were inspected. The user approved this appearance; supported
+iOS builds now enable it by default, with the existing platform/capability fallback.
+Final native phone material verification,
 full authenticated regression and final release/design QA remain IN_PROGRESS.
 No current final Client handoff or safe-to-release claim is authorized by a
 historical PASS label. Do not push the Client repository before the final gate.
@@ -75,6 +76,10 @@ when the explicitly authorized domain/project/key and physical device are availa
 - Next action: Oracle signup/console access, inspect eligible Always Free capacity,
   then provision/restore and public HTTPS testing. Do not produce final store
   replacements for stopped API/auth URLs or perform the Client handoff.
+- Native iOS appearance approved and enabled by default on supported versions;
+  unsupported/error/Android fallbacks remain intact. Flutter analysis and all
+  64 tests PASS after adoption. This closes the appearance-approval dependency,
+  not hosting, provider, physical-device or publication gates.
 
 ## Operating record
 

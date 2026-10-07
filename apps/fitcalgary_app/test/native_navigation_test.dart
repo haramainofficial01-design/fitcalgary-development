@@ -25,7 +25,7 @@ void main() {
     expect(tester.getTopLeft(find.byKey(content)).dy, 44);
     expect(tester.takeException(), isNull);
   });
-  testWidgets('standard builds preserve usable fallback navigation', (
+  testWidgets('non-iOS builds preserve usable fallback navigation', (
     tester,
   ) async {
     var selected = -1;
@@ -54,9 +54,11 @@ void main() {
     ) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       const capability = MethodChannel('fitcalgary/material');
+      var capabilityChecks = 0;
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
         capability,
         (call) async {
+          capabilityChecks++;
           if (unavailable) throw PlatformException(code: 'UNAVAILABLE');
           return false;
         },
@@ -78,6 +80,12 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      expect(
+        capabilityChecks,
+        const bool.fromEnvironment('NATIVE_IOS_NAVIGATION', defaultValue: true)
+            ? 1
+            : 0,
+      );
       expect(find.text('FitCalgary navigation'), findsOneWidget);
       expect(find.byType(UiKitView), findsNothing);
       expect(tester.takeException(), isNull);

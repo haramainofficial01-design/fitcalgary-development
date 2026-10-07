@@ -64,11 +64,20 @@ emulator results are not physical-device verification.
 
 ### Native iOS navigation preview
 
-- Added an opt-in UIKit navigation surface using genuine `UIGlassEffect` on
+- The user approved the displayed native appearance. Supported iOS builds now
+  enable the verified native control by default; explicit opt-out, unsupported
+  iOS and Android retain the Flutter fallback. This approval does not resolve
+  hosting/authentication, physical-device or store-release gates.
+- Approval adoption verification: Flutter analysis PASS and 64 Flutter tests
+  PASS with the new default. The fallback regression checks that iOS attempts
+  capability detection by default and safely handles unsupported/error responses.
+  The explicit `NATIVE_IOS_NAVIGATION=false` run also passes all four navigation
+  regressions, with no capability request attempted.
+- Initially added as an opt-in UIKit navigation surface using genuine `UIGlassEffect` on
   iOS 26+. The material and all five buttons share one native view hierarchy;
   Dart still owns application routing. Standard builds and Android retain the
   existing Flutter navigation. Enable only for review with
-  `NATIVE_IOS_NAVIGATION=true`; publication requires visual approval.
+  `NATIVE_IOS_NAVIGATION=true`; the appearance approval has now been received.
 - Native Xcode UI tests operated Home, Gyms, Board, Compete and Me on iPhone
   17 Pro (iOS 26.5) and iPad Pro 13-inch (iOS 27): both PASS. Result bundles:
   `/tmp/fitcalgary-native-ui-run-v3.xcresult` and
