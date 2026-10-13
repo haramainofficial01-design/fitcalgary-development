@@ -109,6 +109,11 @@ when the explicitly authorized domain/project/key and physical device are availa
   Neither is a signed store release or authenticated production test.
 - README now follows the actual pnpm lockfile. Signed build scripts require live
   health/readiness and matching HTTPS discovery before retrieving signing material.
+- Current source delivered to Client `handoff-current` in one root commit
+  `3732f425036710ddee2cb4728e1f52a377192f88`. Client `main` remains
+  `209ca890e21ca2bdefd37a026dd475733de8ddda`; no history was rewritten.
+  See SOURCE_HANDOFF_STATUS.md for fresh-clone evidence and the exact remaining
+  default-branch authorization gate. This is source delivery, not public release.
 
 ## Operating record
 

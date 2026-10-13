@@ -21,6 +21,7 @@ const excludes = new Set([
   'docs/TEST_MATRIX.md', 'docs/ZERO_COST_MIGRATION.md',
   'docs/FINAL_RELEASE_MATRIX.md', 'docs/PRODUCTION_VERIFICATION.md',
   'docs/STORE_SUBMISSION_PREPARATION.md',
+  'docs/SOURCE_HANDOFF_STATUS.md',
   'scripts/prepare_source_export.mjs', 'scripts/prepare_phase2_review_assets.py',
   'scripts/test_free_vm_restore.mjs', 'scripts/snapshot_migration_config.mjs',
 ]);
