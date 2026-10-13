@@ -30,3 +30,25 @@ if (fc_validate_https_url API_BASE_URL http://localhost:4000) >/dev/null 2>&1; t
   exit 1
 fi
 printf 'Release tool discovery, overrides and insecure-endpoint rejection PASS\n'
+curl() {
+  if [[ "${@: -1}" == */openid-configuration ]]; then
+    printf '%s' '{"issuer":"https://auth.example.org/realms/fitcalgary","authorization_endpoint":"https://auth.example.org/auth","token_endpoint":"https://auth.example.org/token","jwks_uri":"https://auth.example.org/certs"}'
+  fi
+}
+fc_verify_release_services
+curl() { return 22; }
+if (fc_verify_release_services) >/dev/null 2>&1; then
+  printf 'Unreachable services were accepted\n' >&2
+  exit 1
+fi
+curl() {
+  if [[ "${@: -1}" == */openid-configuration ]]; then
+    printf '%s' '{"issuer":"https://wrong.example.org","authorization_endpoint":"https://auth.example.org/auth","token_endpoint":"https://auth.example.org/token","jwks_uri":"https://auth.example.org/certs"}'
+  fi
+}
+if (fc_verify_release_services) >/dev/null 2>&1; then
+  printf 'Mismatched identity issuer was accepted\n' >&2
+  exit 1
+fi
+unset -f curl
+printf 'Release service preflight and issuer-mismatch rejection PASS\n'

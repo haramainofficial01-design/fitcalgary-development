@@ -101,6 +101,14 @@ when the explicitly authorized domain/project/key and physical device are availa
   Oracle session/capacity, domain/provider setup, real device and store gates remain.
 - Next: isolated export build/security/completeness audit; verify history-update
   authorization before any Client push. Do not represent source transfer as release readiness.
+- Isolated export: 443 source files; completeness, sensitive-file/tool-artifact/
+  private-reference and documentation-link scan PASS. Flutter analysis + 64 tests,
+  Go tests/vet/build + real isolated DB workflows, Watch snapshot smoke and web
+  frozen-lockfile install/lint/type/build + 15 auth/deployment checks PASS.
+- Export iOS simulator build (Watch embedded) and Android debug APK build PASS.
+  Neither is a signed store release or authenticated production test.
+- README now follows the actual pnpm lockfile. Signed build scripts require live
+  health/readiness and matching HTTPS discovery before retrieving signing material.
 
 ## Operating record
 

@@ -60,6 +60,36 @@ fc_validate_domain() {
   esac
 }
 
+fc_verify_release_services() {
+  local api_base="${FC_API_BASE_URL%/}"
+  case "$api_base" in
+    */api/v1) ;;
+    *) fc_fail "API_BASE_URL must end with /api/v1" ;;
+  esac
+  for endpoint in health ready; do
+    curl --fail --silent --show-error --max-time 15 --proto '=https' \
+      "${api_base%/api/v1}/$endpoint" >/dev/null 2>&1 ||
+      fc_fail "Production API $endpoint check failed; no release build was started"
+  done
+  local discovery
+  discovery="$(curl --fail --silent --show-error --max-time 15 --proto '=https' \
+    "${FC_OIDC_ISSUER%/}/.well-known/openid-configuration" 2>/dev/null)" ||
+    fc_fail "Production identity discovery is unavailable; no release build was started"
+  printf '%s' "$discovery" | /usr/bin/python3 -c '
+import json, sys
+from urllib.parse import urlparse
+try:
+    document = json.load(sys.stdin)
+    assert document.get("issuer") == sys.argv[1].rstrip("/")
+    for field in ("authorization_endpoint", "token_endpoint", "jwks_uri"):
+        value = urlparse(document[field])
+        assert value.scheme == "https" and value.hostname and not value.username and not value.password
+except (AssertionError, KeyError, TypeError, ValueError):
+    sys.exit(1)
+' "$FC_OIDC_ISSUER" ||
+    fc_fail "Production discovery issuer/endpoints are invalid; no release build was started"
+}
+
 fc_prepare_release() {
   FC_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
   FC_APP="$FC_ROOT/apps/fitcalgary_app"

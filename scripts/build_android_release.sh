@@ -3,6 +3,7 @@
 set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/release_common.sh"
 fc_prepare_release
+fc_verify_release_services
 
 export JAVA_HOME="$FC_JAVA_HOME"
 export PATH="$JAVA_HOME/bin:$PATH"

@@ -3,6 +3,7 @@
 set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/release_common.sh"
 fc_prepare_release
+fc_verify_release_services
 
 identity_output="$(security find-identity -v -p codesigning 2>/dev/null)"
 distribution_line="$(printf '%s\n' "$identity_output" | /usr/bin/grep -E 'Apple Distribution:|iPhone Distribution:' | /usr/bin/head -1 || true)"

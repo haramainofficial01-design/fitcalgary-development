@@ -19,7 +19,7 @@ delivery does not establish live authentication, store approval or physical-devi
 
 ## Prerequisites
 
-Go 1.27+, Node.js 22.13+, npm, Flutter 3.47+, and Docker with Compose 2.30+.
+Go 1.27+, Node.js 22.13+, pnpm 11+, Flutter 3.47+, and Docker with Compose 2.30+.
 Apple builds require macOS, Xcode 26+, CocoaPods and an authorized signing team.
 Android builds require JDK 21 and Android SDK 37+. Put tools on PATH; release
 scripts accept explicit tool paths. XcodeGen regenerates standalone Watch and
@@ -48,8 +48,8 @@ set -a
 . ./.env
 set +a
 cd apps/web
-npm ci
-npm run dev
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
 The dashboard is `/admin`; Go enforces its permissions. Provision local test
@@ -77,8 +77,8 @@ Import approved catalog data using `cmd/client-data-import`. Missing prices or
 dates must not be invented. The source contains 273 gyms, 743 clubs and 531 competitions.
 
 From `services/api-go`: `go test ./...`, `go vet ./...`, `go build ./cmd/api`.
-From `apps/web`: `npm ci`, `npm run lint`, `npx tsc --noEmit`,
-`npm run test:auth`, `npm run test:deployment`, `npm run build`.
+From `apps/web`: `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm exec tsc --noEmit`,
+`pnpm test:auth`, `pnpm test:deployment`, `pnpm build`.
 From `apps/fitcalgary_app`: `flutter pub get`, `flutter analyze`, `flutter test`.
 From the root: `bash scripts/test_watch_snapshot.sh` and
 `bash scripts/test_release_common.sh`.
@@ -92,6 +92,8 @@ production configuration using `FITCALGARY_PRODUCTION_CONFIG`. Select Flutter
 with `FITCALGARY_FLUTTER`; select JDK with `FITCALGARY_JAVA_HOME` or `JAVA_HOME`.
 Keep keys and signing passwords outside Git. Read
 [store signing](docs/STORE_SIGNING_AND_SUBMISSION.md) before uploading.
+The scripts require live API health/readiness and matching HTTPS OIDC discovery
+before starting a signed build. These checks do not replace real login/device QA.
 
 The responsive website runs on Cloudflare Workers; its server-side account
 routes require more than static hosting. The candidate in `infrastructure/free-vm`
