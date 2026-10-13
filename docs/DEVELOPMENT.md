@@ -26,8 +26,7 @@ contract.
 - Use migrations for every database schema change and preserve audit history.
 - Keep secrets outside source control and maintain reproducible placeholders in
   `.env.example`.
-- Update `IMPLEMENTATION_STATUS.md` whenever implementation or verification status
-  changes.
+- Keep deployment and verification documentation accurate when status changes.
 - Run proportionate build, test, security, and platform checks for each change;
   never treat simulator results as physical-device verification.
 

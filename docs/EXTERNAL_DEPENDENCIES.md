@@ -1,7 +1,8 @@
 # External dependencies
 
-These are release inputs, not missing application functionality. The source,
-adapters, validation and local verification paths are maintained in the project.
+These inputs require configuration and actual verification before release. The
+source and local test paths are maintained, but that is not proof of functioning
+production services. See `DEPLOYMENT_STATUS.md` for current runtime limitations.
 
 | Service / input | Required from Client or operator | Ready in source | Release verification still needed |
 |---|---|---|---|

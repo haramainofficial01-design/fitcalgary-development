@@ -3,7 +3,7 @@
 This is a migration candidate, **not a deployed or release-verified stack**.
 Use only an eligible Oracle Always Free tenancy/resource in its home region.
 No paid upgrade, PAYG account, trial-only machine or paid add-on is permitted.
-See `docs/ZERO_COST_MIGRATION.md` for current evidence and cutover gates.
+See `docs/DEPLOYMENT_STATUS.md` for current live-service limitations and cutover gates.
 
 The existing Go/Keycloak/PostgreSQL architecture is retained. PostgreSQL runs
 on the VM because continuous notification-worker polling exceeds Neon Free's

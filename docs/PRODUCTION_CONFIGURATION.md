@@ -50,8 +50,8 @@ must not be used as a production secret source.
 Android release signing is supplied only through `FITCALGARY_RELEASE_KEYSTORE`,
 `FITCALGARY_RELEASE_STORE_PASSWORD`, `FITCALGARY_RELEASE_KEY_ALIAS`, and
 `FITCALGARY_RELEASE_KEY_PASSWORD`. Without all four values the project can still
-produce a local debug-signed release artifact, but it is not a store-uploadable
-production bundle.
+build a debug application, but Release tasks fail closed. Debug signing is never
+substituted for a production upload key.
 
 ## Keycloak and email/social providers
 

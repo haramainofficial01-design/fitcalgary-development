@@ -1,4 +1,4 @@
-# V1 handoff
+# Source handoff
 
 The delivered source is organized as one maintainable FitCalgary codebase:
 Flutter mobile/web clients, the web/admin surface, Go services, PostgreSQL
@@ -11,10 +11,30 @@ listed in `EXTERNAL_DEPENDENCIES.md`, and complete the release matrix. Secrets,
 signing material, private evidence and production credentials must remain in the
 appropriate platform secret manager rather than this repository.
 
-The final source snapshot has been prepared as a clean one-commit candidate in
-the local release workspace for inspection. It is intentionally not pushed to the
-Client repository while hosting, provider credentials, signing accounts, physical
-devices and store inputs remain external. The candidate contains no review media,
-simulator artifacts, internal phase-history files, private development references
-or secrets. A final transfer can be produced from the same source once those
-external release inputs and the corresponding verification are complete.
+Read `DEPLOYMENT_STATUS.md` for current live-service, provider, device and store
+dependencies. Source delivery does not establish public-release readiness.
+
+## Access and operating sequence
+
+Transfer hosting, identity administration, database access, private storage,
+email/push accounts, signing and store access through an authorized secure
+channel. The Client should control permanent accounts and recovery contacts.
+
+Restore application and identity backups into isolated databases first. Preserve
+existing encryption keys and account identifiers. Configure HTTPS endpoints and
+Keycloak callbacks, then verify authentication, authorization and private storage.
+Build release binaries against the functioning endpoints before store submission.
+Record actual platform responses; never infer approval from a successful upload.
+
+## Domain change
+
+Connect the approved Client domain, issue TLS, update origins/CORS, Keycloak
+redirect/logout URLs and association files. Confirm Google and Apple broker
+domain requirements. Replace mobile builds if packaged API/issuer settings change.
+Keep old routes working during transition where possible.
+
+## Recovery
+
+Keep encrypted off-device copies and verify restoration. After new writes,
+rollback requires verified synchronization or a current backup; restoring an old
+export can lose data. Never delete or reinitialize production volumes.

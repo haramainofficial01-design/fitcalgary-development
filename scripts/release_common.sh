@@ -63,12 +63,21 @@ fc_validate_domain() {
 fc_prepare_release() {
   FC_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
   FC_APP="$FC_ROOT/apps/fitcalgary_app"
-  FC_FLUTTER="$FC_ROOT/.tooling/flutter/bin/flutter"
-  FC_JAVA_HOME="${FITCALGARY_JAVA_HOME:-/Users/sahlshafiq/.fitcalgary-tooling/jdk-21}"
+  FC_FLUTTER="${FITCALGARY_FLUTTER:-}"
+  if [ -z "$FC_FLUTTER" ]; then
+    FC_FLUTTER="$(command -v flutter || true)"
+  fi
+  if [ -z "$FC_FLUTTER" ] && [ -x "$FC_ROOT/.tooling/flutter/bin/flutter" ]; then
+    FC_FLUTTER="$FC_ROOT/.tooling/flutter/bin/flutter"
+  fi
+  FC_JAVA_HOME="${FITCALGARY_JAVA_HOME:-${JAVA_HOME:-}}"
+  if [ -z "$FC_JAVA_HOME" ] && [ -x /usr/libexec/java_home ]; then
+    FC_JAVA_HOME="$(/usr/libexec/java_home -v 21 2>/dev/null || true)"
+  fi
   FITCALGARY_PRODUCTION_CONFIG="${FITCALGARY_PRODUCTION_CONFIG:-$HOME/Library/Application Support/FitCalgary/config/mobile-production.env}"
   FC_RELEASE_OUTPUT="${FITCALGARY_RELEASE_OUTPUT:-$HOME/Library/Application Support/FitCalgary/release}"
 
-  [ -x "$FC_FLUTTER" ] || fc_fail "Flutter executable not found at $FC_FLUTTER"
+  [ -x "$FC_FLUTTER" ] || fc_fail "Install Flutter on PATH or set FITCALGARY_FLUTTER to its executable"
   [ -f "$FITCALGARY_PRODUCTION_CONFIG" ] || fc_fail "Production config is missing. Copy config/release/mobile-production.env.example to $FITCALGARY_PRODUCTION_CONFIG and replace every placeholder."
 
   FC_PRODUCTION_BUILD="$(fc_config_value PRODUCTION_BUILD)"

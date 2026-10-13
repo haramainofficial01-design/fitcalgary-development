@@ -26,8 +26,11 @@ light/dark captures were inspected. The user approved this appearance; supported
 iOS builds now enable it by default, with the existing platform/capability fallback.
 Final native phone material verification,
 full authenticated regression and final release/design QA remain IN_PROGRESS.
-No current final Client handoff or safe-to-release claim is authorized by a
-historical PASS label. Do not push the Client repository before the final gate.
+No safe-to-release claim is authorized by a historical PASS label. The user now
+requests source handoff even if external release dependencies remain. Prepare an
+audited source export with DEPLOYMENT_STATUS.md accurately describing those
+dependencies. Replacing Client history still requires written clean-snapshot
+authorization and a fresh remote-state check; never overwrite unexpected work.
 
 The notification logout race and interrupted-submission return path are fixed
 in `6cd4ef6`; their regressions pass. The native navigation preview, capability
@@ -80,6 +83,24 @@ when the explicitly authorized domain/project/key and physical device are availa
   unsupported/error/Android fallbacks remain intact. Flutter analysis and all
   64 tests PASS after adoption. This closes the appearance-approval dependency,
   not hosting, provider, physical-device or publication gates.
+
+### Source transfer preparation
+
+- Client main contains one root handoff commit, `209ca890e21ca2bdefd37a026dd475733de8ddda`.
+  No later Client work was found; no Client branch has been changed in this run.
+- Removed operator-specific release JDK dependence; explicit tool overrides and
+  PATH-based Flutter discovery work. Release-helper regression PASS.
+- Corrected missing local web bindings and matching Keycloak/storage examples;
+  development infrastructure now binds only loopback. Compose consistency PASS.
+- Go unit tests/vet/build and isolated PostgreSQL workflow tests PASS. Initial
+  seed attempts were correctly refused for missing APP_ENV and sslmode=disable;
+  the explicit disposable-test configuration then passed without production access.
+- Watch snapshot/session smoke PASS; web 10 auth + 5 deployment tests, lint,
+  type-check and production build PASS. Approved source counts remain 273/743/531.
+- Public website/admin entry reachable; old API and OIDC still return HTTP 404.
+  Oracle session/capacity, domain/provider setup, real device and store gates remain.
+- Next: isolated export build/security/completeness audit; verify history-update
+  authorization before any Client push. Do not represent source transfer as release readiness.
 
 ## Operating record
 
